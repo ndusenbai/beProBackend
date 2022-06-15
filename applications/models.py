@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 from utils.models import BaseModel
 
@@ -16,9 +17,9 @@ class ApplicationToCreateCompany(BaseModel):
     email = models.EmailField()
     phone_number = models.CharField(max_length=15, blank=True)
     company_name = models.CharField(max_length=200)
-    company_legal_name = models.CharField(max_length=200, blank=True)
-    employees_qty = models.IntegerField(default=0)
-    years_of_work = models.IntegerField(default=0)
+    company_legal_name = models.CharField(max_length=200)
+    employees_qty = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    years_of_work = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
 
     class Meta:

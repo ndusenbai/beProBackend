@@ -43,6 +43,7 @@ LOCAL_APPS = [
     'utils',
     'auth_user.apps.AuthUserConfig',
     'applications.apps.ApplicationsConfig',
+    'companies.apps.CompaniesConfig',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -105,6 +106,11 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 25
 }
 
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
