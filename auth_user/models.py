@@ -45,10 +45,10 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=70, unique=True)
-    first_name = models.CharField(max_length=500, blank=True)
-    last_name = models.CharField(max_length=500, blank=True)
-    middle_name = models.CharField(max_length=500, blank=True)
-    phone_number = models.CharField(max_length=50, blank=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    middle_name = models.CharField(max_length=50, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
     avatar = models.ImageField(upload_to='avatar/', blank=True, null=True)
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
