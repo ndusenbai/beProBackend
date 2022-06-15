@@ -1,5 +1,5 @@
 from django.contrib import admin
-from companies.models import Company, Department
+from companies.models import Company, Department, Schedule
 
 
 @admin.register(Company)
@@ -12,3 +12,9 @@ class CompanyAdmin(admin.ModelAdmin):
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'company')
     search_fields = ('name', 'company__name', 'company__legal_name')
+
+
+@admin.register(Schedule)
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('department', 'week_day', 'time_from', 'time_to')
+    search_fields = ('department',)

@@ -21,7 +21,7 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=CreateApplicationToCreateCompanySerializer())
+    @swagger_auto_schema(request_body=CreateApplicationToCreateCompanySerializer)
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
