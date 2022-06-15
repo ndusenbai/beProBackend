@@ -2,7 +2,7 @@
 - python 3.10
 - poetry
 
-Create .env file in root directory and add following values:
+Create .env file in config directory and add following values:
 ```dotenv
 DEBUG=on
 DEBUG_STATIC=on
