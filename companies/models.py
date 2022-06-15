@@ -33,3 +33,17 @@ class Department(BaseModel):
 
     def __str__(self):
         return f'{self.name} @{self.company}'
+
+
+class RoleChoices(models.IntegerChoices):
+    OWNER = 1, 'Owner'
+    HR = 2, 'HR'
+    OBSERVER = 3, 'Observer'
+    EMPLOYEE = 4, 'Employee'
+
+
+class Role(BaseModel):
+    company = models.ForeignKey(to=Company, on_delete=models.CASCADE)
+    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True)
+    role = models.CharField(max_length=50, choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
+    user = models.ForeignKey(to='auth_user.User', on_delete=models.CASCADE)

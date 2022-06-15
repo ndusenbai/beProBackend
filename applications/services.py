@@ -3,7 +3,7 @@ from django.db.transaction import atomic
 
 from auth_user.services import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus
-from companies.models import Company, Department
+from companies.models import Company, Department, Role, RoleChoices
 
 User = get_user_model()
 
@@ -35,6 +35,7 @@ def accept_application_to_create_company(instance: ApplicationToCreateCompany) -
             phone_number=instance.phone_number,
             selected_company=company,
         )
+        Role.objects.create(company=company, department=None, role=RoleChoices.OWNER, user=owner)
         password = User.objects.make_random_password()
         owner.set_password(password)
         owner.save(update_fields=['password'])
