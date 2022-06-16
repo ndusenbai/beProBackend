@@ -9,6 +9,7 @@ from applications.serializers import ApplicationToCreateCompanyModelSerializer, 
     CreateApplicationToCreateCompanySerializer, UpdateApplicationToCreateCompanySerializer
 from applications.services import update_application_to_create_company, accept_application_to_create_company
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
+from utils.tools import log_exception
 
 
 class ApplicationToCreateCompanyViewSet(ModelViewSet):
@@ -27,14 +28,18 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=UpdateApplicationToCreateCompanySerializer)
     def update(self, request, *args, **kwargs):
-        serializer = UpdateApplicationToCreateCompanySerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        application_status = serializer.validated_data['status']
-        if application_status == ApplicationStatus.ACCEPTED:
-            accept_application_to_create_company(self.get_object())
-        elif application_status == ApplicationStatus.DECLINED:
-            update_application_to_create_company(self.get_object(), {'status': application_status})
-        else:
-            return Response({'message': 'Incorrect status'}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        try:
+            serializer = UpdateApplicationToCreateCompanySerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            application_status = serializer.validated_data['status']
+            if application_status == ApplicationStatus.ACCEPTED:
+                accept_application_to_create_company(self.get_object())
+            elif application_status == ApplicationStatus.DECLINED:
+                update_application_to_create_company(self.get_object(), {'status': application_status})
+            else:
+                return Response({'message': 'Incorrect status'}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+            return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            log_exception(e, 'Error in ApplicationToCreateCompanyViewSet.update()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

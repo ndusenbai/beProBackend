@@ -1,7 +1,10 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from utils.models import BaseModel
+
+User = get_user_model()
 
 
 class CompanyTypes(models.IntegerChoices):
@@ -48,6 +51,12 @@ class Role(BaseModel):
     role = models.CharField(max_length=50, choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
     user = models.ForeignKey(to='auth_user.User', on_delete=models.CASCADE)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['company', 'role', 'user'], name='unique role in company for user'),
+            models.UniqueConstraint(fields=['department', 'role', 'user'], name='unique role in department for user')
+        ]
+
 
 class WeekDayChoices(models.IntegerChoices):
     MONDAY = 1, 'Monday'
@@ -59,7 +68,7 @@ class WeekDayChoices(models.IntegerChoices):
     SUNDAY = 7, 'Sunday'
 
 
-class Schedule(BaseModel):
+class DepartmentSchedule(BaseModel):
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE)
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
     time_from = models.TimeField()
@@ -70,3 +79,16 @@ class Schedule(BaseModel):
 
     def __str__(self):
         return f'{self.department} - {self.week_day}'
+
+
+class EmployeeSchedule(BaseModel):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
+    time_from = models.TimeField()
+    time_to = models.TimeField()
+
+    class Meta:
+        unique_together = ('user', 'week_day')
+
+    def __str__(self):
+        return f'{self.user} - {self.week_day}'

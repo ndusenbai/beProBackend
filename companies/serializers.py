@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from companies.models import Company, Department, Schedule
+from companies.models import Company, Department, DepartmentSchedule, EmployeeSchedule
 from utils.serializers import BaseSerializer
 
 
@@ -20,14 +20,27 @@ class DepartmentModelSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 
-class ScheduleModelSerializer(serializers.ModelSerializer):
+class DepartmentScheduleModelSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Schedule
+        model = DepartmentSchedule
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 
 
-class UpdateScheduleSerializer(BaseSerializer):
+class UpdateDepartmentScheduleSerializer(BaseSerializer):
+    time_from = serializers.TimeField()
+    time_to = serializers.TimeField()
+
+
+class EmployeeScheduleModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EmployeeSchedule
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class UpdateEmployeeScheduleSerializer(BaseSerializer):
     time_from = serializers.TimeField()
     time_to = serializers.TimeField()
