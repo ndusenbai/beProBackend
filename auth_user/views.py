@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer
-from auth_user.services import change_password, forgot_password, change_password_after_forgot, check_link_after_forgot
-
+from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
+    ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer
+from auth_user.services import change_password, forgot_password, change_password_after_forgot, check_link_after_forgot, \
+    create_observer_and_role, get_user_list
+from django.db.transaction import atomic
 User = get_user_model()
 
 
@@ -46,3 +48,36 @@ class ForgotPasswordView(GenericViewSet):
         return Response({
             'active': check_link_after_forgot(uid, token)
         })
+
+
+class ObserverViewSet(ListModelMixin,
+                      CreateModelMixin,
+                      DestroyModelMixin,
+                      GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ObserverListSerializer
+        elif self.action == 'create':
+            return ObserverCreateSerializer
+
+    def get_queryset(self):
+        return get_user_list(self.request.user.selected_company)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with atomic():
+            create_observer_and_role(serializer, request.user)
+        return Response({'message': 'created'}, status=status.HTTP_201_CREATED)
+
+
+class EmployeeListView(ListModelMixin, GenericViewSet):
+    pagination_class = None
+    permission_classes = (IsAuthenticated,)
+    serializer_class = EmployeeListSerializer
+
+    def get_queryset(self):
+        return get_user_list(self.request.user.selected_company)

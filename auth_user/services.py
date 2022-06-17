@@ -9,6 +9,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.apps import apps
+from auth_user.serializers import ObserverCreateSerializer
+from companies.models import RoleChoices
 
 User = get_user_model()
 password_reset_token = PasswordResetTokenGenerator()
@@ -88,3 +91,43 @@ def get_domain(request: HttpRequest) -> str:
 
     protocol = 'https://' if request.is_secure() else 'http://'
     return protocol + domain_name
+
+
+def create_observer_and_role(serializer: ObserverCreateSerializer, user):
+    first_name = serializer.validated_data['first_name']
+    last_name = serializer.validated_data['last_name']
+    middle_name = serializer.validated_data['middle_name']
+    email = serializer.validated_data['email']
+    observer = User.objects.filter(email=email)
+    print(user)
+    if not observer.exists():
+        observer = User.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            middle_name=middle_name,
+            email=email,
+        )
+        # TODO: need to add email sending
+        password = User.objects.make_random_password()
+        observer.set_password(password)
+        observer.save(update_fields=['password'])
+    else:
+        observer = observer.first()
+    apps.get_model(
+        app_label='companies',
+        model_name='Role'
+    ).objects.create(
+        company=user.selected_company,
+        department=None,
+        role=RoleChoices.OBSERVER,
+        user=observer
+    )
+    return observer
+
+
+def get_user_list(company):
+    return apps.get_model(
+        app_label='companies',
+        model_name='Role'
+    ).objects.filter(company=company)
+

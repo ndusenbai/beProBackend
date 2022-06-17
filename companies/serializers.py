@@ -44,3 +44,8 @@ class EmployeeScheduleModelSerializer(serializers.ModelSerializer):
 class UpdateEmployeeScheduleSerializer(BaseSerializer):
     time_from = serializers.TimeField()
     time_to = serializers.TimeField()
+
+
+class DepartmentListSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
