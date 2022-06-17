@@ -5,16 +5,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
-    ProfileSerializer
+    UserModelSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, check_link_after_forgot
 
 User = get_user_model()
 
 
-class ProfileView(ModelViewSet):
+class UserView(ModelViewSet):
     permission_classes = (IsAuthenticated, )
     queryset = User.objects.order_by()
-    serializer_class = ProfileSerializer
+    serializer_class = UserModelSerializer
 
 
 class ChangePasswordView(GenericViewSet):

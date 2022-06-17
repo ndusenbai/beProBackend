@@ -5,7 +5,7 @@ from auth_user.models import User
 from utils.serializers import BaseSerializer
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class UserModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
