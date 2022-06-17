@@ -1,13 +1,20 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer
+from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
+    ProfileSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, check_link_after_forgot
 
 User = get_user_model()
+
+
+class ProfileView(ModelViewSet):
+    permission_classes = (IsAuthenticated, )
+    queryset = User.objects.order_by()
+    serializer_class = ProfileSerializer
 
 
 class ChangePasswordView(GenericViewSet):
