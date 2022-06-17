@@ -2,6 +2,7 @@ from typing import Tuple
 
 from django.contrib.auth import get_user_model
 from django.db.transaction import atomic
+from django.http import HttpRequest
 
 from auth_user.services import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus
@@ -16,12 +17,12 @@ def update_application_to_create_company(instance: ApplicationToCreateCompany, d
     instance.save()
 
 
-def accept_application_to_create_company(instance: ApplicationToCreateCompany) -> None:
+def accept_application_to_create_company(request: HttpRequest, instance: ApplicationToCreateCompany) -> None:
     with atomic():
         company, hr_department = create_company_and_hr_department(instance)
-        owner = create_owner_and_role(instance, company)
+        owner, password = create_owner_and_role(instance, company)
         update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
-        send_created_account_notification(owner)
+        send_created_account_notification(request, owner, password)
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:
@@ -42,7 +43,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
     return company, hr_department
 
 
-def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company) -> User:
+def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company) -> Tuple[User, str]:
     owner = User.objects.create(
         email=instance.email,
         first_name=instance.first_name,
@@ -55,4 +56,4 @@ def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company
     password = User.objects.make_random_password()
     owner.set_password(password)
     owner.save(update_fields=['password'])
-    return owner
+    return owner, password

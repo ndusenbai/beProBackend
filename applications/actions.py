@@ -7,7 +7,7 @@ from companies.models import Role, RoleChoices
 User = get_user_model()
 
 
-def set_app_to_create_company_status_new(modeladmin, request, queryset):
+def set_status_new(modeladmin, request, queryset):
     with atomic():
         for obj in queryset:
             Role.objects.get(user__email=obj.email, role=RoleChoices.OWNER).company.delete()

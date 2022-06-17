@@ -12,3 +12,17 @@ class ChangePasswordSerializer(BaseSerializer):
         attrs = super().validate(attrs)
         password_validation.validate_password(attrs.get('new_password'))
         return attrs
+
+
+class ForgotPasswordResetSerializer(BaseSerializer):
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        attrs = super(ForgotPasswordResetSerializer, self).validate(attrs)
+        password_validation.validate_password(attrs.get('password'))
+        return attrs
+
+
+class EmailSerializer(BaseSerializer):
+    email = serializers.EmailField()
+

@@ -33,7 +33,7 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             application_status = serializer.validated_data['status']
             if application_status == ApplicationStatus.ACCEPTED:
-                accept_application_to_create_company(self.get_object())
+                accept_application_to_create_company(request, self.get_object())
             elif application_status == ApplicationStatus.DECLINED:
                 update_application_to_create_company(self.get_object(), {'status': application_status})
             else:
