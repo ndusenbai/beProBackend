@@ -41,6 +41,6 @@ class TariffApplication(BaseModel):
 class TestApplication(BaseModel):
     # Temporary replacement for fk to Test's
     test = models.PositiveSmallIntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_applications')
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
 
