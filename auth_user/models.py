@@ -2,46 +2,25 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+
+from utils.tools import log_exception
 
 
 class UserManager(BaseUserManager):
-    def _create_user(self, email, password, **extra_fields):
-        """
-        Creates and saves a User with the given username and password.
-        """
+
+    def create_user(self, email, **extra_fields):
         if not email:
             raise ValueError('The given email must be set')
-
+        email = email.lower()
         user = self.model(email=email, **extra_fields)
+        password = self.model.objects.make_random_password()
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
+        user.send_mail_invitation(password)
         return user
-
-    def create_user(self, email, password=None, **extra_fields):
-        email = email.lower()
-        return self._create_user(email, password, **extra_fields)
-
-    def create_staff(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_active', True)
-        email = email.lower()
-        return self._create_user(email, password, **extra_fields)
-
-    def create_admin(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_admin', True)
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_active', True)
-        email = email.lower()
-        return self._create_user(email, password, **extra_fields)
-
-    def create_superuser(self, email, password, **extra_fields):
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_admin', True)
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_active', True)
-        email = email.lower()
-
-        return self._create_user(email, password, **extra_fields)
 
 
 class AssistantTypes(models.IntegerChoices):
@@ -76,6 +55,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         return full_name if len(full_name) > 0 else 'Данные не заполнены!'
 
     objects = UserManager()
+
+    def send_mail_invitation(self, password: str) -> None:
+        try:
+            subject = 'Добро пожаловать!'
+            from_mail = settings.EMAIL_HOST_USER
+            to_list = [self.email, ]
+            email_tmp = render_to_string(
+                'company_registered_notification.html',
+                {'domain': settings.CURRENT_SITE, 'login': self.email, 'password': password}
+            )
+            msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
+            msg.attach_alternative(email_tmp, "text/html")
+            msg.send()
+        except Exception as e:
+            log_exception(e, 'Error in send_mail_invitation')
 
     def __str__(self):
         return self.full_name

@@ -6,8 +6,6 @@ router = DefaultRouter()
 
 router.register('department-list', views.DepartmentListView, basename='department-list-view')
 router.register('company', views.CompanyViewSet, basename='company')
-router.register('department', views.DepartmentViewSet, basename='department')
-router.register('department-schedule', views.DepartmentScheduleViewSet, basename='department-schedule')
-router.register('employee-schedule', views.EmployeeScheduleViewSet, basename='employee-schedule')
+router.register('departments', views.DepartmentViewSet, basename='department')
 
 urlpatterns = [] + router.urls

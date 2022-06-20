@@ -14,7 +14,7 @@ router.register(r'employee-list', views.EmployeeListView, basename='employee-lis
 
 router = DefaultRouter()
 
-router.register('profile', views.ProfileView, basename='profile')
+router.register('users', views.UserViewSet, basename='profile')
 
 
 urlpatterns = [
