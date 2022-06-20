@@ -3,9 +3,14 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView
 )
+from auth_user import views
 from rest_framework.routers import DefaultRouter
 
-from auth_user import views
+router = DefaultRouter()
+
+router.register(r'assistant', views.AssistantViewSet, basename='assistant-viewset')
+router.register(r'observer', views.ObserverViewSet, basename='observer-viewset')
+router.register(r'employee-list', views.EmployeeListView, basename='employee-list-view')
 
 router = DefaultRouter()
 

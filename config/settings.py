@@ -44,6 +44,8 @@ LOCAL_APPS = [
     'auth_user.apps.AuthUserConfig',
     'applications.apps.ApplicationsConfig',
     'companies.apps.CompaniesConfig',
+    'scores.apps.ScoresConfig',
+    'bepro_statistics.apps.BeproStatisticsConfig',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS

@@ -1,15 +1,33 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
-
 from utils.models import BaseModel
 
 User = get_user_model()
+
+from django.utils.translation import gettext_lazy as _
 
 
 class CompanyTypes(models.IntegerChoices):
     LLC = 1, 'Limited Liability Company'
     SP = 2, 'Sole Proprietorship'
+
+
+class RoleChoices(models.IntegerChoices):
+    OWNER = 1, _('Owner')
+    HR = 2, _('HR')
+    OBSERVER = 3, _('Observer')
+    EMPLOYEE = 4, _('Employee')
+
+
+class WeekDayChoices(models.IntegerChoices):
+    MONDAY = 1, 'Monday'
+    TUESDAY = 2, 'Tuesday'
+    WEDNESDAY = 3, 'Wednesday'
+    THURSDAY = 4, 'Thursday'
+    FRIDAY = 5, 'Friday'
+    SATURDAY = 6, 'Saturday'
+    SUNDAY = 7, 'Sunday'
 
 
 class Company(BaseModel):
@@ -38,13 +56,6 @@ class Department(BaseModel):
         return f'{self.name} @{self.company}'
 
 
-class RoleChoices(models.IntegerChoices):
-    OWNER = 1, 'Owner'
-    HR = 2, 'HR'
-    OBSERVER = 3, 'Observer'
-    EMPLOYEE = 4, 'Employee'
-
-
 class Role(BaseModel):
     company = models.ForeignKey(to=Company, on_delete=models.CASCADE)
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True)
@@ -56,16 +67,6 @@ class Role(BaseModel):
             models.UniqueConstraint(fields=['company', 'role', 'user'], name='unique role in company for user'),
             models.UniqueConstraint(fields=['department', 'role', 'user'], name='unique role in department for user')
         ]
-
-
-class WeekDayChoices(models.IntegerChoices):
-    MONDAY = 1, 'Monday'
-    TUESDAY = 2, 'Tuesday'
-    WEDNESDAY = 3, 'Wednesday'
-    THURSDAY = 4, 'Thursday'
-    FRIDAY = 5, 'Friday'
-    SATURDAY = 6, 'Saturday'
-    SUNDAY = 7, 'Sunday'
 
 
 class DepartmentSchedule(BaseModel):

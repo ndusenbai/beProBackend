@@ -1,7 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-
 from utils.models import BaseModel
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class ApplicationStatus(models.IntegerChoices):
@@ -27,3 +29,18 @@ class ApplicationToCreateCompany(BaseModel):
 
     def __str__(self):
         return f'{self.company_name}: {self.last_name} {self.first_name}'
+
+
+class TariffApplication(BaseModel):
+    # Temporary replacement for fk to Tariff's
+    tariff = models.PositiveSmallIntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
+    status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
+
+
+class TestApplication(BaseModel):
+    # Temporary replacement for fk to Test's
+    test = models.PositiveSmallIntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
+    status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
+
