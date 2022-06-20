@@ -1,9 +1,11 @@
 import environ
 from django.contrib import admin
+from django.conf import settings
 from django.urls import path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+import debug_toolbar
 
 env = environ.Env()
 environ.Env.read_env()
@@ -22,3 +24,10 @@ urlpatterns = [
     path('api/', include('config.api_urls')),
     path('django-admin/', admin.site.urls),
 ]
+
+
+if settings.DEBUG:
+    try:
+        urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
+    except ImportError:
+        pass

@@ -12,6 +12,11 @@ router.register(r'assistant', views.AssistantViewSet, basename='assistant-viewse
 router.register(r'observer', views.ObserverViewSet, basename='observer-viewset')
 router.register(r'employee-list', views.EmployeeListView, basename='employee-list-view')
 
+router = DefaultRouter()
+
+router.register('profile', views.ProfileView, basename='profile')
+
+
 urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
@@ -19,6 +24,4 @@ urlpatterns = [
     path('reset-password/<str:uid>/<str:token>/', views.ForgotPasswordView.as_view(
         {'post': 'new_password', 'get': 'check_link'}), name='new-password'),
     path('reset-password/', views.ForgotPasswordView.as_view({'post': 'reset_password'}), name='reset-password'),
-]
-
-urlpatterns += router.urls
+] + router.urls

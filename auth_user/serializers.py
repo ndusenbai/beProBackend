@@ -1,7 +1,16 @@
 from rest_framework import serializers
 from django.contrib.auth import password_validation
 
+from auth_user.models import User
 from utils.serializers import BaseSerializer
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'middle_name', 'email', 'phone_number', 'is_admin')
+        read_only_fields = ('id', 'email', 'is_admin')
 
 
 class ChangePasswordSerializer(BaseSerializer):
