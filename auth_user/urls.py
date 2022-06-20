@@ -8,7 +8,7 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 
-
+router.register(r'assistant', views.AssistantViewSet, basename='assistant-viewset')
 router.register(r'observer', views.ObserverViewSet, basename='observer-viewset')
 router.register(r'employee-list', views.EmployeeListView, basename='employee-list-view')
 

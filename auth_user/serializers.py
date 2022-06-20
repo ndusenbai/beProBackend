@@ -32,7 +32,6 @@ class ObserverCreateSerializer(BaseSerializer):
     last_name = serializers.CharField(max_length=50)
     middle_name = serializers.CharField(max_length=50, allow_blank=True)
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
 
 
 class UserSerializer(BaseSerializer):
@@ -50,3 +49,12 @@ class ObserverListSerializer(BaseSerializer):
 
 class EmployeeListSerializer(BaseSerializer):
     user = UserSerializer()
+
+
+class AssistantSerializer(BaseSerializer):
+    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
+    middle_name = serializers.CharField(max_length=50, allow_blank=True)
+    phone_number = serializers.CharField()
+    email = serializers.EmailField()
+    assistant_type = serializers.IntegerField()

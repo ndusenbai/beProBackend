@@ -1,6 +1,7 @@
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
-from django.db import models
 
 
 class UserManager(BaseUserManager):
@@ -43,6 +44,11 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+class AssistantTypes(models.IntegerChoices):
+    MARKETING = 1, _('Marketing-sales')
+    PRODUCTION_WORKERS = 2, _('Production workers')
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=70, unique=True)
     first_name = models.CharField(max_length=50)
@@ -56,6 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    assistant_type = models.PositiveSmallIntegerField(choices=AssistantTypes.choices, null=True, blank=True)
     selected_company = models.ForeignKey(to='companies.Company', on_delete=models.SET_NULL, null=True, blank=True)
 
     USERNAME_FIELD = 'email'

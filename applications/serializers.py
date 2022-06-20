@@ -1,7 +1,21 @@
 from rest_framework import serializers
 
-from applications.models import ApplicationToCreateCompany, ApplicationStatus
+from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
 from utils.serializers import BaseSerializer
+
+
+class TariffApplicationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TariffApplication
+        fields = '__all__'
+
+
+class TestApplicationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TestApplication
+        fields = '__all__'
 
 
 class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
