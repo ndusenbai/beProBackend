@@ -7,8 +7,11 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+from django.db.transaction import atomic
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+
+from companies.models import EmployeeSchedule, Role, Department, RoleChoices, Company
 
 User = get_user_model()
 password_reset_token = PasswordResetTokenGenerator()
@@ -88,3 +91,61 @@ def get_domain(request: HttpRequest) -> str:
 
     protocol = 'https://' if request.is_secure() else 'http://'
     return protocol + domain_name
+
+
+def create_employee(data: dict) -> None:
+    with atomic():
+        title = data.pop('title')
+        grade = data.pop('grade')
+        department_id = data.pop('department_id')
+        schedules = data.pop('schedules')
+
+        department = Department.objects.get(id=department_id)
+        data['selected_company_id'] = department.company_id
+        employee = User.objects.create_user(**data)
+        Role.objects.create(
+            company=department.company,
+            department=department,
+            role=RoleChoices.EMPLOYEE,
+            user=employee,
+            title=title,
+            grade=grade
+        )
+        create_employee_schedules(employee, schedules, department.company)
+
+
+def update_user(user: User, data: dict, request_user: User) -> None:
+    with atomic():
+        if 'email' in data:
+            data.pop('email')
+        schedules = data.pop('schedules')
+        role_data = {
+            'title': data.pop('title'),
+            'grade': data.pop('grade'),
+            'department_id': data.pop('department_id'),
+        }
+
+        company = request_user.selected_company
+        Role.objects.filter(company=company, user=user).update(**role_data)
+        update_employee_schedules(user, schedules, company)
+
+        for key, value in data.items():
+            setattr(user, key, value)
+        user.save()
+
+
+def update_employee_schedules(user, schedules, company):
+    EmployeeSchedule.objects.filter(user=user, company=company).delete()
+    create_employee_schedules(user, schedules, company)
+
+
+def create_employee_schedules(employee: User, schedules: list, company: Company) -> None:
+    new_schedules = [
+        EmployeeSchedule(
+            user=employee,
+            company=company,
+            week_day=schedule['week_day'],
+            time_from=schedule['time_from'],
+            time_to=schedule['time_to'],
+        ) for schedule in schedules]
+    EmployeeSchedule.objects.bulk_create(new_schedules)

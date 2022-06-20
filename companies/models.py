@@ -48,8 +48,10 @@ class RoleChoices(models.IntegerChoices):
 class Role(BaseModel):
     company = models.ForeignKey(to=Company, on_delete=models.CASCADE)
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True)
-    role = models.CharField(max_length=50, choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
+    role = models.IntegerField(choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
     user = models.ForeignKey(to='auth_user.User', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, default='')
+    grade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(4)])
 
     class Meta:
         constraints = [
@@ -69,7 +71,7 @@ class WeekDayChoices(models.IntegerChoices):
 
 
 class DepartmentSchedule(BaseModel):
-    department = models.ForeignKey(to=Department, on_delete=models.CASCADE)
+    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name='department_schedules')
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
     time_from = models.TimeField()
     time_to = models.TimeField()
@@ -82,7 +84,8 @@ class DepartmentSchedule(BaseModel):
 
 
 class EmployeeSchedule(BaseModel):
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='employee_schedules')
+    company = models.ForeignKey(to=Company, on_delete=models.CASCADE, null=True)
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
     time_from = models.TimeField()
     time_to = models.TimeField()

@@ -1,8 +1,32 @@
 from rest_framework import serializers
-from django.contrib.auth import password_validation
+from django.contrib.auth import password_validation, get_user_model
 
-from auth_user.models import User
+from companies.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
+
+User = get_user_model()
+
+
+class UserSerializer(BaseSerializer):
+    id = serializers.IntegerField(read_only=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    middle_name = serializers.CharField(allow_blank=True)
+    email = serializers.CharField()
+    phone_number = serializers.CharField()
+    schedules = ScheduleSerializer(many=True)
+
+
+class CreateEmployeeSerializer(BaseSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    middle_name = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField()
+    phone_number = serializers.CharField(allow_blank=True)
+    title = serializers.CharField()
+    grade = serializers.IntegerField()
+    department_id = serializers.IntegerField()
+    schedules = ScheduleSerializer(many=True)
 
 
 class UserModelSerializer(serializers.ModelSerializer):

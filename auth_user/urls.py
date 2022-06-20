@@ -9,7 +9,7 @@ from auth_user import views
 
 router = DefaultRouter()
 
-router.register('users', views.UserView, basename='profile')
+router.register('users', views.UserViewSet, basename='profile')
 
 
 urlpatterns = [
