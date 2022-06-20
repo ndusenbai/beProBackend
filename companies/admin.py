@@ -32,11 +32,3 @@ class RoleAdmin(admin.ModelAdmin):
 class EmployeeScheduleAdmin(admin.ModelAdmin):
     list_display = ('user', 'week_day', 'time_from', 'time_to')
     search_fields = ('user',)
-
-
-@admin.register(Role)
-class RoleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'role', 'company', 'department')
-    list_display_links = ('id', 'user')
-
-
