@@ -7,6 +7,7 @@ User = get_user_model()
 class StatisticType(models.IntegerChoices):
     GENERAL = 1, 'General statistics'
     DOUBLE = 2, 'Double statistics'
+    INVERTED = 3, 'Inverted statistics'
 
 
 class VisibilityType(models.IntegerChoices):
@@ -33,12 +34,7 @@ class Statistic(BaseModel):
         null=True,
         blank=True
     )
-    company = models.ForeignKey(
-        'companies.Company',
-        on_delete=models.CASCADE,
-        related_name='statistics'
-    )
-    plan = models.IntegerField(null=True, blank=True)
+    plan = models.FloatField(null=True, blank=True)
     visibility = models.IntegerField(choices=VisibilityType.choices)
 
     def __str__(self):
@@ -51,3 +47,14 @@ class StatisticObserver(BaseModel):
 
     def __str__(self):
         return f'{self.statistic} - {self.user}'
+
+
+class UserStatistic(BaseModel):
+    statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE, related_name='users')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_statistics')
+    weekday = models.DateField()
+    fact = models.FloatField()
+
+    def __str__(self):
+        return f'{self.user} - {self.weekday}: {self.fact}'
+
