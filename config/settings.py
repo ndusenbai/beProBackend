@@ -46,6 +46,7 @@ LOCAL_APPS = [
     'companies.apps.CompaniesConfig',
     'scores.apps.ScoresConfig',
     'bepro_statistics.apps.BeproStatisticsConfig',
+    'timesheet.apps.TimesheetConfig',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS

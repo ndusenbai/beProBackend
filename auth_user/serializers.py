@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import password_validation, get_user_model
 
-from companies.serializers import ScheduleSerializer
+from timesheet.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
 
 User = get_user_model()

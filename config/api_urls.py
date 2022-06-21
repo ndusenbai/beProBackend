@@ -6,6 +6,7 @@ urlpatterns = [
     path('applications/', include('applications.urls'), name='applications'),
     path('companies/', include('companies.urls'), name='companies'),
     path('scores/', include('scores.urls'), name='scores'),
-    path('bepro-stats/', include('bepro_statistics.urls'), name='stats')
+    path('bepro-stats/', include('bepro_statistics.urls'), name='stats'),
+    path('timesheet/', include('timesheet.urls'), name='timesheet'),
 ]
 

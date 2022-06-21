@@ -6,7 +6,8 @@ from django.http import HttpRequest
 
 from auth_user.services import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus
-from companies.models import Company, Department, Role, RoleChoices, DepartmentSchedule
+from companies.models import Company, Department, Role, RoleChoices
+from timesheet.models import DepartmentSchedule
 
 User = get_user_model()
 
