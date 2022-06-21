@@ -12,7 +12,8 @@ from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
 from auth_user.serializers import ObserverCreateSerializer
-from companies.models import EmployeeSchedule, Role, Department, RoleChoices, Company
+from companies.models import Role, Department, RoleChoices, Company
+from timesheet.models import EmployeeSchedule
 
 User = get_user_model()
 password_reset_token = PasswordResetTokenGenerator()

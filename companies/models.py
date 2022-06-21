@@ -1,11 +1,11 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.translation import gettext_lazy as _
+
 from utils.models import BaseModel
 
 User = get_user_model()
-
-from django.utils.translation import gettext_lazy as _
 
 
 class CompanyTypes(models.IntegerChoices):
@@ -18,16 +18,6 @@ class RoleChoices(models.IntegerChoices):
     HR = 2, _('HR')
     OBSERVER = 3, _('Observer')
     EMPLOYEE = 4, _('Employee')
-
-
-class WeekDayChoices(models.IntegerChoices):
-    MONDAY = 1, 'Monday'
-    TUESDAY = 2, 'Tuesday'
-    WEDNESDAY = 3, 'Wednesday'
-    THURSDAY = 4, 'Thursday'
-    FRIDAY = 5, 'Friday'
-    SATURDAY = 6, 'Saturday'
-    SUNDAY = 7, 'Sunday'
 
 
 class Company(BaseModel):
@@ -51,6 +41,7 @@ class Department(BaseModel):
     latitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     is_hr = models.BooleanField(default=False)
+    radius = models.IntegerField(default=50)
 
     def __str__(self):
         return f'{self.name} @{self.company}'
@@ -69,30 +60,3 @@ class Role(BaseModel):
             models.UniqueConstraint(fields=['company', 'role', 'user'], name='unique role in company for user'),
             models.UniqueConstraint(fields=['department', 'role', 'user'], name='unique role in department for user')
         ]
-
-
-class DepartmentSchedule(BaseModel):
-    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name='department_schedules')
-    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
-    time_from = models.TimeField()
-    time_to = models.TimeField()
-
-    class Meta:
-        unique_together = ('department', 'week_day')
-
-    def __str__(self):
-        return f'{self.department} - {self.week_day}'
-
-
-class EmployeeSchedule(BaseModel):
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='employee_schedules')
-    company = models.ForeignKey(to=Company, on_delete=models.CASCADE, null=True)
-    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
-    time_from = models.TimeField()
-    time_to = models.TimeField()
-
-    class Meta:
-        unique_together = ('user', 'week_day')
-
-    def __str__(self):
-        return f'{self.user} - {self.week_day}'
