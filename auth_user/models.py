@@ -24,6 +24,7 @@ class UserManager(BaseUserManager):
 
 
 class AssistantTypes(models.IntegerChoices):
+    NON_ASSISTANT = 0, _('Non assistant')
     MARKETING = 1, _('Marketing-sales')
     PRODUCTION_WORKERS = 2, _('Production workers')
 
@@ -41,7 +42,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    assistant_type = models.PositiveSmallIntegerField(choices=AssistantTypes.choices, null=True, blank=True)
+    assistant_type = models.PositiveSmallIntegerField(
+        choices=AssistantTypes.choices,
+        default=AssistantTypes.NON_ASSISTANT,
+        blank=True
+    )
     selected_company = models.ForeignKey(to='companies.Company', on_delete=models.SET_NULL, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
