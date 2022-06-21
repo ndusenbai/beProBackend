@@ -1,7 +1,8 @@
 from django.apps import apps
 from django.db.transaction import atomic
 
-from companies.models import Department, DepartmentSchedule
+from companies.models import Department
+from timesheet.models import DepartmentSchedule
 
 
 def update_department(instance: Department, data) -> None:
