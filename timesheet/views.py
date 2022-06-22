@@ -12,6 +12,7 @@ from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeShe
     TimeSheetListSerializer, TimeSheetUpdateSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     get_timesheet_qs_by_month, update_timesheet
+from timesheet.utils import EmployeeTooFarFromDepartment
 from utils.manual_parameters import QUERY_YEAR, QUERY_USER, QUERY_MONTH
 from utils.tools import log_exception
 
@@ -66,6 +67,8 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
             serializer.is_valid(raise_exception=True)
             create_check_in_timesheet(request.user, serializer.validated_data)
             return Response({'message': 'created'})
+        except EmployeeTooFarFromDepartment as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in CheckInViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
