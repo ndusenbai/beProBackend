@@ -13,6 +13,16 @@ class CompanyModelSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 
+class CreateHeadDepartmentSerializer(BaseSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    middle_name = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField()
+    phone_number = serializers.CharField(allow_blank=True)
+    title = serializers.CharField()
+    grade = serializers.IntegerField(min_value=1, max_value=4)
+
+
 class DepartmentSerializer(BaseSerializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
@@ -20,6 +30,7 @@ class DepartmentSerializer(BaseSerializer):
     latitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
     longitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
     schedules = ScheduleSerializer(many=True)
+    head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
 
 
 class DepartmentModelSerializer(serializers.ModelSerializer):

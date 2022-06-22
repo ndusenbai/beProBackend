@@ -13,6 +13,7 @@ class RoleChoices(models.IntegerChoices):
     HR = 2, _('HR')
     OBSERVER = 3, _('Observer')
     EMPLOYEE = 4, _('Employee')
+    HEAD_OF_DEPARTMENT = 5, _('Head of department')
 
 
 class Company(BaseModel):
@@ -36,6 +37,12 @@ class Department(BaseModel):
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     is_hr = models.BooleanField(default=False)
     radius = models.IntegerField(default=50)
+    head_of_department = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'company'], name='unique name-company'),
+        ]
 
     def __str__(self):
         return f'{self.name} @{self.company}'

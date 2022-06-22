@@ -9,7 +9,7 @@ from rest_framework.mixins import ListModelMixin
 
 from companies.models import Company, Department
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer
-from companies.services import update_department, get_department_list, create_company
+from companies.services import update_department, get_department_list, create_company, create_department
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -36,6 +36,13 @@ class DepartmentViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Department.objects.prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+
+    @swagger_auto_schema(request_body=DepartmentSerializer)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_department(request.user, serializer.validated_data)
+        return Response({'message': 'created'})
 
     @swagger_auto_schema(manual_parameters=[QUERY_COMPANY])
     def list(self, request, *args, **kwargs):
