@@ -8,11 +8,6 @@ from utils.models import BaseModel
 User = get_user_model()
 
 
-class CompanyTypes(models.IntegerChoices):
-    LLC = 1, 'Limited Liability Company'
-    SP = 2, 'Sole Proprietorship'
-
-
 class RoleChoices(models.IntegerChoices):
     OWNER = 1, _('Owner')
     HR = 2, _('HR')
@@ -23,7 +18,6 @@ class RoleChoices(models.IntegerChoices):
 class Company(BaseModel):
     name = models.CharField(max_length=100, unique=True)
     legal_name = models.CharField(max_length=100, unique=True)
-    type = models.IntegerField(choices=CompanyTypes.choices, default=CompanyTypes.LLC)
     years_of_work = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_active = models.BooleanField(default=True)
 

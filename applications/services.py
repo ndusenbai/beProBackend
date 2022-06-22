@@ -38,7 +38,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
         company=company,
     )
     department_schedule = [
-        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in range(1, 6)
+        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in range(0, 5)
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
     return company, hr_department

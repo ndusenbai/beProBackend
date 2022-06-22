@@ -9,7 +9,7 @@ from rest_framework.mixins import ListModelMixin
 
 from companies.models import Company, Department
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer
-from companies.services import update_department, get_department_list
+from companies.services import update_department, get_department_list, create_company
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -20,6 +20,12 @@ class CompanyViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanyModelSerializer
     queryset = Company.objects.order_by()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_company(request.user, serializer.validated_data)
+        return Response({'message': 'created'})
 
 
 class DepartmentViewSet(ModelViewSet):
