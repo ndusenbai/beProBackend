@@ -51,6 +51,6 @@ class Role(BaseModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['company', 'role', 'user'], name='unique role in company for user'),
-            models.UniqueConstraint(fields=['department', 'role', 'user'], name='unique role in department for user')
+            models.UniqueConstraint(fields=['company', 'user'], name='unique company-user'),
+            models.UniqueConstraint(fields=['department', 'user'], name='unique department-user')
         ]
