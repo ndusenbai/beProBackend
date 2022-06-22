@@ -38,7 +38,7 @@ class CheckOutSerializer(BaseSerializer):
 
 
 class ScheduleSerializer(BaseSerializer):
-    week_day = serializers.IntegerField()
+    week_day = serializers.IntegerField(min_value=0, max_value=6)
     time_from = serializers.TimeField()
     time_to = serializers.TimeField()
 
