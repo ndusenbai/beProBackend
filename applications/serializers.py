@@ -40,3 +40,7 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
 
 class UpdateApplicationToCreateCompanySerializer(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
+
+
+class ApproveDeclineTariffApplication(BaseSerializer):
+    application_id = serializers.IntegerField()
