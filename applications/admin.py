@@ -13,5 +13,5 @@ class ApplicationToCreateCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(TariffApplication)
 class TariffApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tariff', 'user', 'status')
-    list_display_filter = ('id', 'tariff', 'user')
+    list_display = ('id', 'tariff', 'owner', 'status')
+    list_display_filter = ('id', 'tariff', 'owner')

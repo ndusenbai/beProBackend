@@ -34,7 +34,7 @@ class ApplicationToCreateCompany(BaseModel):
 class TariffApplication(BaseModel):
     # Temporary replacement for fk to Tariff's
     tariff = models.PositiveSmallIntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
 
 
