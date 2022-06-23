@@ -8,5 +8,6 @@ urlpatterns = [
     path('scores/', include('scores.urls'), name='scores'),
     path('bepro-stats/', include('bepro_statistics.urls'), name='stats'),
     path('timesheet/', include('timesheet.urls'), name='timesheet'),
+    path('tariffs/', include('tariffs.urls'), name='tariffs'),
 ]
 
