@@ -9,6 +9,7 @@ class Tariff(BaseModel):
     max_capacity = models.IntegerField(validators=[MinValueValidator(0)])
     month_price = models.IntegerField()
     year_price = models.IntegerField()
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.name}, QTY: {self.max_capacity}'
