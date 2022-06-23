@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 
 from auth_user.serializers import UserModelSerializer
@@ -36,6 +38,16 @@ class DepartmentSerializer(BaseSerializer):
 
 class DepartmentList2Serializer(DepartmentSerializer):
     head_of_department = UserModelSerializer()
+    today_schedule = serializers.SerializerMethodField()
+
+    def get_today_schedule(self, instance):
+        week_day = datetime.today().weekday()
+        today_schedule = instance.department_schedules.filter(week_day=week_day)
+        if today_schedule:
+            time_from = today_schedule[0].time_from.strftime('%H:%M')
+            time_to = today_schedule[0].time_to.strftime('%H:%M')
+            return f'{time_from} - {time_to}'
+        return '-'
 
 
 class DepartmentModelSerializer(serializers.ModelSerializer):

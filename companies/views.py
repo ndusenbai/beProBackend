@@ -31,7 +31,6 @@ class CompanyViewSet(ModelViewSet):
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Department.objects.order_by()
     filterset_fields = ('company',)
 
     def get_serializer_class(self):
