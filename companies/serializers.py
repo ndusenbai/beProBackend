@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from auth_user.serializers import UserModelSerializer
 from companies.models import Company, Department
 from timesheet.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
@@ -31,6 +32,10 @@ class DepartmentSerializer(BaseSerializer):
     longitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
+
+
+class DepartmentList2Serializer(DepartmentSerializer):
+    head_of_department = UserModelSerializer()
 
 
 class DepartmentModelSerializer(serializers.ModelSerializer):
