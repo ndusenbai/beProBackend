@@ -4,11 +4,14 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin
+from rest_framework.views import APIView
+
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationToCreateCompanySerializer, \
-    TariffApplicationSerializer, TestApplicationSerializer
-from applications.services import update_application_to_create_company, accept_application_to_create_company
+    TariffApplicationSerializer, TestApplicationSerializer, ApproveDeclineTariffApplication
+from applications.services import update_application_to_create_company, accept_application_to_create_company, \
+    approve_tariff_application
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
 from utils.tools import log_exception
 
@@ -66,3 +69,13 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+
+class ApproveTariffApplication(APIView):
+
+    @swagger_auto_schema(request_body=ApproveDeclineTariffApplication)
+    def post(self, request):
+        serializer = ApproveDeclineTariffApplication(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        approve_tariff_application(**serializer.validated_data)
+        return Response({'message': 'Success'})

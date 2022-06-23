@@ -15,3 +15,4 @@ class ApplicationToCreateCompanyAdmin(admin.ModelAdmin):
 class TariffApplicationAdmin(admin.ModelAdmin):
     list_display = ('id', 'tariff', 'owner', 'status')
     list_display_filter = ('id', 'tariff', 'owner')
+    raw_id_fields = ('tariff', 'owner')

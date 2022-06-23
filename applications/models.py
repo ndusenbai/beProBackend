@@ -32,10 +32,14 @@ class ApplicationToCreateCompany(BaseModel):
 
 
 class TariffApplication(BaseModel):
-    # Temporary replacement for fk to Tariff's
-    tariff = models.PositiveSmallIntegerField()
+    tariff = models.ForeignKey(to='tariffs.Tariff', on_delete=models.DO_NOTHING)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
+
+    def __str__(self):
+        return f'{self.owner} tariff:{self.owner} status:{self.status}'
 
 
 class TestApplication(BaseModel):

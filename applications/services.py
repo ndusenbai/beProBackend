@@ -5,7 +5,7 @@ from django.db.transaction import atomic
 from django.http import HttpRequest
 
 from auth_user.services import send_created_account_notification
-from applications.models import ApplicationToCreateCompany, ApplicationStatus
+from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
 from companies.models import Company, Department, Role, RoleChoices
 from timesheet.models import DepartmentSchedule
 
@@ -58,3 +58,14 @@ def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company
     owner.set_password(password)
     owner.save(update_fields=['password'])
     return owner, password
+
+
+@atomic
+def approve_tariff_application(application_id: int) -> None:
+    tariff_app = TariffApplication.objects.get(id=application_id)
+    if tariff_app.status != ApplicationStatus.NEW:
+        raise Exception('Application must be in NEW status')
+    companies_id = Role.objects.filter(role=RoleChoices.OWNER, user=tariff_app.owner).values_list('company', flat=True)
+    Company.objects.filter(id__in=companies_id).update(is_active=True)
+    tariff_app.status = ApplicationStatus.ACCEPTED
+    tariff_app.save()
