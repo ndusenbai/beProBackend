@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 
 from companies.models import Company, Department
-from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer
+from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
+    DepartmentList2Serializer
 from companies.services import update_department, get_department_list, create_company, create_department
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
@@ -30,9 +31,13 @@ class CompanyViewSet(ModelViewSet):
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = DepartmentSerializer
     queryset = Department.objects.order_by()
     filterset_fields = ('company',)
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return DepartmentSerializer
+        return DepartmentList2Serializer
 
     def get_queryset(self):
         return Department.objects.prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
