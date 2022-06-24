@@ -11,11 +11,14 @@ from django.db.transaction import atomic
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
-from auth_user.serializers import ObserverCreateSerializer
+
+from auth_user.models import AssistantTypes
+from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
 
 from companies.models import Role, Department, RoleChoices, Company
 from timesheet.models import EmployeeSchedule
+from utils.tools import log_exception
 
 User = get_user_model()
 password_reset_token = PasswordResetTokenGenerator()
@@ -222,3 +225,40 @@ def create_employee_schedules(employee: User, schedules: list, company: Company)
             time_to=schedule['time_to'],
         ) for schedule in schedules]
     EmployeeSchedule.objects.bulk_create(new_schedules)
+
+
+def get_user_role(user: User) -> str:
+    try:
+        role = ''
+
+        if user.is_superuser:
+            role = 'superuser'
+        elif user.assistant_type == AssistantTypes.MARKETING:
+            role = 'admin_marketing'
+        elif user.assistant_type == AssistantTypes.PRODUCTION_WORKERS:
+            role = 'admin_production_worker'
+        else:
+            role_type = Role.objects.get(user=user, company=user.selected_company).role
+
+            if role_type == RoleChoices.OWNER:
+                role = 'owner'
+            elif role_type == RoleChoices.HR:
+                role = 'hr'
+            elif role_type == RoleChoices.OBSERVER:
+                role = 'observer'
+            elif role_type == RoleChoices.EMPLOYEE:
+                role = 'employee'
+            elif role_type == RoleChoices.HEAD_OF_DEPARTMENT:
+                role = 'head_of_department'
+
+        return role
+    except Exception as e:
+        log_exception(e, 'Error in get_user_role')
+        return 'no_role'
+
+
+def get_additional_user_info(email: str) -> dict:
+    user = User.objects.get(email=email)
+    user_data = UserModelSerializer(user).data
+    user_data['role'] = get_user_role(user)
+    return user_data
