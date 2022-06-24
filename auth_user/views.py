@@ -154,8 +154,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
         resp = super().post(request, *args, **kwargs)
+        user = User.objects.get(email=request.data['email'])
+        resp.data['selected_company_id'] = user.selected_company_id
         try:
-            user = User.objects.get(email=request.data['email'])
             role = ''
 
             if user.is_superuser:
