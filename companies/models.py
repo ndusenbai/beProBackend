@@ -21,6 +21,8 @@ class Company(BaseModel):
     legal_name = models.CharField(max_length=100, unique=True)
     years_of_work = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_active = models.BooleanField(default=True)
+    max_employees_qty = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    owner = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, default=None)
 
     class Meta:
         verbose_name_plural = 'Companies'
@@ -61,3 +63,8 @@ class Role(BaseModel):
             models.UniqueConstraint(fields=['company', 'user'], name='unique company-user'),
             models.UniqueConstraint(fields=['department', 'user'], name='unique department-user')
         ]
+
+    def __str__(self):
+        if not self.department:
+            department = '-'
+        return f'{self.user} at {self.company}, {department}'

@@ -20,7 +20,7 @@ class ApplicationToCreateCompany(BaseModel):
     phone_number = models.CharField(max_length=15, blank=True)
     company_name = models.CharField(max_length=200)
     company_legal_name = models.CharField(max_length=200)
-    employees_qty = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    max_employees_qty = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     years_of_work = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
 
@@ -33,7 +33,7 @@ class ApplicationToCreateCompany(BaseModel):
 
 class TariffApplication(BaseModel):
     tariff = models.ForeignKey(to='tariffs.Tariff', on_delete=models.DO_NOTHING)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tariff_applications')
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='tariff_applications')
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)

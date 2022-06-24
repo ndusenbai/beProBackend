@@ -18,12 +18,14 @@ def update_application_to_create_company(instance: ApplicationToCreateCompany, d
     instance.save()
 
 
+@atomic
 def accept_application_to_create_company(request: HttpRequest, instance: ApplicationToCreateCompany) -> None:
-    with atomic():
-        company, hr_department = create_company_and_hr_department(instance)
-        owner, password = create_owner_and_role(instance, company)
-        update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
-        send_created_account_notification(request, owner, password)
+    company, hr_department = create_company_and_hr_department(instance)
+    owner, password = create_owner_and_role(instance, company)
+    company.owner = owner
+    company.save()
+    update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
+    send_created_account_notification(request, owner, password)
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:
@@ -31,6 +33,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
         name=instance.company_name,
         legal_name=instance.company_legal_name,
         years_of_work=instance.years_of_work,
+        max_employees_qty=instance.max_employees_qty,
     )
     hr_department = Department.objects.create(
         name='HR',
