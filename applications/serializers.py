@@ -34,9 +34,13 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
     phone_number = serializers.CharField(allow_blank=True, default='')
     company_name = serializers.CharField()
     company_legal_name = serializers.CharField()
-    employees_qty = serializers.IntegerField(default=0)
+    max_employees_qty = serializers.IntegerField(default=0)
     years_of_work = serializers.IntegerField(default=0)
 
 
 class UpdateApplicationToCreateCompanySerializer(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
+
+
+class ApproveDeclineTariffApplication(BaseSerializer):
+    application_id = serializers.IntegerField()

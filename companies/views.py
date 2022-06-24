@@ -8,8 +8,9 @@ from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 
 from companies.models import Company, Department
-from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer
-from companies.services import update_department, get_department_list
+from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
+    DepartmentList2Serializer
+from companies.services import update_department, get_department_list, create_company, create_department
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -21,15 +22,31 @@ class CompanyViewSet(ModelViewSet):
     serializer_class = CompanyModelSerializer
     queryset = Company.objects.order_by()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_company(request.user, serializer.validated_data)
+        return Response({'message': 'created'})
+
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = DepartmentSerializer
-    queryset = Department.objects.order_by()
     filterset_fields = ('company',)
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return DepartmentSerializer
+        return DepartmentList2Serializer
 
     def get_queryset(self):
         return Department.objects.prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+
+    @swagger_auto_schema(request_body=DepartmentSerializer)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        create_department(request.user, serializer.validated_data)
+        return Response({'message': 'created'})
 
     @swagger_auto_schema(manual_parameters=[QUERY_COMPANY])
     def list(self, request, *args, **kwargs):

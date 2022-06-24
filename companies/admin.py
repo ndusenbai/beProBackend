@@ -12,6 +12,7 @@ class CompanyAdmin(admin.ModelAdmin):
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'company')
     search_fields = ('name', 'company__name', 'company__legal_name')
+    raw_id_fields = ('company', 'head_of_department')
 
 
 @admin.register(Role)

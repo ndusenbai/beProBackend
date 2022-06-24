@@ -166,45 +166,45 @@ def assistants_queryset():
     return User.objects.filter(~Q(assistant_type=0), is_staff=True)
 
 
+@atomic
 def create_employee(data: dict) -> None:
-    with atomic():
-        title = data.pop('title')
-        grade = data.pop('grade')
-        department_id = data.pop('department_id')
-        schedules = data.pop('schedules')
+    title = data.pop('title')
+    grade = data.pop('grade')
+    department_id = data.pop('department_id')
+    schedules = data.pop('schedules')
 
-        department = Department.objects.get(id=department_id)
-        data['selected_company_id'] = department.company_id
-        employee = User.objects.create_user(**data)
-        Role.objects.create(
-            company=department.company,
-            department=department,
-            role=RoleChoices.EMPLOYEE,
-            user=employee,
-            title=title,
-            grade=grade
-        )
-        create_employee_schedules(employee, schedules, department.company)
+    department = Department.objects.get(id=department_id)
+    data['selected_company_id'] = department.company_id
+    employee = User.objects.create_user(**data)
+    Role.objects.create(
+        company=department.company,
+        department=department,
+        role=RoleChoices.EMPLOYEE,
+        user=employee,
+        title=title,
+        grade=grade
+    )
+    create_employee_schedules(employee, schedules, department.company)
 
 
+@atomic
 def update_user(user: User, data: dict, request_user: User) -> None:
-    with atomic():
-        if 'email' in data:
-            data.pop('email')
-        schedules = data.pop('schedules')
-        role_data = {
-            'title': data.pop('title'),
-            'grade': data.pop('grade'),
-            'department_id': data.pop('department_id'),
-        }
+    if 'email' in data:
+        data.pop('email')
+    schedules = data.pop('schedules')
+    role_data = {
+        'title': data.pop('title'),
+        'grade': data.pop('grade'),
+        'department_id': data.pop('department_id'),
+    }
 
-        company = request_user.selected_company
-        Role.objects.filter(company=company, user=user).update(**role_data)
-        update_employee_schedules(user, schedules, company)
+    company = request_user.selected_company
+    Role.objects.filter(company=company, user=user).update(**role_data)
+    update_employee_schedules(user, schedules, company)
 
-        for key, value in data.items():
-            setattr(user, key, value)
-        user.save()
+    for key, value in data.items():
+        setattr(user, key, value)
+    user.save()
 
 
 def update_employee_schedules(user, schedules, company):

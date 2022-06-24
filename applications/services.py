@@ -5,7 +5,7 @@ from django.db.transaction import atomic
 from django.http import HttpRequest
 
 from auth_user.services import send_created_account_notification
-from applications.models import ApplicationToCreateCompany, ApplicationStatus
+from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
 from companies.models import Company, Department, Role, RoleChoices
 from timesheet.models import DepartmentSchedule
 
@@ -18,12 +18,14 @@ def update_application_to_create_company(instance: ApplicationToCreateCompany, d
     instance.save()
 
 
+@atomic
 def accept_application_to_create_company(request: HttpRequest, instance: ApplicationToCreateCompany) -> None:
-    with atomic():
-        company, hr_department = create_company_and_hr_department(instance)
-        owner, password = create_owner_and_role(instance, company)
-        update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
-        send_created_account_notification(request, owner, password)
+    company, hr_department = create_company_and_hr_department(instance)
+    owner, password = create_owner_and_role(instance, company)
+    company.owner = owner
+    company.save()
+    update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
+    send_created_account_notification(request, owner, password)
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:
@@ -31,6 +33,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
         name=instance.company_name,
         legal_name=instance.company_legal_name,
         years_of_work=instance.years_of_work,
+        max_employees_qty=instance.max_employees_qty,
     )
     hr_department = Department.objects.create(
         name='HR',
@@ -38,7 +41,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
         company=company,
     )
     department_schedule = [
-        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in range(1, 6)
+        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in range(0, 5)
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
     return company, hr_department
@@ -58,3 +61,14 @@ def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company
     owner.set_password(password)
     owner.save(update_fields=['password'])
     return owner, password
+
+
+@atomic
+def approve_tariff_application(application_id: int) -> None:
+    tariff_app = TariffApplication.objects.get(id=application_id)
+    if tariff_app.status != ApplicationStatus.NEW:
+        raise Exception('Application must be in NEW status')
+    companies_id = Role.objects.filter(role=RoleChoices.OWNER, user=tariff_app.owner).values_list('company', flat=True)
+    Company.objects.filter(id__in=companies_id).update(is_active=True)
+    tariff_app.status = ApplicationStatus.ACCEPTED
+    tariff_app.save()

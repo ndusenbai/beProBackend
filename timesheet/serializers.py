@@ -38,9 +38,9 @@ class CheckOutSerializer(BaseSerializer):
 
 
 class ScheduleSerializer(BaseSerializer):
-    week_day = serializers.IntegerField()
-    time_from = serializers.TimeField()
-    time_to = serializers.TimeField()
+    week_day = serializers.IntegerField(min_value=0, max_value=6)
+    time_from = serializers.TimeField(format='%H:%M')
+    time_to = serializers.TimeField(format='%H:%M')
 
 
 class DepartmentScheduleModelSerializer(serializers.ModelSerializer):

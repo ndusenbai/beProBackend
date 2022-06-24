@@ -2,21 +2,22 @@ from django.contrib.auth import get_user_model
 from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
+from auth_user.models import AssistantTypes
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     UserSerializer, ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
     CreateEmployeeSerializer
-from companies.models import Role
+from auth_user.services import change_password, forgot_password, change_password_after_forgot, check_link_after_forgot, \
+    create_observer_and_role, get_user_list, create_assistant, assistants_queryset, create_employee, update_user
+from companies.models import Role, RoleChoices
 from companies.serializers import RoleSerializer
 from utils.tools import log_exception
 
-from auth_user.services import change_password, forgot_password, change_password_after_forgot, check_link_after_forgot, \
-    create_observer_and_role, get_user_list, create_assistant, assistants_queryset, create_employee, update_user
 from django.db.transaction import atomic
 
 User = get_user_model()
@@ -147,3 +148,38 @@ class AssistantViewSet(ModelViewSet):
 
     def get_queryset(self):
         return assistants_queryset()
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+
+    def post(self, request, *args, **kwargs):
+        resp = super().post(request, *args, **kwargs)
+        try:
+            user = User.objects.get(email=request.data['email'])
+            role = ''
+
+            if user.is_superuser:
+                role = 'superuser'
+            elif user.assistant_type == AssistantTypes.MARKETING:
+                role = 'admin_marketing'
+            elif user.assistant_type == AssistantTypes.PRODUCTION_WORKERS:
+                role = 'admin_production_worker'
+            else:
+                role_type = Role.objects.get(user=user, company=user.selected_company).role
+
+                if role_type == RoleChoices.OWNER:
+                    role = 'owner'
+                elif role_type == RoleChoices.HR:
+                    role = 'hr'
+                elif role_type == RoleChoices.OBSERVER:
+                    role = 'observer'
+                elif role_type == RoleChoices.EMPLOYEE:
+                    role = 'employee'
+                elif role_type == RoleChoices.HEAD_OF_DEPARTMENT:
+                    role = 'head_of_department'
+
+            resp.data['role'] = role
+        except Exception as e:
+            resp.data['error_message'] = str(e)
+            log_exception(e, 'Error in CustomTokenObtainPairView.post()')
+        return resp

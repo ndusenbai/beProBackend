@@ -8,24 +8,21 @@ from utils.models import BaseModel
 User = get_user_model()
 
 
-class CompanyTypes(models.IntegerChoices):
-    LLC = 1, 'Limited Liability Company'
-    SP = 2, 'Sole Proprietorship'
-
-
 class RoleChoices(models.IntegerChoices):
     OWNER = 1, _('Owner')
     HR = 2, _('HR')
     OBSERVER = 3, _('Observer')
     EMPLOYEE = 4, _('Employee')
+    HEAD_OF_DEPARTMENT = 5, _('Head of department')
 
 
 class Company(BaseModel):
     name = models.CharField(max_length=100, unique=True)
     legal_name = models.CharField(max_length=100, unique=True)
-    type = models.IntegerField(choices=CompanyTypes.choices, default=CompanyTypes.LLC)
     years_of_work = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_active = models.BooleanField(default=True)
+    max_employees_qty = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    owner = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, default=None)
 
     class Meta:
         verbose_name_plural = 'Companies'
@@ -42,6 +39,12 @@ class Department(BaseModel):
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     is_hr = models.BooleanField(default=False)
     radius = models.IntegerField(default=50)
+    head_of_department = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'company'], name='unique name-company'),
+        ]
 
     def __str__(self):
         return f'{self.name} @{self.company}'
@@ -57,6 +60,11 @@ class Role(BaseModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['company', 'role', 'user'], name='unique role in company for user'),
-            models.UniqueConstraint(fields=['department', 'role', 'user'], name='unique role in department for user')
+            models.UniqueConstraint(fields=['company', 'user'], name='unique company-user'),
+            models.UniqueConstraint(fields=['department', 'user'], name='unique department-user')
         ]
+
+    def __str__(self):
+        if not self.department:
+            department = '-'
+        return f'{self.user} at {self.company}, {department}'
