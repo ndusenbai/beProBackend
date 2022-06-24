@@ -15,6 +15,8 @@ def create_company(user: User, data) -> None:
         name=data['name'],
         legal_name=data['legal_name'],
         years_of_work=data['years_of_work'],
+        max_employees_qty=data['max_employees_qty'],
+        owner=user,
     )
     hr_department = Department.objects.create(
         name='HR',
