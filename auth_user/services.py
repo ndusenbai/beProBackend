@@ -103,7 +103,6 @@ def create_observer_and_role(serializer: ObserverCreateSerializer, user):
     middle_name = serializer.validated_data['middle_name']
     email = serializer.validated_data['email']
     observer = User.objects.filter(email=email)
-    print(user)
     if not observer.exists():
         observer = User.objects.create_user(
             first_name=first_name,
