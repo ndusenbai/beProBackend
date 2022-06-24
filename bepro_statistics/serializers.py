@@ -28,12 +28,12 @@ class UserStatisticSerializer(serializers.ModelSerializer):
 
 
 class UserStatsSerializer(BaseSerializer):
-    weekday = serializers.DateField()
+    day = serializers.DateField()
     fact = serializers.FloatField()
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        ret['weekday_num'] = instance.weekday.weekday()
+        ret['day_num'] = instance.day.weekday()
         if instance.statistic.statistic_type == 2:
             ret['plan'] = instance.statistic.plan
         return ret
