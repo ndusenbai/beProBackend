@@ -52,9 +52,9 @@ class StatisticObserver(BaseModel):
 class UserStatistic(BaseModel):
     statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE, related_name='users')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_statistics')
-    weekday = models.DateField()
+    day = models.DateField()
     fact = models.FloatField()
 
     def __str__(self):
-        return f'{self.user} - {self.weekday}: {self.fact}'
+        return f'{self.user} - {self.day}: {self.fact}'
 

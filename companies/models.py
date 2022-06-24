@@ -65,6 +65,5 @@ class Role(BaseModel):
         ]
 
     def __str__(self):
-        if not self.department:
-            department = '-'
+        department = self.department or '-'
         return f'{self.user} at {self.company}, {department}'

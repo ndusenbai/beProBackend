@@ -4,7 +4,7 @@ from companies.models import Company, Department, Role
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'legal_name', 'is_active')
+    list_display = ('name', 'legal_name', 'max_employees_qty', 'is_active')
     search_fields = ('name', 'legal_name')
 
 

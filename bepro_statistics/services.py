@@ -66,9 +66,9 @@ def get_user_statistic(user):
             model_name='UserStatistic'
         ).objects.filter(
             user=user,
-            weekday__range=[first_day_of_week, last_day_of_week],
+            day__range=[first_day_of_week, last_day_of_week],
             statistic_id=general_stat.id
-        ).select_related('statistic').order_by('weekday')
+        ).select_related('statistic').order_by('day')
         serializer = UserStatsSerializer(general_queryset, many=True)
         general_stats_name_json[general_stat.name] = serializer.data
         generate_general_statistics_plot(serializer.data, general_stat.name)
@@ -80,9 +80,9 @@ def get_user_statistic(user):
             model_name='UserStatistic'
         ).objects.filter(
             user=user,
-            weekday__range=[first_day_of_week, last_day_of_week],
+            day__range=[first_day_of_week, last_day_of_week],
             statistic_id=double_stat.id
-        ).select_related('statistic').order_by('weekday')
+        ).select_related('statistic').order_by('day')
         serializer = UserStatsSerializer(double_queryset, many=True)
 
         double_stats_name_json[double_stat.name] = serializer.data
@@ -97,9 +97,9 @@ def get_user_statistic(user):
             model_name='UserStatistic'
         ).objects.filter(
             user=user,
-            weekday__range=[first_day_of_week, last_day_of_week],
+            day__range=[first_day_of_week, last_day_of_week],
             statistic_id=inverted_stat.id
-        ).select_related('statistic').order_by('weekday')
+        ).select_related('statistic').order_by('day')
         serializer = UserStatsSerializer(inverted_queryset, many=True)
 
         inverted_stats_name_json[inverted_stat.name] = serializer.data
@@ -123,7 +123,7 @@ def generate_general_statistics_plot(serializer, name):
 
     some_dict = {}
     for s in serializer:
-        some_dict[s['weekday_num']] = s['fact']
+        some_dict[s['day_num']] = s['fact']
 
     for weekday in weekday_list:
         if weekday in some_dict:
@@ -144,7 +144,7 @@ def generate_inverted_statistics_plot(serializer, name):
 
     some_dict = {}
     for s in serializer:
-        some_dict[s['weekday_num']] = -abs(s['fact'])
+        some_dict[s['day_num']] = -abs(s['fact'])
 
     for weekday in weekday_list:
         if weekday in some_dict:
@@ -166,7 +166,7 @@ def generate_double_statistics_plot(serializer, name):
 
     some_dict = {}
     for s in serializer:
-        some_dict[s['weekday_num']] = s['fact']
+        some_dict[s['day_num']] = s['fact']
         if not plan_list:
             plan_list.append(s['plan'])
     plan_list = plan_list * 7

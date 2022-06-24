@@ -2,11 +2,13 @@ from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.db.transaction import atomic
+from django.db.models import Q
 import geopy.distance
 
+from bepro_statistics.models import Statistic, UserStatistic
 from companies.models import Company, Role
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
-from timesheet.utils import EmployeeTooFarFromDepartment
+from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 
 User = get_user_model()
 
@@ -43,10 +45,7 @@ def check_distance(user: User, latitude: float, longitude: float) -> None:
         raise EmployeeTooFarFromDepartment()
 
 
-@atomic
-def create_check_in_timesheet(user: User, data: dict) -> None:
-    check_distance(user, data['latitude'], data['longitude'])
-
+def handle_check_in_timesheet(user: User, data: dict) -> None:
     check_in = data['check_in']
     today_schedule = EmployeeSchedule.objects.get(user=user, company=user.selected_company, week_day=check_in.weekday())
 
@@ -78,9 +77,12 @@ def create_check_in_timesheet(user: User, data: dict) -> None:
 
 
 @atomic
-def create_check_out_timesheet(user: User, data: dict) -> bool:
+def create_check_in_timesheet(user: User, data: dict) -> None:
     check_distance(user, data['latitude'], data['longitude'])
+    handle_check_in_timesheet(user, data)
 
+
+def handle_check_out_timesheet(user: User, data: dict) -> bool:
     check_out = data['check_out']
     last_timesheet = TimeSheet.objects.filter(
         user=user,
@@ -117,3 +119,19 @@ def create_check_out_timesheet(user: User, data: dict) -> bool:
     last_timesheet.check_out = check_out
     last_timesheet.save()
     return True
+
+
+def check_statistics(user: User, check_out_date) -> None:
+    department = Role.objects.get(user=user, company=user.selected_company).department
+    stats = Statistic.objects.filter(Q(department=department) | Q(user=user))
+
+    for stat in stats:
+        if not UserStatistic.objects.filter(user=user, statistic=stat, day=check_out_date.date()).exists():
+            raise FillUserStatistic()
+
+
+@atomic
+def create_check_out_timesheet(user: User, data: dict) -> bool:
+    check_distance(user, data['latitude'], data['longitude'])
+    check_statistics(user, data['check_out'])
+    return handle_check_out_timesheet(user, data)

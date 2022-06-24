@@ -1,16 +1,19 @@
 from django.dispatch import receiver
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
 
 from applications.models import TariffApplication, ApplicationStatus
 from companies.models import Role, Company, RoleChoices
 from utils.tools import log_exception
 
 
-@receiver(pre_save, sender=Role)
-def check_employees_qty(sender, instance, **kwargs):
+@receiver(post_save, sender=Role)
+def check_employees_qty(sender, instance, created, **kwargs):
     try:
+        if not created:
+            return True
         if not instance.company.is_active:
             raise Exception('Company is not active. Need to renew tariff')
+
         check_employees_qty_in_company(instance)
         check_employees_qty_in_tariff(instance)
     except Exception as e:
@@ -21,7 +24,8 @@ def check_employees_qty(sender, instance, **kwargs):
 def check_employees_qty_in_company(role):
     max_employees_qty = role.company.max_employees_qty
     employees_count = Role.objects.filter(company=role.company).exclude(role=RoleChoices.OWNER).count()
-    if employees_count >= max_employees_qty:
+    if employees_count > max_employees_qty:
+        role.delete()
         raise Exception('Too many employees in company')
 
 
@@ -33,5 +37,6 @@ def check_employees_qty_in_tariff(role):
 
     owner_companies = Company.objects.filter(owner=owner).values_list('id', flat=True)
     employees_count = Role.objects.filter(company__in=owner_companies).exclude(role=RoleChoices.OWNER).count()
-    if employees_count >= max_employees_qty:
+    if employees_count > max_employees_qty:
+        role.delete()
         raise Exception('Too many employees for tariff')
