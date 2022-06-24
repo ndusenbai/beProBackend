@@ -33,6 +33,7 @@ class UserStatsSerializer(BaseSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+        ret['weekday_num'] = instance.weekday.weekday()
         if instance.statistic.statistic_type == 2:
             ret['plan'] = instance.statistic.plan
         return ret
