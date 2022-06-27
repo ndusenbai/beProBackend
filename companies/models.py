@@ -39,7 +39,7 @@ class Department(BaseModel):
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     is_hr = models.BooleanField(default=False)
     radius = models.IntegerField(default=50)
-    head_of_department = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True)
+    head_of_department = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -65,6 +65,5 @@ class Role(BaseModel):
         ]
 
     def __str__(self):
-        if not self.department:
-            department = '-'
+        department = self.department or '-'
         return f'{self.user} at {self.company}, {department}'

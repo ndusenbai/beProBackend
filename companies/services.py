@@ -68,7 +68,6 @@ def create_department(user: User, data: dict) -> None:
         department.save()
 
 
-
 @atomic
 def update_department(instance: Department, data) -> None:
     DepartmentSchedule.objects.filter(department=instance).delete()
