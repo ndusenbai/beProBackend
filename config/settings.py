@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import environ
-
+import redis
 env = environ.Env()
 environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,6 +37,8 @@ THIRD_PARTY_APPS = [
     'drf_yasg',
     'django_filters',
     'django_db_logger',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 LOCAL_APPS = [
@@ -220,3 +222,10 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 CURRENT_SITE = env('CURRENT_SITE')
+
+
+CELERY_TIMEZONE = "Asia/Almaty"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
