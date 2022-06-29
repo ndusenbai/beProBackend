@@ -9,11 +9,10 @@ User = get_user_model()
 
 
 class RoleChoices(models.IntegerChoices):
-    OWNER = 1, _('Owner')
-    HR = 2, _('HR')
-    OBSERVER = 3, _('Observer')
-    EMPLOYEE = 4, _('Employee')
-    HEAD_OF_DEPARTMENT = 5, _('Head of department')
+    HR = 1, _('HR')
+    OBSERVER = 2, _('Observer')
+    EMPLOYEE = 3, _('Employee')
+    HEAD_OF_DEPARTMENT = 4, _('Head of department')
 
 
 class Company(BaseModel):
@@ -28,7 +27,7 @@ class Company(BaseModel):
         verbose_name_plural = 'Companies'
 
     def __str__(self):
-        return self.legal_name
+        return self.name
 
 
 class Department(BaseModel):
@@ -51,7 +50,7 @@ class Department(BaseModel):
 
 
 class Role(BaseModel):
-    company = models.ForeignKey(to=Company, on_delete=models.CASCADE)
+    company = models.ForeignKey(to=Company, on_delete=models.CASCADE, related_name='roles')
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True, related_name='roles')
     role = models.IntegerField(choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
     user = models.ForeignKey(to='auth_user.User', on_delete=models.CASCADE)

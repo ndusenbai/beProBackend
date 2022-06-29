@@ -6,11 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 
-from companies.models import Company
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
-    DepartmentList2Serializer
+    DepartmentList2Serializer, CompanySerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
-    get_departments_qs
+    get_departments_qs, get_company_qs
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -20,7 +19,15 @@ User = get_user_model()
 class CompanyViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanyModelSerializer
-    queryset = Company.objects.order_by()
+    filterset_fields = ('owner',)
+
+    def get_queryset(self):
+        return get_company_qs()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return CompanySerializer
+        return CompanyModelSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
