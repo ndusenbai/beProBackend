@@ -30,15 +30,6 @@ def create_company(user: User, data) -> None:
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
 
-    Role.objects.create(
-        company=company,
-        department=None,
-        role=RoleChoices.OWNER,
-        user=user,
-        title='Владелец',
-        grade=4,
-    )
-
 
 @atomic
 def create_department(user: User, data: dict) -> None:
@@ -101,3 +92,8 @@ def get_departments_qs() -> QuerySet[Department]:
     return Department.objects\
         .annotate(employees_count=Count('roles')) \
         .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+
+
+def get_company_qs() -> QuerySet[Company]:
+    return Company.objects.all()\
+        .annotate(employees_count=Count('roles'))

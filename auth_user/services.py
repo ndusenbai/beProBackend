@@ -239,8 +239,9 @@ def get_user_role(user: User) -> str:
             role = 'admin_production_worker'
         else:
             role_type = Role.objects.get(user=user, company=user.selected_company).role
+            owner_companies = Company.objects.filter(owner=user)
 
-            if role_type == RoleChoices.OWNER:
+            if owner_companies.exists():
                 role = 'owner'
             elif role_type == RoleChoices.HR:
                 role = 'hr'

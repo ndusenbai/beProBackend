@@ -23,7 +23,7 @@ def check_employees_qty(sender, instance, created, **kwargs):
 
 def check_employees_qty_in_company(role):
     max_employees_qty = role.company.max_employees_qty
-    employees_count = Role.objects.filter(company=role.company).exclude(role=RoleChoices.OWNER).count()
+    employees_count = Role.objects.filter(company=role.company).count()
     if employees_count > max_employees_qty:
         role.delete()
         raise Exception('Too many employees in company')
@@ -36,7 +36,7 @@ def check_employees_qty_in_tariff(role):
     max_employees_qty = tariff_application.tariff.max_employees_qty
 
     owner_companies = Company.objects.filter(owner=owner).values_list('id', flat=True)
-    employees_count = Role.objects.filter(company__in=owner_companies).exclude(role=RoleChoices.OWNER).count()
+    employees_count = Role.objects.filter(company__in=owner_companies).count()
     if employees_count > max_employees_qty:
         role.delete()
         raise Exception('Too many employees for tariff')

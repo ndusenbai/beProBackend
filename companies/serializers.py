@@ -16,6 +16,17 @@ class CompanyModelSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 
+class CompanySerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    legal_name = serializers.CharField()
+    years_of_work = serializers.IntegerField()
+    is_active = serializers.BooleanField()
+    max_employees_qty = serializers.IntegerField()
+    owner_id = serializers.IntegerField(read_only=True)
+    employees_count = serializers.IntegerField()
+
+
 class CreateHeadDepartmentSerializer(BaseSerializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
