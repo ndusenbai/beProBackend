@@ -1,26 +1,40 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
-from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 
-from companies.models import Company, Department, CompanyService
+from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
-    DepartmentList2Serializer, CompanyServiceSerializer
-from companies.services import update_department, get_department_list, create_company, create_department
+    DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer
+from companies.services import update_department, get_department_list, create_company, create_department, \
+    get_departments_qs, get_company_qs
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
 User = get_user_model()
 
 
+class CompanyServiceViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CompanyServiceSerializer
+    queryset = CompanyService.objects.order_by()
+
+
 class CompanyViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanyModelSerializer
-    queryset = Company.objects.order_by()
+    filterset_fields = ('owner',)
+
+    def get_queryset(self):
+        return get_company_qs()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return CompanySerializer
+        return CompanyModelSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -39,7 +53,7 @@ class DepartmentViewSet(ModelViewSet):
         return DepartmentList2Serializer
 
     def get_queryset(self):
-        return Department.objects.prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+        return get_departments_qs()
 
     @swagger_auto_schema(request_body=DepartmentSerializer)
     def create(self, request, *args, **kwargs):
@@ -70,9 +84,3 @@ class DepartmentListView(ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         return get_department_list(self.request.user.selected_company)
-
-
-class CompanyServiceViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = CompanyServiceSerializer
-    queryset = CompanyService.objects.order_by()
