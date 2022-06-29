@@ -71,7 +71,7 @@ def get_user_statistic(user):
         ).select_related('statistic').order_by('day')
         serializer = UserStatsSerializer(general_queryset, many=True)
         general_stats_name_json[general_stat.name] = serializer.data
-        generate_general_statistics_plot(serializer.data, general_stat.name)
+        generate_general_statistics_plot(serializer.data, general_stat.name, user)
     all_generals_list.append(general_stats_name_json)
 
     for double_stat in double_statistic_queryset:
@@ -88,7 +88,7 @@ def get_user_statistic(user):
         double_stats_name_json[double_stat.name] = serializer.data
 
         # HERE I'M GENERATING PLOT
-        generate_double_statistics_plot(serializer.data, double_stat.name)
+        generate_double_statistics_plot(serializer.data, double_stat.name, user)
     all_doubles_list.append(double_stats_name_json)
 
     for inverted_stat in inverted_statistic_queryset:
@@ -103,7 +103,7 @@ def get_user_statistic(user):
         serializer = UserStatsSerializer(inverted_queryset, many=True)
 
         inverted_stats_name_json[inverted_stat.name] = serializer.data
-        # generate_inverted_statistics_plot(serializer.data, double_stat.name)
+        generate_inverted_statistics_plot(serializer.data, inverted_stat.name, user)
 
     all_inverts_list.append(inverted_stats_name_json)
 
@@ -118,7 +118,7 @@ weekday_list = [0, 1, 2, 3, 4, 5, 6]
 weekday_word_list = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
 
 
-def generate_general_statistics_plot(serializer, name):
+def generate_general_statistics_plot(serializer, name, user):
     some_list = []
 
     some_dict = {}
@@ -134,12 +134,12 @@ def generate_general_statistics_plot(serializer, name):
     ypoints = np.array(some_list)
     xpoints = np.array(weekday_list)
     plt.plot(xpoints, ypoints, marker='o')
-    plt.savefig(f'{name}.png', bbox_inches='tight', dpi=100)
+    plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
     plt.close()
     pass
 
 
-def generate_inverted_statistics_plot(serializer, name):
+def generate_inverted_statistics_plot(serializer, name, user):
     some_list = []
 
     some_dict = {}
@@ -155,12 +155,12 @@ def generate_inverted_statistics_plot(serializer, name):
     ypoints = np.array(some_list)
     xpoints = np.array(weekday_list)
     plt.plot(xpoints, ypoints, marker='o')
-    plt.savefig(f'{name}.png', bbox_inches='tight', dpi=100)
+    plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
     plt.close()
     pass
 
 
-def generate_double_statistics_plot(serializer, name):
+def generate_double_statistics_plot(serializer, name, user):
     some_list = []
     plan_list = []
 
@@ -178,8 +178,7 @@ def generate_double_statistics_plot(serializer, name):
 
     plt.plot(weekday_word_list, some_list, plan_list, marker='o')
     plt.title(f'{name}')
-    plt.savefig(f'media/{name}.png', bbox_inches='tight', dpi=100)
+    plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
     plt.close()
-    pass
 
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from companies.models import Company, Department, Role
+from companies.models import Company, Department, Role, CompanyService
 
 
 @admin.register(Company)
@@ -21,3 +21,9 @@ class RoleAdmin(admin.ModelAdmin):
     search_fields = ('company', 'department', 'role')
     list_filter = ('company', 'role')
     raw_id_fields = ('company', 'department', 'user')
+
+
+@admin.register(CompanyService)
+class CompanyServiceAdmin(admin.ModelAdmin):
+    list_display = ('company', 'analytics_enabled', 'time_tracking_enabled', 'tests_enabled')
+    list_display_links = ('company',)

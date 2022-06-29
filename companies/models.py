@@ -67,3 +67,13 @@ class Role(BaseModel):
     def __str__(self):
         department = self.department or '-'
         return f'{self.user} at {self.company}, {department}'
+
+
+class CompanyService(BaseModel):
+    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='service')
+    analytics_enabled = models.BooleanField(default=True)
+    time_tracking_enabled = models.BooleanField(default=True)
+    tests_enabled = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'Service of {self.company}'
