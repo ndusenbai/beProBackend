@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 
-from companies.models import Company, Department, CompanyService
+from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
