@@ -19,6 +19,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'deactivate_tariff': {
         'task': 'companies.tasks.deactivate_tariff',
-        'schedule': 60.0
+        'schedule': 3600.0
     }
 }

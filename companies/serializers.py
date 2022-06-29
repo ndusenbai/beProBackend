@@ -3,9 +3,16 @@ from datetime import datetime
 from rest_framework import serializers
 
 from auth_user.serializers import UserModelSerializer
-from companies.models import Company, Department
+from companies.models import Company, Department, CompanyService
 from timesheet.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
+
+
+class CompanyServiceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CompanyService
+        fields = "__all__"
 
 
 class CompanyModelSerializer(serializers.ModelSerializer):
