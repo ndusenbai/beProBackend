@@ -1,16 +1,16 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
-from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 
-from companies.models import Company, Department
+from companies.models import Company
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
     DepartmentList2Serializer
-from companies.services import update_department, get_department_list, create_company, create_department
+from companies.services import update_department, get_department_list, create_company, create_department, \
+    get_departments_qs
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -39,7 +39,7 @@ class DepartmentViewSet(ModelViewSet):
         return DepartmentList2Serializer
 
     def get_queryset(self):
-        return Department.objects.prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+        return get_departments_qs()
 
     @swagger_auto_schema(request_body=DepartmentSerializer)
     def create(self, request, *args, **kwargs):
