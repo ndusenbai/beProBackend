@@ -21,7 +21,7 @@ def update_application_to_create_company(instance: ApplicationToCreateCompany, d
 @atomic
 def accept_application_to_create_company(request: HttpRequest, instance: ApplicationToCreateCompany) -> None:
     company, hr_department = create_company_and_hr_department(instance)
-    owner, password = create_owner_and_role(instance, company)
+    owner, password = create_owner(instance, company)
     company.owner = owner
     company.save()
     update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
@@ -47,7 +47,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
     return company, hr_department
 
 
-def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company) -> Tuple[User, str]:
+def create_owner(instance: ApplicationToCreateCompany, company: Company) -> Tuple[User, str]:
     owner = User.objects.create(
         email=instance.email,
         first_name=instance.first_name,
@@ -56,7 +56,6 @@ def create_owner_and_role(instance: ApplicationToCreateCompany, company: Company
         phone_number=instance.phone_number,
         selected_company=company,
     )
-    Role.objects.create(company=company, department=None, role=RoleChoices.OWNER, user=owner)
     password = User.objects.make_random_password()
     owner.set_password(password)
     owner.save(update_fields=['password'])
@@ -68,7 +67,6 @@ def approve_tariff_application(application_id: int) -> None:
     tariff_app = TariffApplication.objects.get(id=application_id)
     if tariff_app.status != ApplicationStatus.NEW:
         raise Exception('Application must be in NEW status')
-    companies_id = Role.objects.filter(role=RoleChoices.OWNER, user=tariff_app.owner).values_list('company', flat=True)
-    Company.objects.filter(id__in=companies_id).update(is_active=True)
+    Company.objects.filter(owner=tariff_app.owner).update(is_active=True)
     tariff_app.status = ApplicationStatus.ACCEPTED
     tariff_app.save()
