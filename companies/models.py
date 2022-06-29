@@ -52,7 +52,7 @@ class Department(BaseModel):
 
 class Role(BaseModel):
     company = models.ForeignKey(to=Company, on_delete=models.CASCADE)
-    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True)
+    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True, related_name='roles')
     role = models.IntegerField(choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
     user = models.ForeignKey(to='auth_user.User', on_delete=models.CASCADE)
     title = models.CharField(max_length=200, default='')

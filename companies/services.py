@@ -1,6 +1,8 @@
 from django.apps import apps
 from django.db.transaction import atomic
+from django.db.models import Count, Prefetch
 from django.contrib.auth import get_user_model
+from django.db.models.query import QuerySet
 
 from auth_user.services import create_employee_schedules
 from companies.models import Department, Company, Role, RoleChoices
@@ -93,3 +95,9 @@ def get_department_list(company):
         app_label='companies',
         model_name='Department'
     ).objects.filter(company=company)
+
+
+def get_departments_qs() -> QuerySet[Department]:
+    return Department.objects\
+        .annotate(employees_count=Count('roles')) \
+        .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
