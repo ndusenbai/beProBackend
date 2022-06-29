@@ -1,6 +1,8 @@
 from django.apps import apps
 from django.db.transaction import atomic
+from django.db.models import Count, Prefetch
 from django.contrib.auth import get_user_model
+from django.db.models.query import QuerySet
 
 from auth_user.services import create_employee_schedules
 from companies.models import Department, Company, Role, RoleChoices
@@ -27,15 +29,6 @@ def create_company(user: User, data) -> None:
         DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in range(0, 5)
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
-
-    Role.objects.create(
-        company=company,
-        department=None,
-        role=RoleChoices.OWNER,
-        user=user,
-        title='Владелец',
-        grade=4,
-    )
 
 
 @atomic
@@ -93,3 +86,14 @@ def get_department_list(company):
         app_label='companies',
         model_name='Department'
     ).objects.filter(company=company)
+
+
+def get_departments_qs() -> QuerySet[Department]:
+    return Department.objects\
+        .annotate(employees_count=Count('roles')) \
+        .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+
+
+def get_company_qs() -> QuerySet[Company]:
+    return Company.objects.all()\
+        .annotate(employees_count=Count('roles'))
