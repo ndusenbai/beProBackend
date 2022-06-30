@@ -28,6 +28,8 @@ class CompanyServiceViewSet(ModelViewSet):
 class CompanyViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanyModelSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('name', 'legal_name')
     filterset_fields = ('owner',)
 
     def get_queryset(self):
