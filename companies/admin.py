@@ -4,7 +4,7 @@ from companies.models import Company, Department, Role, CompanyService
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'legal_name', 'owner', 'max_employees_qty', 'is_active')
+    list_display = ('name', 'legal_name', 'owner', 'is_deleted', 'max_employees_qty', 'is_active')
     search_fields = ('name', 'legal_name', 'owner__first_name', 'owner__last_name')
     raw_id_fields = ('owner',)
 

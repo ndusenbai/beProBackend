@@ -31,6 +31,12 @@ def create_company(user: User, data) -> None:
     DepartmentSchedule.objects.bulk_create(department_schedule)
 
 
+def update_company(instance: Company, data: dict) -> None:
+    for key, value in data.items():
+        setattr(instance, key, value)
+    instance.save()
+
+
 @atomic
 def create_department(user: User, data: dict) -> None:
     head_of_department = None
@@ -89,11 +95,11 @@ def get_department_list(company):
 
 
 def get_departments_qs() -> QuerySet[Department]:
-    return Department.objects\
+    return Department.objects.filter(company__is_deleted=False)\
         .annotate(employees_count=Count('roles')) \
         .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
 
 
 def get_company_qs() -> QuerySet[Company]:
-    return Company.objects.all()\
+    return Company.objects.filter(is_deleted=False)\
         .annotate(employees_count=Count('roles'))
