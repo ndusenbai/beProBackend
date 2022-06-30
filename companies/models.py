@@ -22,6 +22,7 @@ class Company(BaseModel):
     is_active = models.BooleanField(default=True)
     max_employees_qty = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     owner = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, default=None)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = 'Companies'
