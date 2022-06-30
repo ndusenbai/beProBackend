@@ -1,10 +1,12 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
+from rest_framework.filters import SearchFilter
 
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
@@ -45,6 +47,8 @@ class CompanyViewSet(ModelViewSet):
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('name',)
     filterset_fields = ('company',)
 
     def get_serializer_class(self):
