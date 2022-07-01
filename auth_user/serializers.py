@@ -82,6 +82,8 @@ class ObserverListSerializer(BaseSerializer):
 
 class EmployeeListSerializer(BaseSerializer):
     user = UserSerializer()
+    role = serializers.IntegerField()
+    grade = serializers.IntegerField()
 
 
 class AssistantSerializer(BaseSerializer):

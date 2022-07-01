@@ -133,6 +133,7 @@ def generate_general_statistics_plot(serializer, name, user):
 
     ypoints = np.array(some_list)
     xpoints = np.array(weekday_list)
+
     plt.plot(xpoints, ypoints, marker='o')
     plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
     plt.close()
@@ -175,7 +176,7 @@ def generate_double_statistics_plot(serializer, name, user):
             some_list.append(some_dict[weekday])
         else:
             some_list.append(None)
-
+    plt.style.use('seaborn-whitegrid')
     plt.plot(weekday_word_list, some_list, plan_list, marker='o')
     plt.title(f'{name}')
     plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)

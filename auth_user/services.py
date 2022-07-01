@@ -134,6 +134,13 @@ def get_user_list(company):
     ).objects.filter(company=company)
 
 
+def get_employee_list():
+    return apps.get_model(
+        app_label='companies',
+        model_name='Role'
+    ).objects.exclude(role=2)
+
+
 def create_assistant(serializer):
     first_name = serializer.validated_data['first_name']
     last_name = serializer.validated_data['last_name']

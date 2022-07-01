@@ -52,8 +52,6 @@ class CompanyViewSet(ModelViewSet):
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    filter_backends = (SearchFilter, DjangoFilterBackend)
-    search_fields = ('name',)
     filterset_fields = ('company',)
 
     def get_serializer_class(self):

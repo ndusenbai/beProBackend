@@ -47,6 +47,7 @@ def create_department(user: User, data: dict) -> None:
         address=data['address'],
         latitude=data['latitude'],
         longitude=data['longitude'],
+        radius=data['radius'],
         head_of_department=head_of_department,
     )
     bulk_create_department_schedules(department, schedules)
@@ -69,6 +70,7 @@ def create_department(user: User, data: dict) -> None:
 
 @atomic
 def update_department(instance: Department, data) -> None:
+    del data['head_of_department']
     DepartmentSchedule.objects.filter(department=instance).delete()
     bulk_create_department_schedules(instance, data.pop('schedules'))
     for key, value in data.items():

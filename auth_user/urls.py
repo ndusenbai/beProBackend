@@ -8,6 +8,7 @@ router = DefaultRouter()
 router.register(r'assistant', views.AssistantViewSet, basename='assistant-viewset')
 router.register(r'observer', views.ObserverViewSet, basename='observer-viewset')
 router.register(r'employee-list', views.EmployeeListView, basename='employee-list-view')
+router.register(r'employees', views.EmployeeWithPaginationList, basename='employees-list')
 router.register('users', views.UserViewSet, basename='profile')
 
 
