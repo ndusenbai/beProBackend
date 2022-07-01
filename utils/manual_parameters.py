@@ -23,6 +23,8 @@ QUERY_EMAIL = openapi.Parameter('email', openapi.IN_QUERY, description='email', 
 # companies
 QUERY_COMPANY = openapi.Parameter('company', openapi.IN_QUERY, description='company id', type=openapi.TYPE_INTEGER)
 
+QUERY_DEPARTMENT = openapi.Parameter('department', openapi.IN_QUERY, description='department id', type=openapi.TYPE_INTEGER)
+
 
 QUERY_MONTH = openapi.Parameter('month', openapi.IN_QUERY, description='06', type=openapi.TYPE_INTEGER)
 QUERY_YEAR = openapi.Parameter('year', openapi.IN_QUERY, description='2022', type=openapi.TYPE_INTEGER)

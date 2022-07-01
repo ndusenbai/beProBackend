@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
-
+from rest_framework import filters
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer
@@ -45,6 +45,13 @@ class CompanyViewSet(ModelViewSet):
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = (
+        'name',
+        'head_of_department__first_name',
+        'head_of_department__last_name',
+        'head_of_department__middle_name'
+    )
     filterset_fields = ('company',)
 
     def get_serializer_class(self):

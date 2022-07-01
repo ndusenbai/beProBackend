@@ -47,9 +47,10 @@ class CreateHeadDepartmentSerializer(BaseSerializer):
 class DepartmentSerializer(BaseSerializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
-    address = serializers.CharField()
+    address = serializers.CharField(allow_blank=True)
     latitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
     longitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
+    radius = serializers.IntegerField(default=50)
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
 
