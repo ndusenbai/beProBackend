@@ -1,16 +1,18 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
-from rest_framework import filters
+from rest_framework.filters import SearchFilter
+
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
-    get_departments_qs, get_company_qs
+    get_departments_qs, get_company_qs, update_company
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -26,6 +28,8 @@ class CompanyServiceViewSet(ModelViewSet):
 class CompanyViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompanyModelSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('name', 'legal_name')
     filterset_fields = ('owner',)
 
     def get_queryset(self):
@@ -42,16 +46,12 @@ class CompanyViewSet(ModelViewSet):
         create_company(request.user, serializer.validated_data)
         return Response({'message': 'created'})
 
+    def perform_destroy(self, instance):
+        update_company(instance, {'is_deleted': True})
+
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = (
-        'name',
-        'head_of_department__first_name',
-        'head_of_department__last_name',
-        'head_of_department__middle_name'
-    )
     filterset_fields = ('company',)
 
     def get_serializer_class(self):

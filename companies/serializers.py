@@ -20,7 +20,7 @@ class CompanyModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('id', 'owner_id', 'is_active', 'is_deleted', 'created_at', 'updated_at')
 
 
 class CompanySerializer(BaseSerializer):
@@ -32,6 +32,10 @@ class CompanySerializer(BaseSerializer):
     max_employees_qty = serializers.IntegerField()
     owner_id = serializers.IntegerField(read_only=True)
     employees_count = serializers.IntegerField()
+    employees_ratio = serializers.SerializerMethodField()
+
+    def get_employees_ratio(self, instance):
+        return f'{instance.employees_count}/{instance.max_employees_qty}'
 
 
 class CreateHeadDepartmentSerializer(BaseSerializer):
