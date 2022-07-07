@@ -1,4 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
+
+from bepro_statistics.models import UserStatistic
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db.transaction import atomic
@@ -31,6 +33,7 @@ class StatisticViewSet(ModelViewSet):
 class UserStatisticViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserStatisticSerializer
+    queryset = UserStatistic.objects.all()
 
 
 class UserStatisticAPI(APIView):
