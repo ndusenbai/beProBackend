@@ -73,6 +73,7 @@ class UserSerializer(BaseSerializer):
     last_name = serializers.CharField(max_length=50)
     middle_name = serializers.CharField(max_length=50, allow_blank=True)
     email = serializers.EmailField()
+    avatar = serializers.ImageField()
 
 
 class ObserverListSerializer(BaseSerializer):
@@ -84,6 +85,11 @@ class EmployeeListSerializer(BaseSerializer):
     user = UserSerializer()
     role = serializers.IntegerField()
     grade = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class EmployeesSerializer(EmployeeListSerializer):
+    score = serializers.IntegerField()
 
 
 class AssistantSerializer(BaseSerializer):

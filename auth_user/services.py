@@ -17,6 +17,7 @@ from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
 
 from companies.models import Role, Department, RoleChoices, Company
+from scores.utils import GetScoreForRole
 from timesheet.models import EmployeeSchedule
 from utils.tools import log_exception
 
@@ -135,10 +136,7 @@ def get_user_list(company):
 
 
 def get_employee_list():
-    return apps.get_model(
-        app_label='companies',
-        model_name='Role'
-    ).objects.exclude(role=2)
+    return Role.objects.exclude(role=RoleChoices.OBSERVER).annotate(score=GetScoreForRole('companies_role.id'))
 
 
 def create_assistant(serializer):
