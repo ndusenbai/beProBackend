@@ -10,7 +10,6 @@ class ReasonAdmin(admin.ModelAdmin):
 
 @admin.register(Score)
 class ScoreAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'reason')
-    list_display_links = ('id', 'user', 'reason')
-
-
+    list_display = ('id', 'role', 'reason')
+    list_display_links = ('id', 'role', 'reason')
+    raw_id_fields = ('role', 'reason')

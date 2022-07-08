@@ -12,13 +12,12 @@ class Reason(BaseModel):
     company = models.ForeignKey('companies.Company', on_delete=models.CASCADE, related_name='reasons')
 
     def __str__(self):
-        return f'{self.name} - {self.score}'
+        return f'{self.name}: {self.score}'
 
 
 class Score(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scores')
+    role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, related_name='scores')
     reason = models.ForeignKey(Reason, on_delete=models.CASCADE, related_name='users')
 
     def __str__(self):
-        return f'{self.user}: {self.reason}'
-
+        return f'{self.role}: {self.reason}'

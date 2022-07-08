@@ -1,26 +1,26 @@
+from django.db.transaction import atomic
 from django.contrib.auth import get_user_model
 from django.db.models import Prefetch
+from drf_yasg.utils import swagger_auto_schema
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters
+
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     UserSerializer, ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
-    CreateEmployeeSerializer
+    CreateEmployeeSerializer, EmployeesSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
-    create_employee, update_user, \
-    get_additional_user_info, get_employee_list
+    create_employee, update_user, get_additional_user_info, get_employee_list
 from companies.models import Role
 from companies.serializers import RoleSerializer
-from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENT
 from utils.tools import log_exception
 
-from django.db.transaction import atomic
 
 User = get_user_model()
 
@@ -130,22 +130,10 @@ class ObserverViewSet(ListModelMixin,
 
 class EmployeeWithPaginationList(ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = EmployeeListSerializer
-    filter_backends = (filters.SearchFilter,)
+    serializer_class = EmployeesSerializer
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
-
-    @swagger_auto_schema(manual_parameters=[QUERY_COMPANY, QUERY_DEPARTMENT])
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    def filter_queryset(self, queryset):
-        extra_kwargs = {}
-        if self.request.GET.get('company'):
-            extra_kwargs['company_id'] = self.request.GET.get('company')
-        if self.request.GET.get('department'):
-            extra_kwargs['department_id'] = self.request.GET.get('department')
-
-        return queryset.filter(**extra_kwargs)
+    filterset_fields = ('company', 'department')
 
     def get_queryset(self):
         return get_employee_list()
