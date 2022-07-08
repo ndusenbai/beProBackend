@@ -90,6 +90,13 @@ class EmployeeListSerializer(BaseSerializer):
 
 class EmployeesSerializer(EmployeeListSerializer):
     score = serializers.IntegerField()
+    department_name = serializers.SerializerMethodField()
+
+    def get_department_name(self, instance):
+        try:
+            return instance.department.name
+        except AttributeError:
+            return ''
 
 
 class AssistantSerializer(BaseSerializer):
