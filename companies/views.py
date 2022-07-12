@@ -10,9 +10,10 @@ from rest_framework.filters import SearchFilter
 
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
-    DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer
+    DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
+    CreateEmployeeSerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
-    get_departments_qs, get_company_qs, update_company
+    get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee
 from utils.manual_parameters import QUERY_COMPANY
 from utils.tools import log_exception
 
@@ -91,3 +92,35 @@ class DepartmentListView(ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         return get_department_list(self.request.user.selected_company)
+
+
+class EmployeesViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = EmployeesSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
+    filterset_fields = ('company', 'department')
+
+    def get_queryset(self):
+        return get_employee_list()
+
+    @swagger_auto_schema(request_body=CreateEmployeeSerializer)
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = CreateEmployeeSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            create_employee(serializer.validated_data)
+            return Response({'message': 'created'})
+        except Exception as e:
+            log_exception(e, 'Error in EmployeesViewSet.create()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            serializer = CreateEmployeeSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            update_employee(self.get_object(), serializer.validated_data, request.user)
+            return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            log_exception(e, 'Error in DepartmentViewSet.update()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

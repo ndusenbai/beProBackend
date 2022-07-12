@@ -48,7 +48,7 @@ class WeekDayChoices(models.IntegerChoices):
 
 class DepartmentSchedule(BaseModel):
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name='department_schedules')
-    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
+    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(0), MaxValueValidator(6)])
     time_from = models.TimeField()
     time_to = models.TimeField()
 
@@ -62,7 +62,7 @@ class DepartmentSchedule(BaseModel):
 class EmployeeSchedule(BaseModel):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='employee_schedules')
     company = models.ForeignKey(to=Company, on_delete=models.CASCADE, null=True)
-    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(1), MaxValueValidator(7)])
+    week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(0), MaxValueValidator(6)])
     time_from = models.TimeField()
     time_to = models.TimeField()
 

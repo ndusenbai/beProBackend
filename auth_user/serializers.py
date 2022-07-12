@@ -17,18 +17,6 @@ class UserSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
 
 
-class CreateEmployeeSerializer(BaseSerializer):
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    middle_name = serializers.CharField(allow_blank=True)
-    email = serializers.EmailField()
-    phone_number = serializers.CharField(allow_blank=True)
-    title = serializers.CharField()
-    grade = serializers.IntegerField()
-    department_id = serializers.IntegerField()
-    schedules = ScheduleSerializer(many=True)
-
-
 class UserModelSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -86,17 +74,6 @@ class EmployeeListSerializer(BaseSerializer):
     role = serializers.IntegerField()
     grade = serializers.IntegerField()
     title = serializers.CharField()
-
-
-class EmployeesSerializer(EmployeeListSerializer):
-    score = serializers.IntegerField()
-    department_name = serializers.SerializerMethodField()
-
-    def get_department_name(self, instance):
-        try:
-            return instance.department.name
-        except AttributeError:
-            return ''
 
 
 class AssistantSerializer(BaseSerializer):

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from auth_user.serializers import UserModelSerializer
+from auth_user.serializers import UserModelSerializer, UserSerializer
 from companies.models import Company, Department, CompanyService
 from timesheet.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
@@ -92,3 +92,26 @@ class RoleSerializer(BaseSerializer):
     role = serializers.CharField()
     title = serializers.CharField()
     grade = serializers.IntegerField()
+
+
+class EmployeesSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    user = UserSerializer()
+    role = serializers.IntegerField()
+    grade = serializers.IntegerField()
+    title = serializers.CharField()
+    score = serializers.IntegerField()
+    department = DepartmentListSerializer()
+
+
+class CreateEmployeeSerializer(BaseSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    middle_name = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField()
+    phone_number = serializers.CharField(allow_blank=True)
+    avatar = serializers.ImageField(allow_null=True)
+    title = serializers.CharField()
+    grade = serializers.IntegerField()
+    department_id = serializers.IntegerField()
+    schedules = ScheduleSerializer(many=True)

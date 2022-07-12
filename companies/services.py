@@ -4,9 +4,10 @@ from django.db.models import Count, Prefetch
 from django.contrib.auth import get_user_model
 from django.db.models.query import QuerySet
 
-from auth_user.services import create_employee_schedules
+from auth_user.services import User
 from companies.models import Department, Company, Role, RoleChoices
-from timesheet.models import DepartmentSchedule
+from scores.utils import GetScoreForRole
+from timesheet.models import DepartmentSchedule, EmployeeSchedule
 
 User = get_user_model()
 
@@ -105,3 +106,68 @@ def get_departments_qs() -> QuerySet[Department]:
 def get_company_qs() -> QuerySet[Company]:
     return Company.objects.filter(is_deleted=False)\
         .annotate(employees_count=Count('roles'))
+
+
+def get_employee_list():
+    return Role.objects.exclude(role=RoleChoices.OBSERVER).annotate(score=GetScoreForRole('companies_role.id'))
+
+
+@atomic
+def create_employee(data: dict) -> None:
+    title = data.pop('title')
+    grade = data.pop('grade')
+    department_id = data.pop('department_id')
+    schedules = data.pop('schedules')
+
+    department = Department.objects.get(id=department_id)
+    data['selected_company_id'] = department.company_id
+    try:
+        employee = User.objects.get(email=data['email'])
+    except User.DoesNotExist:
+        employee = User.objects.create_user(**data)
+    Role.objects.create(
+        company=department.company,
+        department=department,
+        role=RoleChoices.EMPLOYEE,
+        user=employee,
+        title=title,
+        grade=grade
+    )
+    create_employee_schedules(employee, schedules, department.company)
+
+
+@atomic
+def update_employee(role: Role, data: dict, request_user: User) -> None:
+    user = role.user
+    data.pop('email', None)
+    schedules = data.pop('schedules')
+    role_data = {
+        'title': data.pop('title'),
+        'grade': data.pop('grade'),
+        'department_id': data.pop('department_id'),
+    }
+
+    company = request_user.selected_company
+    Role.objects.filter(company=company, user=user).update(**role_data)
+    update_employee_schedules(user, schedules, company)
+
+    for key, value in data.items():
+        setattr(user, key, value)
+    user.save()
+
+
+def update_employee_schedules(user, schedules, company):
+    EmployeeSchedule.objects.filter(user=user, company=company).delete()
+    create_employee_schedules(user, schedules, company)
+
+
+def create_employee_schedules(employee: User, schedules: list, company: Company) -> None:
+    new_schedules = [
+        EmployeeSchedule(
+            user=employee,
+            company=company,
+            week_day=schedule['week_day'],
+            time_from=schedule['time_from'],
+            time_to=schedule['time_to'],
+        ) for schedule in schedules]
+    EmployeeSchedule.objects.bulk_create(new_schedules)
