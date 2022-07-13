@@ -63,6 +63,7 @@ class Role(BaseModel):
             models.UniqueConstraint(fields=['company', 'user'], name='unique company-user'),
             models.UniqueConstraint(fields=['department', 'user'], name='unique department-user')
         ]
+        ordering = ('-created_at',)
 
     def __str__(self):
         department = self.department or '-'

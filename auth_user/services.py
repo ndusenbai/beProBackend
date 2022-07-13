@@ -7,7 +7,6 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-from django.db.transaction import atomic
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
@@ -16,9 +15,7 @@ from auth_user.models import AssistantTypes
 from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
 
-from companies.models import Role, Department, RoleChoices, Company
-from scores.utils import GetScoreForRole
-from timesheet.models import EmployeeSchedule
+from companies.models import Role, RoleChoices, Company
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -135,10 +132,6 @@ def get_user_list(company):
     ).objects.filter(company=company)
 
 
-def get_employee_list():
-    return Role.objects.exclude(role=RoleChoices.OBSERVER).annotate(score=GetScoreForRole('companies_role.id'))
-
-
 def create_assistant(serializer):
     first_name = serializer.validated_data['first_name']
     last_name = serializer.validated_data['last_name']
@@ -172,64 +165,6 @@ def create_assistant(serializer):
 
 def assistants_queryset():
     return User.objects.filter(~Q(assistant_type=0), is_staff=True)
-
-
-@atomic
-def create_employee(data: dict) -> None:
-    title = data.pop('title')
-    grade = data.pop('grade')
-    department_id = data.pop('department_id')
-    schedules = data.pop('schedules')
-
-    department = Department.objects.get(id=department_id)
-    data['selected_company_id'] = department.company_id
-    employee = User.objects.create_user(**data)
-    Role.objects.create(
-        company=department.company,
-        department=department,
-        role=RoleChoices.EMPLOYEE,
-        user=employee,
-        title=title,
-        grade=grade
-    )
-    create_employee_schedules(employee, schedules, department.company)
-
-
-@atomic
-def update_user(user: User, data: dict, request_user: User) -> None:
-    if 'email' in data:
-        data.pop('email')
-    schedules = data.pop('schedules')
-    role_data = {
-        'title': data.pop('title'),
-        'grade': data.pop('grade'),
-        'department_id': data.pop('department_id'),
-    }
-
-    company = request_user.selected_company
-    Role.objects.filter(company=company, user=user).update(**role_data)
-    update_employee_schedules(user, schedules, company)
-
-    for key, value in data.items():
-        setattr(user, key, value)
-    user.save()
-
-
-def update_employee_schedules(user, schedules, company):
-    EmployeeSchedule.objects.filter(user=user, company=company).delete()
-    create_employee_schedules(user, schedules, company)
-
-
-def create_employee_schedules(employee: User, schedules: list, company: Company) -> None:
-    new_schedules = [
-        EmployeeSchedule(
-            user=employee,
-            company=company,
-            week_day=schedule['week_day'],
-            time_from=schedule['time_from'],
-            time_to=schedule['time_to'],
-        ) for schedule in schedules]
-    EmployeeSchedule.objects.bulk_create(new_schedules)
 
 
 def get_user_role(user: User) -> str:

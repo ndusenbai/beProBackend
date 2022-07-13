@@ -7,5 +7,5 @@ router.register('department-list', views.DepartmentListView, basename='departmen
 router.register('company', views.CompanyViewSet, basename='company')
 router.register('departments', views.DepartmentViewSet, basename='department')
 router.register('company-service', views.CompanyServiceViewSet, basename='company-service-viewset')
-
+router.register('employees', views.EmployeesViewSet, basename='employees')
 urlpatterns = [] + router.urls

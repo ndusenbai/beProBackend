@@ -7,28 +7,6 @@ from utils.serializers import BaseSerializer
 User = get_user_model()
 
 
-class UserSerializer(BaseSerializer):
-    id = serializers.IntegerField(read_only=True)
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    middle_name = serializers.CharField(allow_blank=True)
-    email = serializers.CharField()
-    phone_number = serializers.CharField()
-    schedules = ScheduleSerializer(many=True)
-
-
-class CreateEmployeeSerializer(BaseSerializer):
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    middle_name = serializers.CharField(allow_blank=True)
-    email = serializers.EmailField()
-    phone_number = serializers.CharField(allow_blank=True)
-    title = serializers.CharField()
-    grade = serializers.IntegerField()
-    department_id = serializers.IntegerField()
-    schedules = ScheduleSerializer(many=True)
-
-
 class UserModelSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -73,6 +51,7 @@ class UserSerializer(BaseSerializer):
     last_name = serializers.CharField(max_length=50)
     middle_name = serializers.CharField(max_length=50, allow_blank=True)
     email = serializers.EmailField()
+    phone_number = serializers.CharField()
     avatar = serializers.ImageField()
 
 
@@ -86,17 +65,6 @@ class EmployeeListSerializer(BaseSerializer):
     role = serializers.IntegerField()
     grade = serializers.IntegerField()
     title = serializers.CharField()
-
-
-class EmployeesSerializer(EmployeeListSerializer):
-    score = serializers.IntegerField()
-    department_name = serializers.SerializerMethodField()
-
-    def get_department_name(self, instance):
-        try:
-            return instance.department.name
-        except AttributeError:
-            return ''
 
 
 class AssistantSerializer(BaseSerializer):

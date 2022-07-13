@@ -28,3 +28,5 @@ QUERY_DEPARTMENT = openapi.Parameter('department', openapi.IN_QUERY, description
 
 QUERY_MONTH = openapi.Parameter('month', openapi.IN_QUERY, description='06', type=openapi.TYPE_INTEGER)
 QUERY_YEAR = openapi.Parameter('year', openapi.IN_QUERY, description='2022', type=openapi.TYPE_INTEGER)
+QUERY_MONTHS = openapi.Parameter('months', openapi.IN_QUERY, description='[1,2,...,12]', type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_INTEGER))
+QUERY_ROLE = openapi.Parameter('role_id', openapi.IN_QUERY, description='role id', type=openapi.TYPE_INTEGER)

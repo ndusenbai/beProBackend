@@ -15,7 +15,8 @@ def check_employees_qty(sender, instance, created, **kwargs):
             raise Exception('Company is not active. Need to renew tariff')
 
         check_employees_qty_in_company(instance)
-        check_employees_qty_in_tariff(instance)
+        # TODO: uncomment after enabling tariffs
+        # check_employees_qty_in_tariff(instance)
     except Exception as e:
         log_exception(e)
         raise e
