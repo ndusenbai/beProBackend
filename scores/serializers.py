@@ -33,6 +33,7 @@ class ScoreModelSerializer(serializers.ModelSerializer):
 class ScoreSerializer(BaseSerializer):
     role_id = serializers.IntegerField()
     reason_id = serializers.IntegerField()
+    created_at = serializers.DateTimeField()
 
 
 class MonthScoresValidationSerializer(BaseSerializer):
