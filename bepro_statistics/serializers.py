@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from bepro_statistics.models import Statistic, UserStatistic
 from django.contrib.auth import get_user_model
+
+from bepro_statistics.models import Statistic, UserStatistic, StatisticType
+from companies.models import Role
 
 from utils.serializers import BaseSerializer
 
@@ -11,7 +13,7 @@ class StatisticSerializer(serializers.ModelSerializer):
     employees = serializers.ListSerializer(
         write_only=True,
         child=serializers.PrimaryKeyRelatedField(
-            queryset=User.objects.only('id')
+            queryset=Role.objects.only('id')
         )
     )
 
@@ -20,7 +22,19 @@ class StatisticSerializer(serializers.ModelSerializer):
         exclude = ('created_at', 'updated_at')
 
 
-class UserStatisticSerializer(serializers.ModelSerializer):
+class StatisticModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Statistic
+        exclude = ('created_at', 'updated_at')
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['statistic_type'] = dict(StatisticType.choices)[ret['statistic_type']][1]
+        return ret
+
+
+class UserStatisticModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserStatistic
@@ -37,3 +51,13 @@ class UserStatsSerializer(BaseSerializer):
         if instance.statistic.statistic_type == 2:
             ret['plan'] = instance.statistic.plan
         return ret
+
+
+class CreateUserStatSerializer(BaseSerializer):
+    statistic_id = serializers.IntegerField()
+    fact = serializers.IntegerField()
+
+
+class StatsForUserSerializer(BaseSerializer):
+    statistic = StatisticModelSerializer()
+    user_statistics = UserStatsSerializer(many=True)

@@ -29,12 +29,15 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
         if self.action == 'list':
             serializer = TimeSheetListSerializer(data=self.request.query_params)
             serializer.is_valid(raise_exception=True)
-            qs = get_timesheet_qs_by_month(self.request.user.selected_company, serializer.validated_data)
+            qs = get_timesheet_qs_by_month(serializer.validated_data)
             return qs
         return TimeSheet.objects.all()
 
     @swagger_auto_schema(manual_parameters=[QUERY_USER, QUERY_MONTH, QUERY_YEAR])
     def list(self, request, *args, **kwargs):
+        """
+        Получить расписание за определенный месяц на роль
+        """
         return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=TimeSheetUpdateSerializer)
@@ -53,7 +56,7 @@ class LastTimeSheet(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        last_action = get_last_timesheet_action(request.user)
+        last_action = get_last_timesheet_action(request.user.role)
         return Response({'last_action': last_action})
 
 
@@ -65,7 +68,7 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
         try:
             serializer = CheckInSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            create_check_in_timesheet(request.user, serializer.validated_data)
+            create_check_in_timesheet(request.user.role, serializer.validated_data)
             return Response({'message': 'created'})
         except EmployeeTooFarFromDepartment as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
@@ -82,7 +85,7 @@ class CheckOutViewSet(CreateModelMixin, GenericViewSet):
         try:
             serializer = CheckOutSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            result = create_check_out_timesheet(request.user, serializer.validated_data)
+            result = create_check_out_timesheet(request.user.role, serializer.validated_data)
             if not result:
                 Response({'message': 'check_in_again'}, status=status.HTTP_204_NO_CONTENT)
             return Response({'message': 'created'})

@@ -54,20 +54,16 @@ class Role(BaseModel):
     company = models.ForeignKey(to=Company, on_delete=models.CASCADE, related_name='roles')
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, null=True, blank=True, related_name='roles')
     role = models.IntegerField(choices=RoleChoices.choices, default=RoleChoices.EMPLOYEE)
-    user = models.ForeignKey(to='auth_user.User', on_delete=models.CASCADE)
+    user = models.OneToOneField(to='auth_user.User', on_delete=models.CASCADE)
     title = models.CharField(max_length=200, default='')
     grade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(4)])
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['company', 'user'], name='unique company-user'),
-            models.UniqueConstraint(fields=['department', 'user'], name='unique department-user')
-        ]
         ordering = ('-created_at',)
 
     def __str__(self):
         department = self.department or '-'
-        return f'{self.user} at {self.company}, {department}'
+        return f'{self.user} - {department}'
 
 
 class CompanyService(BaseModel):
