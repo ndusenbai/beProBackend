@@ -18,7 +18,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ('company', 'company_id', 'department', 'department_id', 'get_user_email', 'role', 'title', 'grade')
+    list_display = ('id', 'company', 'company_id', 'department', 'department_id', 'get_user_email', 'role', 'title')
     search_fields = ('company', 'department', 'role')
     list_filter = ('company', 'role')
     raw_id_fields = ('company', 'department', 'user')

@@ -10,14 +10,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
-    UserSerializer, ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer
+    ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
     get_additional_user_info
-from companies.services import create_employee, update_employee
-from companies.models import Role
-from companies.serializers import RoleSerializer, CreateEmployeeSerializer
-from utils.tools import log_exception
 
 
 User = get_user_model()
