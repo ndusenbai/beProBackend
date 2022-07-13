@@ -206,3 +206,17 @@ def get_stats_for_user(request):
         data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
 
     return data
+
+
+def get_history_stats_for_user(data: OrderedDict):
+    role = Role.objects.get(id=data['role_id'])
+    stats = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
+
+    result = []
+    for stat in stats:
+        user_stats = UserStatistic.objects \
+            .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \
+            .order_by('day')
+        result.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
+
+    return result

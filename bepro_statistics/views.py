@@ -10,10 +10,10 @@ from rest_framework.views import APIView
 
 from bepro_statistics.models import UserStatistic, Statistic
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
-    CreateUserStatSerializer, StatsForUserSerializer
+    CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
-    create_user_statistic, get_stats_for_user
-from utils.manual_parameters import QUERY_USER, QUERY_ROLE
+    create_user_statistic, get_stats_for_user, get_history_stats_for_user
+from utils.manual_parameters import QUERY_USER, QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -66,6 +66,22 @@ class StatsForUser(ListModelMixin, GenericViewSet):
         Получить все статистики по роли на текущую неделю
         """
         data = get_stats_for_user(request)
+        return Response(data=data)
+
+
+class HistoryStats(ListModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Statistic.objects.all()
+    serializer_class = HistoryStatsForUserSerializer
+
+    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONDAY, QUERY_SUNDAY])
+    def list(self, request, *args, **kwargs):
+        """
+        Получить все статистики по роли на заданную неделю
+        """
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        data = get_history_stats_for_user(serializer.validated_data)
         return Response(data=data)
 
 
