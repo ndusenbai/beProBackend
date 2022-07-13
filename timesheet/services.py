@@ -6,20 +6,19 @@ from django.db.models import Q
 import geopy.distance
 
 from bepro_statistics.models import Statistic, UserStatistic
-from companies.models import Company, Role
+from companies.models import Role, Department
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 
 User = get_user_model()
 
 
-def get_timesheet_qs_by_month(company: Company, data: dict) -> TimeSheet:
+def get_timesheet_qs_by_month(data: dict) -> TimeSheet:
     first_date_of_month = date(data['year'], data['month'], 1)
     last_date_of_month = date(data['year'], data['month'] + 1, 1) - timedelta(days=1)
 
     return TimeSheet.objects.filter(
-            company=company,
-            user_id=data['user_id'],
+            role_id=data['role_id'],
             day__range=[first_date_of_month, last_date_of_month])\
         .order_by('-day')
 
@@ -30,41 +29,36 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
     instance.save()
 
 
-def get_last_timesheet_action(user: User) -> str:
-    last_timesheet = TimeSheet.objects.filter(user=user, company=user.selected_company).order_by('-day').first()
+def get_last_timesheet_action(role: Role) -> str:
+    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
     if last_timesheet and last_timesheet.check_out is None:
         return 'check_in'
     return 'check_out'
 
 
-def check_distance(user: User, latitude: float, longitude: float) -> None:
-    department = Role.objects.get(company=user.selected_company, user=user).department
+def check_distance(department: Department, latitude: float, longitude: float) -> None:
     distance = geopy.distance.geodesic((latitude, longitude), (department.latitude, department.longitude)).m
     if distance > department.radius:
         raise EmployeeTooFarFromDepartment()
 
 
-def handle_check_in_timesheet(user: User, data: dict) -> None:
+def handle_check_in_timesheet(role: Role, data: dict) -> None:
     check_in = data['check_in']
-    today_schedule = EmployeeSchedule.objects.get(user=user, company=user.selected_company, week_day=check_in.weekday())
+    today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
 
     status = TimeSheetChoices.ON_TIME
     if check_in.time() > today_schedule.time_from:
         status = TimeSheetChoices.LATE
 
-    last_timesheet = TimeSheet.objects.filter(
-        user=user,
-        company=user.selected_company,
-    ).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
     if last_timesheet and last_timesheet.check_out is None:
         last_timesheet.check_out = '23:59'
         last_timesheet.save()
 
     TimeSheet.objects.create(
-        user=user,
-        company=user.selected_company,
+        role=role,
         day=check_in.date(),
         check_in=check_in.time(),
         check_out=None,
@@ -77,17 +71,14 @@ def handle_check_in_timesheet(user: User, data: dict) -> None:
 
 
 @atomic
-def create_check_in_timesheet(user: User, data: dict) -> None:
-    check_distance(user, data['latitude'], data['longitude'])
-    handle_check_in_timesheet(user, data)
+def create_check_in_timesheet(role: Role, data: dict) -> None:
+    check_distance(role.department, data['latitude'], data['longitude'])
+    handle_check_in_timesheet(role, data)
 
 
-def handle_check_out_timesheet(user: User, data: dict) -> bool:
+def handle_check_out_timesheet(role: Role, data: dict) -> bool:
     check_out = data['check_out']
-    last_timesheet = TimeSheet.objects.filter(
-        user=user,
-        company=user.selected_company,
-    ).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
     if last_timesheet.day != date.today():
         if not last_timesheet.check_out:
@@ -101,8 +92,7 @@ def handle_check_out_timesheet(user: User, data: dict) -> bool:
         for i in range(absent_days_qty + 1):
             time_sheets.append(
                 TimeSheet(
-                    user=user,
-                    company=user.selected_company,
+                    role=role,
                     day=first_absent_day + timedelta(days=i),
                     check_in=None,
                     check_out=None,
@@ -121,17 +111,17 @@ def handle_check_out_timesheet(user: User, data: dict) -> bool:
     return True
 
 
-def check_statistics(user: User, check_out_date) -> None:
-    department = Role.objects.get(user=user, company=user.selected_company).department
-    stats = Statistic.objects.filter(Q(department=department) | Q(user=user))
+def check_statistics(role: Role, check_out_date) -> None:
+    department = role.department
+    stats = Statistic.objects.filter(Q(department=department) | Q(role=role))
 
     for stat in stats:
-        if not UserStatistic.objects.filter(user=user, statistic=stat, day=check_out_date.date()).exists():
+        if not UserStatistic.objects.filter(role=role, statistic=stat, day=check_out_date.date()).exists():
             raise FillUserStatistic()
 
 
 @atomic
-def create_check_out_timesheet(user: User, data: dict) -> bool:
-    check_distance(user, data['latitude'], data['longitude'])
-    check_statistics(user, data['check_out'])
-    return handle_check_out_timesheet(user, data)
+def create_check_out_timesheet(role: Role, data: dict) -> bool:
+    check_distance(role.department, data['latitude'], data['longitude'])
+    check_statistics(role, data['check_out'])
+    return handle_check_out_timesheet(role, data)

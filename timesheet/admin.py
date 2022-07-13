@@ -11,14 +11,13 @@ class DepartmentScheduleAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeSchedule)
 class EmployeeScheduleAdmin(admin.ModelAdmin):
-    list_display = ('user', 'company', 'week_day', 'time_from', 'time_to')
-    raw_id_fields = ('user', 'company')
-    search_fields = ('user',)
+    list_display = ('role', 'week_day', 'time_from', 'time_to')
+    raw_id_fields = ('role',)
+    search_fields = ('role',)
 
 
 @admin.register(TimeSheet)
 class TimeSheetAdmin(admin.ModelAdmin):
-    list_display = ('user', 'company', 'day', 'status', 'time_from', 'time_to', 'check_in', 'check_out', 'comment')
-    search_fields = ('user', 'company')
-    list_filter = ('company',)
-    raw_id_fields = ('user', 'company')
+    list_display = ('role', 'day', 'status', 'time_from', 'time_to', 'check_in', 'check_out', 'comment')
+    search_fields = ('role',)
+    raw_id_fields = ('role',)

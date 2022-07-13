@@ -95,7 +95,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             log_exception(e, 'Error in send_mail_invitation')
 
     def __str__(self):
-        return self.full_name
+        return self.email
 
     class Meta:
         verbose_name = 'Пользователь'
