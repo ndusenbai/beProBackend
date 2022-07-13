@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register('user-statistic', views.UserStatisticViewSet, basename='user-statistic-viewset')
 router.register('statistic', views.StatisticViewSet, basename='statistic-viewset')
 router.register('stats-for-user', views.StatsForUser, basename='stats-for-user')
+router.register('history-stats-for-user', views.HistoryStats, basename='history-stats')
 router.register('create-user-stat', views.CreateUserStat, basename='create-user-stat')
 
 urlpatterns = [

@@ -61,3 +61,9 @@ class CreateUserStatSerializer(BaseSerializer):
 class StatsForUserSerializer(BaseSerializer):
     statistic = StatisticModelSerializer()
     user_statistics = UserStatsSerializer(many=True)
+
+
+class HistoryStatsForUserSerializer(BaseSerializer):
+    role_id = serializers.IntegerField()
+    monday = serializers.DateField()
+    sunday = serializers.DateField()
