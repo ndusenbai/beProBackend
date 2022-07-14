@@ -67,3 +67,4 @@ class HistoryStatsForUserSerializer(BaseSerializer):
     role_id = serializers.IntegerField()
     monday = serializers.DateField()
     sunday = serializers.DateField()
+    statistic_type = serializers.IntegerField()

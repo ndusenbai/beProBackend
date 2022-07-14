@@ -212,8 +212,9 @@ def get_stats_for_user(request):
     data = []
 
     visibility_level = check_user_permission(request.user, role)
+
     if visibility_level:
-        stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) & Q(**visibility_level))
+        stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) | Q(**visibility_level))
     else:
         return data
 
@@ -231,15 +232,25 @@ def get_stats_for_user(request):
     return data
 
 
-def get_history_stats_for_user(data: OrderedDict):
+def get_history_stats_for_user(user, data: OrderedDict):
     role = Role.objects.get(id=data['role_id'])
-    stats = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
+    stat_type = data['statistic_type']
+    visibility_level = check_user_permission(user, role)
 
+    if visibility_level:
+        stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role))
+                                         & Q(statistic_type=stat_type) & Q(**visibility_level))
+    else:
+        return data
+    print(stats)
     result = []
     for stat in stats:
-        user_stats = UserStatistic.objects \
-            .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \
-            .order_by('day')
-        result.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
-
+        if stat.visibility == VisibilityType.EMPLOYEES and not user.role.\
+                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat):
+            pass
+        else:
+            user_stats = UserStatistic.objects \
+                .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \
+                .order_by('day')
+            result.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
     return result
