@@ -199,12 +199,17 @@ def check_user_permission(user, role):
                                    VisibilityType.OPEN_EVERYONE}}
     elif user.role.department == role.department:
         return {"visibility__in": {VisibilityType.OPEN_DEPARTMENT,
-                                   VisibilityType.OPEN_EVERYONE}}
+                                   VisibilityType.OPEN_EVERYONE,
+                                   VisibilityType.EMPLOYEES}}
     elif user.role.company == role.company:
-        return {"visibility__in": {VisibilityType.OPEN_EVERYONE}}
+        return {"visibility__in": {VisibilityType.OPEN_EVERYONE,
+                                   VisibilityType.EMPLOYEES}}
+    else:
+        return {}
 
 
 def get_stats_for_user(request):
+
     role = Role.objects.get(id=request.query_params['role_id'])
     now = datetime.now()
     monday = date.today() - timedelta(days=now.weekday())
@@ -213,16 +218,10 @@ def get_stats_for_user(request):
 
     visibility_level = check_user_permission(request.user, role)
 
-    if visibility_level:
-        stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) | Q(**visibility_level))
-    else:
-        return data
-
+    stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) | Q(**visibility_level))
     for stat in stats:
-        if stat.visibility == VisibilityType.EMPLOYEES and not request.user.role.\
-                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat):
-            pass
-        else:
+        if not (stat.visibility == VisibilityType.EMPLOYEES and not request.user.role.
+                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat)):
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
                 .order_by('day')
@@ -234,23 +233,22 @@ def get_stats_for_user(request):
 
 def get_history_stats_for_user(user, data: OrderedDict):
     role = Role.objects.get(id=data['role_id'])
-    stat_type = data['statistic_type']
+    stat_types = data['statistic_types']
     visibility_level = check_user_permission(user, role)
-
     if visibility_level:
         stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role))
-                                         & Q(statistic_type=stat_type) & Q(**visibility_level))
+                                         | Q(statistic_type__in=stat_types) & Q(**visibility_level))
     else:
         return data
-    print(stats)
+
     result = []
     for stat in stats:
-        if stat.visibility == VisibilityType.EMPLOYEES and not user.role.\
-                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat):
-            pass
-        else:
+        if not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
+                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat)):
+
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \
                 .order_by('day')
+
             result.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
     return result

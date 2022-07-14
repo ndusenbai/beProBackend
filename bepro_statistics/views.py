@@ -13,7 +13,7 @@ from bepro_statistics.serializers import StatisticSerializer, UserStatisticModel
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
     create_user_statistic, get_stats_for_user, get_history_stats_for_user
-from utils.manual_parameters import QUERY_USER, QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE
+from utils.manual_parameters import QUERY_USER, QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -74,7 +74,7 @@ class HistoryStats(ListModelMixin, GenericViewSet):
     queryset = Statistic.objects.all()
     serializer_class = HistoryStatsForUserSerializer
 
-    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONDAY, QUERY_SUNDAY, QUERY_STATISTIC_TYPE])
+    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONDAY, QUERY_SUNDAY, QUERY_STATISTIC_TYPE_LIST])
     def list(self, request, *args, **kwargs):
         """
         Получить все статистики по роли на заданную неделю
