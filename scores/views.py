@@ -1,11 +1,12 @@
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Sum
-from django.db.models.functions import TruncMonth
+from rest_framework.filters import SearchFilter
 
 from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScoresValidationSerializer, ScoreSerializer, \
     MonthScoresSerializer
@@ -27,7 +28,8 @@ class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ScoreModelSerializer
     queryset = Score.objects.order_by()
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('reason__name', 'created_by__first_name', 'created_by__last_name')
     filterset_fields = ('role',)
 
     def get_serializer_class(self):
