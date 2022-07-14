@@ -1,10 +1,12 @@
 from drf_yasg.utils import swagger_auto_schema
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter
 
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
@@ -20,7 +22,11 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
     permission_classes = (AllowAny,)
     serializer_class = ApplicationToCreateCompanyModelSerializer
     queryset = ApplicationToCreateCompany.objects.all()
+    filter_backends = (SearchFilter, DjangoFilterBackend)
     filterset_fields = ('status',)
+    search_fields = ('id', 'first_name', 'last_name', 'middle_name', 'email',
+                     'phone_number', 'company_name', 'company_legal_name')
+    http_method_names = ['get', 'put']
 
     @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):

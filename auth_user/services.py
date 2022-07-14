@@ -164,7 +164,7 @@ def create_assistant(serializer):
 
 
 def assistants_queryset():
-    return User.objects.filter(~Q(assistant_type=0), is_staff=True)
+    return User.objects.filter(~Q(assistant_type=AssistantTypes.NON_ASSISTANT), is_staff=True)
 
 
 def get_user_role(user: User) -> str:

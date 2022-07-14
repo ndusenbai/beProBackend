@@ -11,7 +11,7 @@ from rest_framework.filters import SearchFilter
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
-    CreateEmployeeSerializer
+    CreateEmployeeSerializer, UpdateDepartmentSerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee
 from utils.manual_parameters import QUERY_COMPANY
@@ -32,6 +32,7 @@ class CompanyViewSet(ModelViewSet):
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('name', 'legal_name')
     filterset_fields = ('owner',)
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_queryset(self):
         return get_company_qs()
@@ -53,11 +54,16 @@ class CompanyViewSet(ModelViewSet):
 
 class DepartmentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
+    filter_backends = (SearchFilter, DjangoFilterBackend)
     filterset_fields = ('company',)
+    search_fields = ('name',)
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_serializer_class(self):
-        if self.action in ['create', 'update']:
+        if self.action == 'create':
             return DepartmentSerializer
+        elif self.action == 'update':
+            return UpdateDepartmentSerializer
         return DepartmentList2Serializer
 
     def get_queryset(self):
@@ -100,6 +106,7 @@ class EmployeesViewSet(ModelViewSet):
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
     filterset_fields = ('company', 'department')
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_queryset(self):
         return get_employee_list()
@@ -115,6 +122,7 @@ class EmployeesViewSet(ModelViewSet):
             log_exception(e, 'Error in EmployeesViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @swagger_auto_schema(request_body=CreateEmployeeSerializer)
     def update(self, request, *args, **kwargs):
         try:
             serializer = CreateEmployeeSerializer(data=request.data)
