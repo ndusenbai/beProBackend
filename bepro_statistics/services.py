@@ -8,9 +8,9 @@ from django.db import IntegrityError
 from django.db.transaction import atomic
 from django.db.models import Q
 
-from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic
+from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
-from companies.models import Role
+from companies.models import Role, RoleChoices
 from timesheet.models import TimeSheet
 
 
@@ -190,20 +190,43 @@ def create_user_statistic(role: Role, data: OrderedDict):
         fact=data['fact'])
 
 
+def check_user_permission(user, role):
+
+    if user.role == role or user.role.role == RoleChoices.HR:
+        return {"visibility__in": {VisibilityType.HIDDEN,
+                                   VisibilityType.EMPLOYEES,
+                                   VisibilityType.OPEN_DEPARTMENT,
+                                   VisibilityType.OPEN_EVERYONE}}
+    elif user.role.department == role.department:
+        return {"visibility__in": {VisibilityType.OPEN_DEPARTMENT,
+                                   VisibilityType.OPEN_EVERYONE}}
+    elif user.role.company == role.company:
+        return {"visibility__in": {VisibilityType.OPEN_EVERYONE}}
+
+
 def get_stats_for_user(request):
     role = Role.objects.get(id=request.query_params['role_id'])
-    stats = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
-
     now = datetime.now()
     monday = date.today() - timedelta(days=now.weekday())
     sunday = monday + timedelta(days=6)
-
     data = []
+
+    visibility_level = check_user_permission(request.user, role)
+    if visibility_level:
+        stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) & Q(**visibility_level))
+    else:
+        return data
+
     for stat in stats:
-        user_stats = UserStatistic.objects \
-            .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
-            .order_by('day')
-        data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
+        if stat.visibility == VisibilityType.EMPLOYEES and not request.user.role.\
+                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat):
+            pass
+        else:
+            user_stats = UserStatistic.objects \
+                .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
+                .order_by('day')
+
+            data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
 
     return data
 
