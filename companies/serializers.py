@@ -59,6 +59,17 @@ class DepartmentSerializer(BaseSerializer):
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
 
 
+class UpdateDepartmentSerializer(BaseSerializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    address = serializers.CharField(allow_blank=True)
+    latitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
+    longitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
+    radius = serializers.IntegerField(default=50)
+    schedules = ScheduleSerializer(many=True)
+    head_of_department_id = serializers.IntegerField()
+
+
 class DepartmentList2Serializer(DepartmentSerializer):
     head_of_department = UserModelSerializer()
     today_schedule = serializers.SerializerMethodField()
@@ -71,7 +82,7 @@ class DepartmentList2Serializer(DepartmentSerializer):
             time_from = today_schedule[0].time_from.strftime('%H:%M')
             time_to = today_schedule[0].time_to.strftime('%H:%M')
             return f'{time_from} - {time_to}'
-        return '-'
+        return ''
 
 
 class DepartmentModelSerializer(serializers.ModelSerializer):
@@ -102,6 +113,18 @@ class EmployeesSerializer(BaseSerializer):
     title = serializers.CharField()
     score = serializers.IntegerField()
     department = DepartmentListSerializer()
+    schedules = ScheduleSerializer(many=True)
+    today_schedule = serializers.SerializerMethodField()
+
+    def get_today_schedule(self, instance):
+        try:
+            week_day = datetime.today().weekday()
+            today_schedule = list(filter(lambda p: p.week_day == week_day, instance.schedules))[0]
+            time_from = today_schedule.time_from.strftime('%H:%M')
+            time_to = today_schedule.time_to.strftime('%H:%M')
+            return f'{time_from} - {time_to}'
+        except IndexError:
+            return ''
 
 
 class CreateEmployeeSerializer(BaseSerializer):

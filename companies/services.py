@@ -56,8 +56,7 @@ def create_department(user: User, data: dict) -> None:
         title = data['head_of_department'].pop('title')
         grade = data['head_of_department'].pop('grade')
         head_of_department = User.objects.create_user(**data['head_of_department'])
-        create_employee_schedules(head_of_department, schedules, user.selected_company)
-        Role.objects.create(
+        head_of_department_role = Role.objects.create(
             company=user.selected_company,
             department=department,
             role=RoleChoices.HEAD_OF_DEPARTMENT,
@@ -65,15 +64,16 @@ def create_department(user: User, data: dict) -> None:
             title=title,
             grade=grade,
         )
+        create_employee_schedules(head_of_department_role, schedules)
         department.head_of_department = head_of_department
         department.save()
 
 
 @atomic
 def update_department(instance: Department, data) -> None:
-    del data['head_of_department']
     DepartmentSchedule.objects.filter(department=instance).delete()
     bulk_create_department_schedules(instance, data.pop('schedules'))
+
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()
@@ -109,7 +109,9 @@ def get_company_qs() -> QuerySet[Company]:
 
 
 def get_employee_list():
-    return Role.objects.exclude(role=RoleChoices.OBSERVER).annotate(score=GetScoreForRole('companies_role.id'))
+    return Role.objects.exclude(role=RoleChoices.OBSERVER)\
+        .annotate(score=GetScoreForRole('companies_role.id'))\
+        .prefetch_related(Prefetch('employee_schedules', to_attr='schedules'))
 
 
 @atomic
@@ -125,7 +127,7 @@ def create_employee(data: dict) -> None:
         employee = User.objects.get(email=data['email'])
     except User.DoesNotExist:
         employee = User.objects.create_user(**data)
-    Role.objects.create(
+    role = Role.objects.create(
         company=department.company,
         department=department,
         role=RoleChoices.EMPLOYEE,
@@ -133,12 +135,11 @@ def create_employee(data: dict) -> None:
         title=title,
         grade=grade
     )
-    create_employee_schedules(employee, schedules, department.company)
+    create_employee_schedules(role, schedules)
 
 
 @atomic
-def update_employee(role: Role, data: dict, request_user: User) -> None:
-    user = role.user
+def update_employee(role: Role, data: dict) -> None:
     data.pop('email', None)
     schedules = data.pop('schedules')
     role_data = {
@@ -147,25 +148,24 @@ def update_employee(role: Role, data: dict, request_user: User) -> None:
         'department_id': data.pop('department_id'),
     }
 
-    company = request_user.selected_company
-    Role.objects.filter(company=company, user=user).update(**role_data)
-    update_employee_schedules(user, schedules, company)
+    Role.objects.filter(role=role).update(**role_data)
+    update_employee_schedules(role, schedules)
 
+    user = role.user
     for key, value in data.items():
         setattr(user, key, value)
     user.save()
 
 
-def update_employee_schedules(user, schedules, company):
-    EmployeeSchedule.objects.filter(user=user, company=company).delete()
-    create_employee_schedules(user, schedules, company)
+def update_employee_schedules(role: Role, schedules):
+    EmployeeSchedule.objects.filter(role=role).delete()
+    create_employee_schedules(role, schedules)
 
 
-def create_employee_schedules(employee: User, schedules: list, company: Company) -> None:
+def create_employee_schedules(role: Role, schedules: list) -> None:
     new_schedules = [
         EmployeeSchedule(
-            user=employee,
-            company=company,
+            role=role,
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
