@@ -16,8 +16,7 @@ class TimeSheetChoices(models.IntegerChoices):
 
 
 class TimeSheet(BaseModel):
-    user = models.ForeignKey(to=User, on_delete=models.DO_NOTHING, related_name='timesheet')
-    company = models.ForeignKey(to='companies.Company', on_delete=models.DO_NOTHING)
+    role = models.ForeignKey(to='companies.Role', on_delete=models.DO_NOTHING, related_name='timesheet')
     day = models.DateField()
     check_in = models.TimeField(null=True)
     check_out = models.TimeField(null=True, blank=True)
@@ -29,11 +28,11 @@ class TimeSheet(BaseModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'company', 'day'], name='unique timesheet in company for user'),
+            models.UniqueConstraint(fields=['role', 'day'], name='unique timesheet'),
         ]
 
     def __str__(self):
-        return f'{self.user}, {self.company} @{self.day}'
+        return f'{self.role} @{self.day}'
 
 
 class WeekDayChoices(models.IntegerChoices):
@@ -60,16 +59,15 @@ class DepartmentSchedule(BaseModel):
 
 
 class EmployeeSchedule(BaseModel):
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='employee_schedules')
-    company = models.ForeignKey(to=Company, on_delete=models.CASCADE, null=True)
+    role = models.ForeignKey(to='companies.Role', on_delete=models.CASCADE, related_name='employee_schedules')
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(0), MaxValueValidator(6)])
     time_from = models.TimeField()
     time_to = models.TimeField()
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'company', 'week_day'], name='unique schedule in company for user'),
+            models.UniqueConstraint(fields=['role', 'week_day'], name='unique schedule'),
         ]
 
     def __str__(self):
-        return f'{self.user}@{self.company} - {WeekDayChoices.choices[self.week_day][1]}'
+        return f'{self.role} - {WeekDayChoices.choices[self.week_day][1]}'

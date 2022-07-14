@@ -20,20 +20,8 @@ class VisibilityType(models.IntegerChoices):
 class Statistic(BaseModel):
     name = models.CharField(max_length=255)
     statistic_type = models.IntegerField(choices=StatisticType.choices, default=StatisticType.GENERAL)
-    department = models.ForeignKey(
-        'companies.Department',
-        on_delete=models.CASCADE,
-        related_name='statistics',
-        null=True,
-        blank=True
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='statistics',
-        null=True,
-        blank=True
-    )
+    department = models.ForeignKey('companies.Department', on_delete=models.CASCADE, related_name='statistics', null=True, blank=True)
+    role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, related_name='statistics', null=True, blank=True)
     plan = models.FloatField(null=True, blank=True)
     visibility = models.IntegerField(choices=VisibilityType.choices)
 
@@ -43,18 +31,23 @@ class Statistic(BaseModel):
 
 class StatisticObserver(BaseModel):
     statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE, related_name='observers')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='observing_statistics')
+    role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, related_name='observing_statistics')
 
     def __str__(self):
-        return f'{self.statistic} - {self.user}'
+        return f'{self.statistic} - {self.role}'
 
 
 class UserStatistic(BaseModel):
-    statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE, related_name='users')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_statistics')
+    statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE)
+    role = models.ForeignKey('companies.Role', on_delete=models.CASCADE)
     day = models.DateField()
     fact = models.FloatField()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['statistic', 'role', 'day'], name='unique stat-role-day'),
+        ]
+
     def __str__(self):
-        return f'{self.user} - {self.day}: {self.fact}'
+        return f'{self.role} - {self.day}: {self.fact}'
 

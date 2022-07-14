@@ -12,7 +12,7 @@ class TimeSheetModelSerializer(serializers.ModelSerializer):
 
 
 class TimeSheetListSerializer(BaseSerializer):
-    user_id = serializers.IntegerField(required=False)
+    role_id = serializers.IntegerField(required=False)
     month = serializers.IntegerField(min_value=1, max_value=12, required=False)
     year = serializers.IntegerField(min_value=2022, max_value=9999, required=False)
 

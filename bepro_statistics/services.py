@@ -1,9 +1,17 @@
-from django.apps import apps
-from datetime import datetime, date, timedelta
-from bepro_statistics.models import StatisticObserver
-from bepro_statistics.serializers import UserStatsSerializer
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import OrderedDict
+from datetime import datetime, date, timedelta
+
+from django.apps import apps
+from django.db import IntegrityError
+from django.db.transaction import atomic
+from django.db.models import Q
+
+from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic
+from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
+from companies.models import Role
+from timesheet.models import TimeSheet
 
 
 def get_statistics_queryset():
@@ -13,15 +21,13 @@ def get_statistics_queryset():
     ).objects.order_by()
 
 
+@atomic
 def create_statistic(serializer):
     employees_list = serializer.validated_data['employees']
     del serializer.validated_data['employees']
-    statistic = apps.get_model(
-        app_label='bepro_statistics',
-        model_name='Statistic'
-    ).objects.create(**serializer.validated_data)
+    statistic = Statistic.objects.create(**serializer.validated_data)
     statistic_observers = [
-        StatisticObserver(statistic=statistic, user=employee) for employee in employees_list
+        StatisticObserver(statistic=statistic, role=employee.role) for employee in employees_list
     ]
     StatisticObserver.objects.bulk_create(statistic_observers)
     return statistic
@@ -31,20 +37,11 @@ def get_user_statistic(user):
     first_day_of_week = date.today() - timedelta(days=date.today().weekday())
     last_day_of_week = first_day_of_week + timedelta(days=6)
 
-    general_statistic_queryset = apps.get_model(
-        app_label='bepro_statistics',
-        model_name='Statistic'
-    ).objects.filter(user=user, statistic_type=1)
+    general_statistic_queryset = Statistic.objects.filter(role=user.role, statistic_type=1)
 
-    double_statistic_queryset = apps.get_model(
-        app_label='bepro_statistics',
-        model_name='Statistic'
-    ).objects.filter(user=user, statistic_type=2)
+    double_statistic_queryset = Statistic.objects.filter(role=user.role, statistic_type=2)
 
-    inverted_statistic_queryset = apps.get_model(
-        app_label='bepro_statistics',
-        model_name='Statistic'
-    ).objects.filter(user=user, statistic_type=3)
+    inverted_statistic_queryset = Statistic.objects.filter(role=user.role, statistic_type=3)
 
     user_statistics_json = {}
 
@@ -65,7 +62,7 @@ def get_user_statistic(user):
             app_label='bepro_statistics',
             model_name='UserStatistic'
         ).objects.filter(
-            user=user,
+            role=user.role,
             day__range=[first_day_of_week, last_day_of_week],
             statistic_id=general_stat.id
         ).select_related('statistic').order_by('day')
@@ -79,7 +76,7 @@ def get_user_statistic(user):
             app_label='bepro_statistics',
             model_name='UserStatistic'
         ).objects.filter(
-            user=user,
+            role=user.role,
             day__range=[first_day_of_week, last_day_of_week],
             statistic_id=double_stat.id
         ).select_related('statistic').order_by('day')
@@ -96,7 +93,7 @@ def get_user_statistic(user):
             app_label='bepro_statistics',
             model_name='UserStatistic'
         ).objects.filter(
-            user=user,
+            role=user.role,
             day__range=[first_day_of_week, last_day_of_week],
             statistic_id=inverted_stat.id
         ).select_related('statistic').order_by('day')
@@ -183,3 +180,43 @@ def generate_double_statistics_plot(serializer, name, user):
     plt.close()
 
 
+@atomic
+def create_user_statistic(role: Role, data: OrderedDict):
+    last_check_in = TimeSheet.objects.filter(role=role, check_out__isnull=True).order_by('-day').first()
+    UserStatistic.objects.create(
+        role=role,
+        statistic_id=data['statistic_id'],
+        day=last_check_in.day,
+        fact=data['fact'])
+
+
+def get_stats_for_user(request):
+    role = Role.objects.get(id=request.query_params['role_id'])
+    stats = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
+
+    now = datetime.now()
+    monday = date.today() - timedelta(days=now.weekday())
+    sunday = monday + timedelta(days=6)
+
+    data = []
+    for stat in stats:
+        user_stats = UserStatistic.objects \
+            .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
+            .order_by('day')
+        data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
+
+    return data
+
+
+def get_history_stats_for_user(data: OrderedDict):
+    role = Role.objects.get(id=data['role_id'])
+    stats = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
+
+    result = []
+    for stat in stats:
+        user_stats = UserStatistic.objects \
+            .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \
+            .order_by('day')
+        result.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
+
+    return result
