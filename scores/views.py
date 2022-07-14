@@ -20,6 +20,7 @@ class ReasonViewSet(ModelViewSet):
     queryset = Reason.objects.order_by('name')
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('company',)
+    http_method_names = ['get', 'post', 'put', 'delete']
 
 
 class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
