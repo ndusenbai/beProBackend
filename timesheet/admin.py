@@ -21,3 +21,4 @@ class TimeSheetAdmin(admin.ModelAdmin):
     list_display = ('role', 'day', 'status', 'time_from', 'time_to', 'check_in', 'check_out', 'comment')
     search_fields = ('role',)
     raw_id_fields = ('role',)
+    date_hierarchy = 'day'

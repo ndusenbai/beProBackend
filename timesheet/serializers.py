@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from timesheet.models import TimeSheet, DepartmentSchedule, EmployeeSchedule
+from timesheet.models import TimeSheet, DepartmentSchedule, EmployeeSchedule, TimeSheetChoices
 from utils.serializers import BaseSerializer
 
 
@@ -66,3 +66,10 @@ class EmployeeScheduleModelSerializer(serializers.ModelSerializer):
 class UpdateEmployeeScheduleSerializer(BaseSerializer):
     time_from = serializers.TimeField()
     time_to = serializers.TimeField()
+
+
+class ChangeTimeSheetSerializer(BaseSerializer):
+    timesheet = serializers.PrimaryKeyRelatedField(queryset=TimeSheet.objects.only('id'))
+    start_vacation_date = serializers.DateField(allow_null=True)
+    end_vacation_date = serializers.DateField(allow_null=True)
+    status = serializers.ChoiceField(choices=TimeSheetChoices.choices)

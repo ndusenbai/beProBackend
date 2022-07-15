@@ -1,3 +1,4 @@
+from typing import OrderedDict
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
@@ -7,6 +8,7 @@ import geopy.distance
 
 from bepro_statistics.models import Statistic, UserStatistic
 from companies.models import Role, Department
+from scores.models import Score
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 
@@ -125,3 +127,43 @@ def create_check_out_timesheet(role: Role, data: dict) -> bool:
     check_distance(role.department, data['latitude'], data['longitude'])
     check_statistics(role, data['check_out'])
     return handle_check_out_timesheet(role, data)
+
+
+def bulk_create_vacation_timesheets(data):
+    vacation_date = data['start_vacation_date']
+    end_vacation_date = data['end_vacation_date']
+    role = data['timesheet'].role
+    timesheets = []
+    while True:
+        if vacation_date != end_vacation_date + timedelta(days=1):
+            timesheets.append(TimeSheet(
+                role=role,
+                day=vacation_date,
+                time_from='00:00',
+                time_to='23:59',
+                status=TimeSheetChoices.ON_VACATION
+            ))
+
+            vacation_date = vacation_date + timedelta(days=1)
+        else:
+            break
+
+    TimeSheet.objects.bulk_create(timesheets)
+
+
+@atomic
+def change_timesheet(data: OrderedDict) -> None:
+    new_status = data['status']
+    timesheet = data['timesheet']
+
+    if new_status == TimeSheetChoices.ON_VACATION:
+        bulk_create_vacation_timesheets(data)
+        return
+
+    if timesheet.status == TimeSheetChoices.LATE and new_status == TimeSheetChoices.ON_TIME:
+        auto_score = Score.objects.filter(role=timesheet.role, created_at__date=timesheet.day, reason__is_auto=True)
+        if auto_score:
+            auto_score.delete()
+
+    timesheet.status = new_status
+    timesheet.save()
