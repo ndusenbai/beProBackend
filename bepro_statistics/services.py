@@ -190,6 +190,14 @@ def create_user_statistic(role: Role, data: OrderedDict):
         fact=data['fact'])
 
 
+def change_user_statistic(data: OrderedDict):
+    UserStatistic.objects.update_or_create(
+        role=data['role'],
+        statistic=data['statistic'],
+        day=data['date'],
+        defaults={'fact': data['fact']})
+
+
 def get_stats_for_user(request):
     role = Role.objects.get(id=request.query_params['role_id'])
     stats = Statistic.objects.filter(Q(department=role.department) | Q(role=role))

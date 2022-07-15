@@ -10,9 +10,9 @@ from rest_framework.views import APIView
 
 from bepro_statistics.models import UserStatistic, Statistic
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
-    CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer
+    CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
-    create_user_statistic, get_stats_for_user, get_history_stats_for_user
+    create_user_statistic, get_stats_for_user, get_history_stats_for_user, change_user_statistic
 from utils.manual_parameters import QUERY_USER, QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY
 from utils.tools import log_exception
 
@@ -103,4 +103,23 @@ class CreateUserStat(CreateModelMixin, GenericViewSet):
             return Response({'message': 'Статистика уже заполнена'}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in CreateUserStat.create()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ChangeUserStat(CreateModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangeUserStatSerializer
+
+    @swagger_auto_schema(requet_body=ChangeUserStatSerializer)
+    def create(self, request, *args, **kwargs):
+        """
+        изменить существующую или заполнить юзер статистику за него
+        """
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            change_user_statistic(serializer.validated_data)
+            return Response({'message': 'created'})
+        except Exception as e:
+            log_exception(e, 'Error in ChangeUserStat.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

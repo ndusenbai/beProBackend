@@ -58,6 +58,13 @@ class CreateUserStatSerializer(BaseSerializer):
     fact = serializers.IntegerField()
 
 
+class ChangeUserStatSerializer(BaseSerializer):
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'))
+    statistic = serializers.PrimaryKeyRelatedField(queryset=Statistic.objects.only('id'))
+    date = serializers.DateField()
+    fact = serializers.IntegerField()
+
+
 class StatsForUserSerializer(BaseSerializer):
     statistic = StatisticModelSerializer()
     user_statistics = UserStatsSerializer(many=True)
