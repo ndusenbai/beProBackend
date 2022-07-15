@@ -138,3 +138,13 @@ class CreateEmployeeSerializer(BaseSerializer):
     grade = serializers.IntegerField()
     department_id = serializers.IntegerField()
     schedules = ScheduleSerializer(many=True)
+
+
+class FilterEmployeesSerializer(BaseSerializer):
+    departments = serializers.ListField(child=serializers.CharField(), required=False)
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if 'departments' in data:
+            data['departments'] = [int(i) for i in data['departments'][0].split(',')]
+        return data

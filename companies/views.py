@@ -11,10 +11,10 @@ from rest_framework.filters import SearchFilter
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
-    CreateEmployeeSerializer, UpdateDepartmentSerializer
+    CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee
-from utils.manual_parameters import QUERY_COMPANY
+from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -107,9 +107,26 @@ class EmployeesViewSet(ModelViewSet):
     search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
     filterset_fields = ('company', 'department')
     http_method_names = ['get', 'post', 'put', 'delete']
+    filter_serializer = None
 
     def get_queryset(self):
         return get_employee_list()
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        data = self.filter_serializer.validated_data
+        if 'departments' in data:
+            return queryset.filter(department__in=data['departments'])
+        return queryset
+
+    @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS])
+    def list(self, request, *args, **kwargs):
+        """
+        Получить кол-во баллов за каждый выбранный месяц в году по роли
+        """
+        self.filter_serializer = FilterEmployeesSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
+        return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=CreateEmployeeSerializer)
     def create(self, request, *args, **kwargs):
