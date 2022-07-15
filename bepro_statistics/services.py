@@ -208,6 +208,14 @@ def check_user_permission(user, role):
         return {}
 
 
+def change_user_statistic(data: OrderedDict):
+    UserStatistic.objects.update_or_create(
+        role=data['role'],
+        statistic=data['statistic'],
+        day=data['date'],
+        defaults={'fact': data['fact']})
+
+
 def get_stats_for_user(request):
 
     role = Role.objects.get(id=request.query_params['role_id'])
