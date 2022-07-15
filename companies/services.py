@@ -55,7 +55,10 @@ def create_department(user: User, data: dict) -> None:
     if data['head_of_department']:
         title = data['head_of_department'].pop('title')
         grade = data['head_of_department'].pop('grade')
-        head_of_department = User.objects.create_user(**data['head_of_department'])
+        try:
+            head_of_department = User.objects.get(email=data['head_of_department']['email'])
+        except User.DoesNotExist:
+            head_of_department = User.objects.create_user(**data['head_of_department'])
         head_of_department_role = Role.objects.create(
             company=user.selected_company,
             department=department,
@@ -171,3 +174,7 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
             time_to=schedule['time_to'],
         ) for schedule in schedules]
     EmployeeSchedule.objects.bulk_create(new_schedules)
+
+
+def delete_head_of_department_role(instance: Department) -> None:
+    Role.objects.filter(user=instance.head_of_department).delete()

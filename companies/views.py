@@ -13,7 +13,8 @@ from companies.serializers import CompanyModelSerializer, DepartmentSerializer, 
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer
 from companies.services import update_department, get_department_list, create_company, create_department, \
-    get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee
+    get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
+    delete_head_of_department_role
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.tools import log_exception
 
@@ -89,6 +90,10 @@ class DepartmentViewSet(ModelViewSet):
         except Exception as e:
             log_exception(e, 'Error in DepartmentViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def perform_destroy(self, instance):
+        delete_head_of_department_role(instance)
+        super().perform_destroy(instance)
 
 
 class DepartmentListView(ListModelMixin, GenericViewSet):
