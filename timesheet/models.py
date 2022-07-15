@@ -16,7 +16,7 @@ class TimeSheetChoices(models.IntegerChoices):
 
 
 class TimeSheet(BaseModel):
-    role = models.ForeignKey(to='companies.Role', on_delete=models.DO_NOTHING, related_name='timesheet')
+    role = models.ForeignKey(to='companies.Role', on_delete=models.CASCADE, related_name='timesheet')
     day = models.DateField()
     check_in = models.TimeField(null=True)
     check_out = models.TimeField(null=True, blank=True)
