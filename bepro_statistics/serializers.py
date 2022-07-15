@@ -74,3 +74,9 @@ class HistoryStatsForUserSerializer(BaseSerializer):
     role_id = serializers.IntegerField()
     monday = serializers.DateField()
     sunday = serializers.DateField()
+    statistic_types = serializers.ListField(child=serializers.CharField())
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['statistic_types'] = [int(i) for i in data['statistic_types'][0].split(',')] if "," in data['statistic_types'][0] else data['statistic_types'][0]
+        return data
