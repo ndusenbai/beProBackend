@@ -119,9 +119,11 @@ class EmployeesViewSet(ModelViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
-        data = self.filter_serializer.validated_data
-        if 'departments' in data:
-            return queryset.filter(department__in=data['departments'])
+        
+        if self.filter_serializer:
+            data = self.filter_serializer.validated_data
+            if 'departments' in data:
+                return queryset.filter(department__in=data['departments'])
         return queryset
 
     @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS])
