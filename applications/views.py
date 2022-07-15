@@ -26,7 +26,7 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
     filterset_fields = ('status',)
     search_fields = ('id', 'first_name', 'last_name', 'middle_name', 'email',
                      'phone_number', 'company_name', 'company_legal_name')
-    http_method_names = ['get', 'put']
+    http_method_names = ['get', 'put', 'post']
 
     @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
