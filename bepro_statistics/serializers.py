@@ -31,11 +31,6 @@ class StatisticModelSerializer(serializers.ModelSerializer):
         model = Statistic
         exclude = ('created_at', 'updated_at')
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        ret['statistic_type'] = dict(StatisticType.choices)[ret['statistic_type']][1]
-        return ret
-
 
 class UserStatisticModelSerializer(serializers.ModelSerializer):
 
