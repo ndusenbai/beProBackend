@@ -10,7 +10,6 @@ router.register('stats-for-user', views.StatsForUser, basename='stats-for-user')
 router.register('history-stats-for-user', views.HistoryStats, basename='history-stats')
 router.register('create-user-stat', views.CreateUserStat, basename='create-user-stat')
 router.register('change-user-stat', views.ChangeUserStat, basename='change-user-stat')
-router.register('change-user-stat', views.ChangeUserStat, basename='change-user-stat')
 
 urlpatterns = [
     path('user-all-stats/', views.UserStatisticAPI.as_view())
