@@ -39,6 +39,12 @@ def get_last_timesheet_action(role: Role) -> str:
     return 'check_out'
 
 
+def subtract_scores(role):
+    last_score = role.scores.last()
+    last_score.points -= role.company.reasons.get(is_auto=True).score
+    last_score.save()
+
+
 def check_distance(department: Department, latitude: float, longitude: float) -> None:
     distance = geopy.distance.geodesic((latitude, longitude), (department.latitude, department.longitude)).m
     if distance > department.radius:
@@ -52,6 +58,8 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     status = TimeSheetChoices.ON_TIME
     if check_in.time() > today_schedule.time_from:
         status = TimeSheetChoices.LATE
+
+        subtract_scores(role)
 
     last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
