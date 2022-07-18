@@ -8,12 +8,11 @@ from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 
-from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
+from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationToCreateCompanySerializer, \
     TariffApplicationSerializer, TestApplicationSerializer, ApproveDeclineTariffApplication
-from applications.services import update_application_to_create_company, accept_application_to_create_company, \
-    approve_tariff_application
+from applications.services import approve_tariff_application, change_status_of_application_to_create_company
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
 from utils.tools import log_exception
 
@@ -38,17 +37,16 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=UpdateApplicationToCreateCompanySerializer)
     def update(self, request, *args, **kwargs):
+        """
+        Принятие или отклонение статуса заявки на создание компанииc. ApplicationStatus:
+            NEW = 1
+            ACCEPTED = 2
+            DECLINED = 3
+        """
         try:
             serializer = UpdateApplicationToCreateCompanySerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            application_status = serializer.validated_data['status']
-            if application_status == ApplicationStatus.ACCEPTED:
-                accept_application_to_create_company(request, self.get_object())
-            elif application_status == ApplicationStatus.DECLINED:
-                update_application_to_create_company(self.get_object(), {'status': application_status})
-            else:
-                return Response({'message': 'Incorrect status'}, status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            change_status_of_application_to_create_company(request, self.get_object(), serializer.validated_data)
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)
         except Exception as e:
             log_exception(e, 'Error in ApplicationToCreateCompanyViewSet.update()')

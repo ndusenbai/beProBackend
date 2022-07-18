@@ -1,3 +1,5 @@
+from typing import OrderedDict
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.contrib.sites.shortcuts import get_current_site
@@ -207,3 +209,12 @@ def get_additional_user_info(email: str) -> dict:
     except:
         user_data['role_id'] = None
     return user_data
+
+
+def change_selected_company(request_user: User, data: OrderedDict):
+    new_selected_company = data['new_selected_company']
+    if new_selected_company.owner.id == request_user.id:
+        request_user.selected_company = new_selected_company
+        request_user.save()
+        return True
+    return False

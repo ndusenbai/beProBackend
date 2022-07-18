@@ -26,6 +26,7 @@ class Company(BaseModel):
 
     class Meta:
         verbose_name_plural = 'Companies'
+        ordering = ('id',)
 
     def __str__(self):
         return self.name
@@ -45,6 +46,7 @@ class Department(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=['name', 'company'], name='unique name-company'),
         ]
+        ordering = ('id',)
 
     def __str__(self):
         return f'{self.name} @{self.company}'
