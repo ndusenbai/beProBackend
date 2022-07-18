@@ -18,7 +18,8 @@ class ReasonSerializer(serializers.ModelSerializer):
 
 
 class ScoreModelSerializer(serializers.ModelSerializer):
-    reason = ReasonSerializer()
+    name = serializers.CharField()
+    points = serializers.IntegerField()
     created_by = UserSerializer()
 
     class Meta:

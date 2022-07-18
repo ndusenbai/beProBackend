@@ -11,6 +11,6 @@ class ReasonAdmin(admin.ModelAdmin):
 
 @admin.register(Score)
 class ScoreAdmin(admin.ModelAdmin):
-    list_display = ('id', 'role', 'reason', 'created_at', 'updated_at')
-    list_display_links = ('id', 'role', 'reason')
-    raw_id_fields = ('role', 'reason')
+    list_display = ('id', 'role', 'name', 'points', 'created_at', 'updated_at')
+    list_display_links = ('id', 'role')
+    raw_id_fields = ('role', 'created_by')

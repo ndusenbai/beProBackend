@@ -26,7 +26,6 @@ class ReasonViewSet(ModelViewSet):
 
 class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = ScoreModelSerializer
     queryset = Score.objects.order_by()
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('reason__name', 'created_by__first_name', 'created_by__last_name')
@@ -54,7 +53,7 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return Score.objects\
             .annotate(month=TruncMonth('created_at')).values('month')\
-            .annotate(score=100+Sum('reason__score')).values('month', 'score')
+            .annotate(score=100+Sum('points')).values('month', 'score')
 
     def filter_queryset(self, queryset):
         data = self.filter_serializer.validated_data

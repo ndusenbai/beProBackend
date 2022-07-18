@@ -18,10 +18,11 @@ class Reason(BaseModel):
 
 class Score(models.Model):
     role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, related_name='scores')
-    reason = models.ForeignKey(Reason, on_delete=models.CASCADE, related_name='users')
+    name = models.CharField(max_length=255)
+    points = models.SmallIntegerField()
     created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.role}: {self.reason}'
+        return f'{self.role}: {self.name} {self.points}'
