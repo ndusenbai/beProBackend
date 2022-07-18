@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, OrderedDict
 
 from django.contrib.auth import get_user_model
 from django.db.transaction import atomic
@@ -70,3 +70,14 @@ def approve_tariff_application(application_id: int) -> None:
     Company.objects.filter(owner=tariff_app.owner).update(is_active=True)
     tariff_app.status = ApplicationStatus.ACCEPTED
     tariff_app.save()
+
+
+def change_status_of_application_to_create_company(
+        request: HttpRequest,
+        instance: ApplicationToCreateCompany,
+        data: OrderedDict) -> None:
+    application_status = data['status']
+    if application_status == ApplicationStatus.ACCEPTED:
+        accept_application_to_create_company(request, instance)
+    elif application_status == ApplicationStatus.DECLINED:
+        update_application_to_create_company(instance, {'status': application_status})

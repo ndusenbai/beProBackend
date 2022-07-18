@@ -1,20 +1,18 @@
 from django.db.transaction import atomic
 from django.contrib.auth import get_user_model
-from django.db.models import Prefetch
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
-    ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer
+    ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
+    ChangeSelectedCompanySerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
-    get_additional_user_info
-
+    get_additional_user_info, change_selected_company
 
 User = get_user_model()
 
@@ -111,3 +109,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         resp = super().post(request, *args, **kwargs)
         resp.data['user'] = get_additional_user_info(request.data['email'])
         return resp
+
+
+class ChangeSelectedCompanyViewSet(UpdateModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = ChangeSelectedCompanySerializer
+    http_method_names = ['put']
+
+    def update(self, request, *args, **kwargs):
+        """
+        id = юзер айди владельца
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = change_selected_company(self.get_object(), serializer.validated_data)
+        if not result:
+            return Response({'message': 'you are not the owner of company'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'updated'})
