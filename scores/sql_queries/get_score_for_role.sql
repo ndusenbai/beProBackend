@@ -4,11 +4,10 @@ returns int
 language plpgsql as $$
 declare score int;
 BEGIN
-    select sum(sr.score) + 100 as score
+    select sum(ss.points) + 100 as score
     into score
     from companies_role cr
          inner join scores_score ss on ss.role_id =cr.id
-         inner join scores_reason sr on ss.reason_id=sr.id
     where
         cr.id=my_role_id
         and

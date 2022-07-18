@@ -128,9 +128,6 @@ class EmployeesViewSet(ModelViewSet):
 
     @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS])
     def list(self, request, *args, **kwargs):
-        """
-        Получить кол-во баллов за каждый выбранный месяц в году по роли
-        """
         self.filter_serializer = FilterEmployeesSerializer(data=request.query_params)
         self.filter_serializer.is_valid(raise_exception=True)
         return super().list(request, *args, **kwargs)
