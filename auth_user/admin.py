@@ -7,3 +7,4 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('id', 'email', 'full_name', 'is_active')
     list_display_links = ('id', 'email', 'full_name')
     list_filter = ('is_active', 'is_superuser')
+    raw_id_fields = ('selected_company',)

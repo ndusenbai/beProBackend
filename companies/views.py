@@ -119,7 +119,7 @@ class EmployeesViewSet(ModelViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
-        
+
         if self.filter_serializer:
             data = self.filter_serializer.validated_data
             if 'departments' in data:
