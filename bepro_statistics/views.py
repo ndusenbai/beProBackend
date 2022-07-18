@@ -75,6 +75,7 @@ class StatsForUser(ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Statistic.objects.all()
     serializer_class = StatsForUserSerializer
+    pagination_class = None
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE])
     def list(self, request, *args, **kwargs):
