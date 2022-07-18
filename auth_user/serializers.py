@@ -89,3 +89,4 @@ class OwnerSerializer(BaseSerializer):
     phone_number = serializers.CharField()
     company_name = serializers.CharField()
     employees_count = serializers.IntegerField()
+    is_company_active = serializers.BooleanField()
