@@ -218,3 +218,11 @@ def change_selected_company(request_user: User, data: OrderedDict):
         request_user.save()
         return True
     return False
+
+
+def activate_owner_companies(owner_id):
+    Company.objects.filter(owner_id=owner_id).update(is_active=True)
+
+
+def deactivate_owner_companies(owner_id):
+    Company.objects.filter(owner_id=owner_id).update(is_active=False)
