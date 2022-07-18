@@ -79,3 +79,13 @@ class AssistantSerializer(BaseSerializer):
 
 class ChangeSelectedCompanySerializer(BaseSerializer):
     new_selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
+
+
+class OwnerSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    last_name = serializers.CharField()
+    first_name = serializers.CharField()
+    middle_name = serializers.CharField()
+    phone_number = serializers.CharField()
+    company_name = serializers.CharField()
+    employees_count = serializers.IntegerField()

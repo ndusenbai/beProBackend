@@ -6,10 +6,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
-    ChangeSelectedCompanySerializer
+    ChangeSelectedCompanySerializer, OwnerSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
     get_additional_user_info, change_selected_company
@@ -127,3 +128,20 @@ class ChangeSelectedCompanyViewSet(UpdateModelMixin, GenericViewSet):
         if not result:
             return Response({'message': 'you are not the owner of company'}, status=status.HTTP_403_FORBIDDEN)
         return Response({'message': 'updated'})
+
+
+class OwnerViewSet(ListModelMixin, DestroyModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = OwnerSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('last_name', 'first_name', 'middle_name', 'phone_number', 'company_name')
+
+    def get_queryset(self):
+        from django.db.models import Count, F
+        return User.objects.annotate(
+                employees_count=Count('selected_company__roles', distinct=True),
+                company_name=F('selected_company__name'))\
+            .alias(owned_companies_count=Count('owned_companies', distinct=True))\
+            .filter(owned_companies_count__gt=0)\
+            .only('id', 'last_name', 'first_name', 'middle_name', 'phone_number')\
+            .order_by('id')

@@ -10,6 +10,7 @@ router.register('assistant', views.AssistantViewSet, basename='assistant-viewset
 router.register('observer', views.ObserverViewSet, basename='observer-viewset')
 router.register('employee-list', views.EmployeeListView, basename='employee-list-view')
 router.register('change-company', views.ChangeSelectedCompanyViewSet, basename='change-selected-company')
+router.register('owner', views.OwnerViewSet, basename='owner')
 
 
 urlpatterns = [
