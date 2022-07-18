@@ -17,6 +17,11 @@ class VisibilityType(models.IntegerChoices):
     EMPLOYEES = 4, 'Employees'
 
 
+class PurposeType(models.IntegerChoices):
+    TO_DEPARTMENT = 1, 'To department'
+    TO_ROLE = 2, 'To role'
+
+
 class Statistic(BaseModel):
     name = models.CharField(max_length=255)
     statistic_type = models.IntegerField(choices=StatisticType.choices, default=StatisticType.GENERAL)
