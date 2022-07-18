@@ -14,22 +14,23 @@ from companies.models import Role, RoleChoices
 from timesheet.models import TimeSheet
 
 
-def get_statistics_queryset():
+def get_statistics_queryset(request):
     return apps.get_model(
         app_label='bepro_statistics',
         model_name='Statistic'
-    ).objects.order_by()
+    ).objects.filter(Q(department__company=request.user.role.company) |
+                     Q(role__company=request.user.role.company)).order_by()
 
 
 @atomic
 def create_statistic(serializer):
-    employees_list = serializer.validated_data['employees']
-    del serializer.validated_data['employees']
+    employees_list = serializer.validated_data.pop('employees') if 'employees' in serializer.validated_data else None
     statistic = Statistic.objects.create(**serializer.validated_data)
-    statistic_observers = [
-        StatisticObserver(statistic=statistic, role=employee.role) for employee in employees_list
-    ]
-    StatisticObserver.objects.bulk_create(statistic_observers)
+    if employees_list:
+        statistic_observers = [
+            StatisticObserver(statistic=statistic, role=employee) for employee in employees_list
+        ]
+        StatisticObserver.objects.bulk_create(statistic_observers)
     return statistic
 
 

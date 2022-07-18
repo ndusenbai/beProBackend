@@ -2,13 +2,19 @@ from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.mixins import (ListModelMixin, CreateModelMixin, RetrieveModelMixin,
+                                   UpdateModelMixin, DestroyModelMixin)
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.parsers import JSONParser, FormParser
 
+from bepro_statistics.filters import StatisticsFilterSet
 from bepro_statistics.models import UserStatistic, Statistic
+from bepro_statistics.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
@@ -19,12 +25,22 @@ from utils.tools import log_exception
 User = get_user_model()
 
 
-class StatisticViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+class StatisticViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin,
+                       DestroyModelMixin, GenericViewSet):
+
+    permission_classes = (IsAuthenticated, StatisticsPermission)
+    queryset = Statistic.objects.all()
     serializer_class = StatisticSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    parser_classes = (JSONParser, FormParser)
+    lookup_field = "id"
+    filter_class = StatisticsFilterSet
+    search_fields = ['name', 'role__user__first_name', 'role__user__last_name', 'role__user__middle_name',
+                     'department__name', ]
+    ordering_fields = ['id', 'updated_at', "created_at"]
 
     def get_queryset(self):
-        return get_statistics_queryset()
+        return get_statistics_queryset(self.request)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
