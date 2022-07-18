@@ -103,12 +103,13 @@ def get_department_list(company):
 def get_departments_qs() -> QuerySet[Department]:
     return Department.objects.filter(company__is_deleted=False)\
         .annotate(employees_count=Count('roles')) \
-        .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))
+        .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))\
+        .order_by('id')
 
 
 def get_company_qs() -> QuerySet[Company]:
     return Company.objects.filter(is_deleted=False)\
-        .annotate(employees_count=Count('roles'))
+        .annotate(employees_count=Count('roles')).order_by('id')
 
 
 def get_employee_list():
