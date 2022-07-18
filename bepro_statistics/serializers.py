@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from bepro_statistics.models import Statistic, UserStatistic, StatisticType
-from companies.models import Role
+from companies.models import Role, Department
 
 from utils.serializers import BaseSerializer
 
@@ -11,11 +11,14 @@ User = get_user_model()
 
 class StatisticSerializer(serializers.ModelSerializer):
     employees = serializers.ListSerializer(
-        write_only=True,
+        required=False,
         child=serializers.PrimaryKeyRelatedField(
             queryset=Role.objects.only('id')
         )
     )
+    plan = serializers.IntegerField(required=False)
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'), required=False)
+    department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.only('id'), required=False)
 
     class Meta:
         model = Statistic
