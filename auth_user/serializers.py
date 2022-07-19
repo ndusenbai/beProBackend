@@ -90,3 +90,11 @@ class OwnerSerializer(BaseSerializer):
     company_name = serializers.CharField()
     employees_count = serializers.IntegerField()
     is_company_active = serializers.BooleanField()
+
+
+class UserProfileSerializer(BaseSerializer):
+    id = serializers.IntegerField(required=False,)
+    full_name = serializers.CharField()
+    department_name = serializers.CharField(required=False)
+    phone_number = serializers.CharField()
+    email = serializers.EmailField(required=False)
