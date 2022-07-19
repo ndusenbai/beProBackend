@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from rest_framework import serializers
@@ -139,6 +140,14 @@ class CreateEmployeeSerializer(BaseSerializer):
     grade = serializers.IntegerField()
     department_id = serializers.IntegerField()
     schedules = ScheduleSerializer(many=True)
+
+    def to_internal_value(self, data):
+        if hasattr(data, 'getlist'):
+            data = data.dict()
+        if isinstance(data['schedules'], str):
+            data['schedules'] = json.loads(data['schedules'])
+        data = super().to_internal_value(data)
+        return data
 
 
 class FilterEmployeesSerializer(BaseSerializer):
