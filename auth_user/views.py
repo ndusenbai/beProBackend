@@ -11,10 +11,11 @@ from rest_framework.views import APIView
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
-    ChangeSelectedCompanySerializer, OwnerSerializer
+    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
-    get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies
+    get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies, \
+    get_user_profile, update_user_profile
 
 User = get_user_model()
 
@@ -163,3 +164,30 @@ class DeactivateOwnerCompaniesViewSet(APIView):
     def post(self, request, **kwargs):
         deactivate_owner_companies(kwargs['pk'])
         return Response({'message': 'Success'})
+
+
+class UserProfileView(APIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        response, status_code = get_user_profile(self.request.user, self.serializer_class)
+        return Response(response, status=status_code)
+
+
+class UpdateUserProfileView(UpdateModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    lookup_field = "pk"
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        response, status_code = update_user_profile(instance, serializer,)
+
+        return Response(response, status=status_code)
