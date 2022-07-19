@@ -23,6 +23,6 @@ app.conf.beat_schedule = {
     },
     'absence_check': {
         'task': 'timesheet.tasks.absence_check',
-        'schedule': crontab(hour=21, minute=30),
+        'schedule': crontab(hour=23, minute=50),
     }
 }
