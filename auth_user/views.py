@@ -4,16 +4,14 @@ from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
-from django.forms.models import model_to_dict
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
-    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, UserSerializer, UserModelSerializer
+    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
     get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies, \

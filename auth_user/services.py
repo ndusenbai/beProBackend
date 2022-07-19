@@ -14,7 +14,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
 
 from auth_user.models import AssistantTypes
-from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer, UserProfileSerializer
+from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
 
 from companies.models import Role, RoleChoices, Company
