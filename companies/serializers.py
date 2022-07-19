@@ -74,6 +74,7 @@ class DepartmentList2Serializer(DepartmentSerializer):
     head_of_department = UserModelSerializer()
     today_schedule = serializers.SerializerMethodField()
     employees_count = serializers.IntegerField()
+    is_hr = serializers.BooleanField()
 
     def get_today_schedule(self, instance):
         week_day = datetime.today().weekday()
