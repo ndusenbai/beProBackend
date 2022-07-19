@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from rest_framework import serializers
@@ -74,6 +75,7 @@ class DepartmentList2Serializer(DepartmentSerializer):
     head_of_department = UserModelSerializer()
     today_schedule = serializers.SerializerMethodField()
     employees_count = serializers.IntegerField()
+    is_hr = serializers.BooleanField()
 
     def get_today_schedule(self, instance):
         week_day = datetime.today().weekday()
@@ -138,6 +140,14 @@ class CreateEmployeeSerializer(BaseSerializer):
     grade = serializers.IntegerField()
     department_id = serializers.IntegerField()
     schedules = ScheduleSerializer(many=True)
+
+    def to_internal_value(self, data):
+        if hasattr(data, 'getlist'):
+            data = data.dict()
+        if isinstance(data['schedules'], str):
+            data['schedules'] = json.loads(data['schedules'])
+        data = super().to_internal_value(data)
+        return data
 
 
 class FilterEmployeesSerializer(BaseSerializer):
