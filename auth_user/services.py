@@ -247,7 +247,7 @@ def update_user_profile(user, serializer):
     full_name = [name.strip() for name in data.pop('full_name').split(" ")]
 
     for index, key in enumerate(("middle_name", "first_name", "last_name")):
-        data[key] = full_name[index] if index < len(full_name) else None
+        data[key] = full_name[index] if index < len(full_name) else ""
 
     serializer = UserModelSerializer(user, data=data, partial=True)
     serializer.is_valid(raise_exception=True)
