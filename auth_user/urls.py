@@ -22,4 +22,8 @@ urlpatterns = [
     path('auth/reset-password/', views.ForgotPasswordView.as_view({'post': 'reset_password'}), name='reset-password'),
     path('owner/<int:pk>/activate-owner-companies', views.ActivateOwnerCompaniesViewSet.as_view(), name='activate-owner-companies'),
     path('owner/<int:pk>/deactivate-owner-companies', views.DeactivateOwnerCompaniesViewSet.as_view(), name='deactivate-owner-companies'),
+    path('user-profile/', views.UserProfileView.as_view(), name='get-user-profile'),
+    path('user-profile/<int:pk>/', views.UpdateUserProfileView.as_view(
+        {'patch': 'update'}), name='update-user-profile')
+
 ] + router.urls
