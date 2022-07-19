@@ -245,9 +245,8 @@ def get_history_stats_for_user(user, data: OrderedDict):
     role = Role.objects.get(id=data['role_id'])
     stat_types = data['statistic_types']
     visibility_level = check_user_permission(user, role)
-
     stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role))
-                                     | Q(statistic_type__in=stat_types) & Q(**visibility_level))
+                                     & Q(statistic_type__in=stat_types) & Q(**visibility_level))
 
     result = []
 
