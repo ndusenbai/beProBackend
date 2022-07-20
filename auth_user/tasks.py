@@ -44,3 +44,17 @@ def send_created_account_notification(request: HttpRequest, user: User, password
     msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
     msg.attach_alternative(email_tmp, "text/html")
     msg.send()
+
+
+@app.task
+def send_invitation(email, password):
+    subject = 'Добро пожаловать!'
+    from_mail = settings.EMAIL_HOST_USER
+    to_list = [email, ]
+    email_tmp = render_to_string(
+        'company_registered_notification.html',
+        {'domain': settings.CURRENT_SITE, 'login': email, 'password': password}
+    )
+    msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
+    msg.attach_alternative(email_tmp, "text/html")
+    msg.send()
