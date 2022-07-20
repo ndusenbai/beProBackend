@@ -10,6 +10,7 @@ from django.utils.timezone import now
 from datetime import timedelta
 import random
 
+from auth_user.tasks import send_invitation
 from utils.models import BaseModel
 from utils.tools import log_exception
 
@@ -86,16 +87,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def send_mail_invitation(self, password: str) -> None:
         try:
-            subject = 'Добро пожаловать!'
-            from_mail = settings.EMAIL_HOST_USER
-            to_list = [self.email, ]
-            email_tmp = render_to_string(
-                'company_registered_notification.html',
-                {'domain': settings.CURRENT_SITE, 'login': self.email, 'password': password}
-            )
-            msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
-            msg.attach_alternative(email_tmp, "text/html")
-            msg.send()
+            send_invitation.delay(self.email, password)
         except Exception as e:
             log_exception(e, 'Error in send_mail_invitation')
 
