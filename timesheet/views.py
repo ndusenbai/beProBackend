@@ -11,7 +11,7 @@ from timesheet.models import TimeSheet
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
-    get_timesheet_qs_by_month, update_timesheet, change_timesheet
+    get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
 from utils.tools import log_exception
@@ -74,6 +74,18 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in CheckInViewSet.create()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TakeTimeOffView(CreateModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            set_took_off(self.request.user.role)
+            return Response({'message': 'created'})
+        except Exception as e:
+            log_exception(e, 'Error in TookOffViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

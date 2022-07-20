@@ -1,7 +1,6 @@
 from celery import shared_task
 from datetime import date, datetime
 from django.apps import apps
-from django.db.models import Q
 from timesheet.models import TimeSheetChoices
 
 
