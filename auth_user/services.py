@@ -6,9 +6,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import HttpRequest
 from django.utils.encoding import force_bytes, force_str
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
-from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
@@ -17,23 +14,12 @@ from auth_user.models import AssistantTypes, AcceptCode
 from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
 from django.db import IntegrityError
-
+from auth_user.tasks import send_email
 from companies.models import Role, RoleChoices, Company
 from utils.tools import log_exception
 
 User = get_user_model()
 password_reset_token = PasswordResetTokenGenerator()
-
-
-def send_email(subject: str, to_list: list, template_name: str, context: dict):
-    from_mail = settings.EMAIL_HOST_USER
-    email_tmp = render_to_string(
-        template_name,
-        context
-    )
-    msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
-    msg.attach_alternative(email_tmp, "text/html")
-    msg.send()
 
 
 def change_password(user: User, validated_data: dict) -> None:
@@ -52,7 +38,7 @@ def forgot_password(request: HttpRequest, validated_data: dict):
         'token': password_reset_token.make_token(user),
         'uid': urlsafe_base64_encode(force_bytes(user.pk))
     }
-    send_email(subject='Смена пароля', to_list=[user.email], template_name='reset_password.html', context=context)
+    send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_password.html', context=context)
 
 
 def get_accept_code(user):
@@ -69,7 +55,7 @@ def forgot_password_with_pin(validated_data: dict):
     context = {
         'accept_code': accept_code,
     }
-    send_email(subject='Смена пароля', to_list=[user.email], template_name='reset_password_with_pin.html', context=context)
+    send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_password_with_pin.html', context=context)
 
 
 def change_password_after_forgot(uid, token, validated_data: dict):
@@ -126,20 +112,6 @@ def check_code_after_forgot(code) -> dict:
         return {'status': False, 'message': 'Code is expired'}
 
     return {'status': True, 'message': 'Is active'}
-
-
-def send_created_account_notification(request: HttpRequest, user: User, password: str) -> None:
-    subject = 'Добро пожаловать!'
-    from_mail = settings.EMAIL_HOST_USER
-    to_list = [user.email, ]
-    domain = get_domain(request)
-    email_tmp = render_to_string(
-        'company_registered_notification.html',
-        {'domain': domain, 'login': user.email, 'password': password}
-    )
-    msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
-    msg.attach_alternative(email_tmp, "text/html")
-    msg.send()
 
 
 def get_domain(request: HttpRequest) -> str:
