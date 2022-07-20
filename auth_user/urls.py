@@ -20,6 +20,12 @@ urlpatterns = [
     path('auth/reset-password/<str:uid>/<str:token>/', views.ForgotPasswordView.as_view(
         {'post': 'new_password', 'get': 'check_link'}), name='new-password'),
     path('auth/reset-password/', views.ForgotPasswordView.as_view({'post': 'reset_password'}), name='reset-password'),
+
+    path('auth/reset-password-with-pin-code/', views.ForgotPasswordWithPinView.as_view(
+        {'post': 'new_password', 'get': 'check_code'}), name='new-password-pin'),
+    path('auth/reset-password-with-pin/', views.ForgotPasswordWithPinView.as_view({'post': 'reset_password'}), name='reset-password-pin'),
+
+
     path('owner/<int:pk>/activate-owner-companies', views.ActivateOwnerCompaniesViewSet.as_view(), name='activate-owner-companies'),
     path('owner/<int:pk>/deactivate-owner-companies', views.DeactivateOwnerCompaniesViewSet.as_view(), name='deactivate-owner-companies'),
     path('user-profile/', views.UserProfileView.as_view(), name='get-user-profile'),
