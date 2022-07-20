@@ -3,10 +3,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.http import HttpRequest
-from django.contrib.auth import get_user_model
 from django.contrib.sites.shortcuts import get_current_site
-
-User = get_user_model()
 
 
 def get_domain(request: HttpRequest) -> str:
@@ -32,14 +29,13 @@ def send_email(subject: str, to_list: list, template_name: str, context: dict):
 
 
 @app.task
-def send_created_account_notification(request: HttpRequest, user: User, password: str) -> None:
+def send_created_account_notification(domain, email, password: str) -> None:
     subject = 'Добро пожаловать!'
     from_mail = settings.EMAIL_HOST_USER
-    to_list = [user.email, ]
-    domain = get_domain(request)
+    to_list = [email, ]
     email_tmp = render_to_string(
         'company_registered_notification.html',
-        {'domain': domain, 'login': user.email, 'password': password}
+        {'domain': domain, 'login': email, 'password': password}
     )
     msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
     msg.attach_alternative(email_tmp, "text/html")
