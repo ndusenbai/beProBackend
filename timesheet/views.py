@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from timesheet.models import TimeSheet
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
-    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer
+    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
@@ -80,9 +80,12 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
 class TakeTimeOffView(CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=TakeTimeOffSerializer)
     def create(self, request, *args, **kwargs):
         try:
-            set_took_off(self.request.user.role)
+            serializer = TakeTimeOffSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            set_took_off(self.request.user.role, serializer.validated_data)
             return Response({'message': 'created'})
         except Exception as e:
             log_exception(e, 'Error in TookOffViewSet.create()')

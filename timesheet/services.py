@@ -105,7 +105,7 @@ def get_schedule(role, now_date):
 
 
 @atomic
-def set_took_off(role: Role) -> None:
+def set_took_off(role: Role, data: dict) -> None:
     now_date = date.today()
 
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
@@ -117,10 +117,9 @@ def set_took_off(role: Role) -> None:
         time_sheet.save()
     else:
         schedule = get_schedule(role, now_date)
-        print(schedule)
         if schedule:
             TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date,
-                                     time_to=schedule.time_to, time_from=schedule.time_from)
+                                     time_to=schedule.time_to, time_from=schedule.time_from, **data)
 
 
 def handle_check_out_timesheet(role: Role, data: dict) -> bool:
