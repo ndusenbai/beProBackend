@@ -12,10 +12,11 @@ from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
-
-from auth_user.models import AssistantTypes
+from django.utils.timezone import now
+from auth_user.models import AssistantTypes, AcceptCode
 from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
+from django.db import IntegrityError
 
 from companies.models import Role, RoleChoices, Company
 from utils.tools import log_exception
@@ -54,6 +55,23 @@ def forgot_password(request: HttpRequest, validated_data: dict):
     send_email(subject='Смена пароля', to_list=[user.email], template_name='reset_password.html', context=context)
 
 
+def get_accept_code(user):
+    try:
+        accept_code = AcceptCode.objects.create(user=user)
+        return accept_code.code
+    except IntegrityError:
+        get_accept_code(user)
+
+
+def forgot_password_with_pin(validated_data: dict):
+    user = get_object_or_404(User, **validated_data)
+    accept_code = get_accept_code(user)
+    context = {
+        'accept_code': accept_code,
+    }
+    send_email(subject='Смена пароля', to_list=[user.email], template_name='reset_password_with_pin.html', context=context)
+
+
 def change_password_after_forgot(uid, token, validated_data: dict):
     pk = force_str(urlsafe_base64_decode(uid))
     try:
@@ -67,6 +85,21 @@ def change_password_after_forgot(uid, token, validated_data: dict):
         raise serializers.ValidationError('Token expired', code='expired_token')
 
 
+def change_password_with_code_after_forgot(validated_data: dict):
+    code = validated_data.pop('code')
+    validation_dict = check_code_after_forgot(code)
+
+    if not validation_dict['status']:
+        raise serializers.ValidationError(validation_dict['message'], code='code_validation_error')
+
+    accept_code = AcceptCode.objects.select_related('user').get(code=code, is_expired=False, is_accepted=False)
+    accept_code.user.set_password(validated_data.get('password'))
+    accept_code.user.save()
+
+    accept_code.is_accepted = True
+    accept_code.save()
+
+
 def check_link_after_forgot(uid, token) -> bool:
     pk = force_str(urlsafe_base64_decode(uid))
     try:
@@ -74,6 +107,25 @@ def check_link_after_forgot(uid, token) -> bool:
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
     return bool(user is not None and password_reset_token.check_token(user, token))
+
+
+def check_code_after_forgot(code) -> dict:
+    if not code:
+        return {'status': False, 'message': 'Input code'}
+
+    accept_code = AcceptCode.objects.filter(code=code, is_accepted=False, is_expired=False)
+
+    if not accept_code.exists():
+        return {'status': False, 'message': 'Wrong code'}
+
+    accept_code = accept_code.first()
+
+    if accept_code.expiration < now():
+        accept_code.is_expired = True
+        accept_code.save()
+        return {'status': False, 'message': 'Code is expired'}
+
+    return {'status': True, 'message': 'Is active'}
 
 
 def send_created_account_notification(request: HttpRequest, user: User, password: str) -> None:

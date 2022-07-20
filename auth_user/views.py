@@ -8,14 +8,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
-    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer
+    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
     get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies, \
-    get_user_profile, update_user_profile
+    get_user_profile, update_user_profile, forgot_password_with_pin, check_code_after_forgot, \
+    change_password_with_code_after_forgot
+from utils.manual_parameters import QUERY_CODE
 
 User = get_user_model()
 
@@ -56,6 +59,31 @@ class ForgotPasswordView(GenericViewSet):
         return Response({
             'active': check_link_after_forgot(uid, token)
         })
+
+
+class ForgotPasswordWithPinView(GenericViewSet):
+    queryset = User.objects.order_by()
+
+    def get_serializer_class(self):
+        if self.action == 'reset_password':
+            return EmailSerializer
+        return ForgotPasswordWithPinResetSerializer
+
+    def reset_password(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        forgot_password_with_pin(serializer.validated_data)
+        return Response({'message': 'email_sent'})
+
+    def new_password(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        change_password_with_code_after_forgot(serializer.validated_data)
+        return Response({'message': 'changed'})
+
+    @swagger_auto_schema(manual_parameters=[QUERY_CODE])
+    def check_code(self, request):
+        return Response(check_code_after_forgot(request.GET.get('code')))
 
 
 class ObserverViewSet(ListModelMixin,

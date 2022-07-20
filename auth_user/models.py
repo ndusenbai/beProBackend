@@ -5,7 +5,12 @@ from django.contrib.auth.models import PermissionsMixin
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.timezone import now
+from datetime import timedelta
+import random
 
+from utils.models import BaseModel
 from utils.tools import log_exception
 
 
@@ -100,3 +105,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+
+class AcceptCode(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pin_codes")
+    code = models.PositiveIntegerField(validators=[MinValueValidator(1000), MaxValueValidator(9999)], blank=True)
+    expiration = models.DateTimeField(blank=True, editable=False)
+    is_accepted = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user}, Code: {self.code}, Accepted: {self.is_accepted}"
+
+    def set_accept_code(self):
+        self.code = random.randint(1000, 9999)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.expiration = now() + timedelta(days=1)
+            self.set_accept_code()
+        super(AcceptCode, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['code', 'is_accepted']
+        verbose_name = "Код для восстановления пароля"
+        verbose_name_plural = "Коды для восстановления пароля"

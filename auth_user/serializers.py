@@ -34,6 +34,16 @@ class ForgotPasswordResetSerializer(BaseSerializer):
         return attrs
 
 
+class ForgotPasswordWithPinResetSerializer(BaseSerializer):
+    code = serializers.IntegerField(min_value=1000, max_value=9999)
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        attrs = super(ForgotPasswordWithPinResetSerializer, self).validate(attrs)
+        password_validation.validate_password(attrs.get('password'))
+        return attrs
+
+
 class EmailSerializer(BaseSerializer):
     email = serializers.EmailField()
 
