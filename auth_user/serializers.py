@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import password_validation, get_user_model
 
-from companies.models import Company
+from companies.models import Company, Role
 from utils.serializers import BaseSerializer
 
 User = get_user_model()
@@ -103,8 +103,15 @@ class OwnerSerializer(BaseSerializer):
 
 
 class UserProfileSerializer(BaseSerializer):
-    id = serializers.IntegerField(required=False,)
+    id = serializers.IntegerField(required=False, read_only=True)
     full_name = serializers.CharField()
-    department_name = serializers.CharField(required=False)
+    department_name = serializers.SerializerMethodField(required=False, read_only=True)
     phone_number = serializers.CharField()
-    email = serializers.EmailField(required=False)
+    email = serializers.EmailField(required=False, read_only=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'), required=False)
+    selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
+
+    def get_department_name(self, instance):
+        return instance.role.department.name
+

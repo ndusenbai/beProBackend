@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
@@ -16,7 +16,7 @@ from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, For
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
     get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies, \
-    get_user_profile, update_user_profile, forgot_password_with_pin, check_code_after_forgot, \
+    update_user_profile, forgot_password_with_pin, check_code_after_forgot, \
     change_password_with_code_after_forgot
 from utils.manual_parameters import QUERY_CODE
 
@@ -194,28 +194,20 @@ class DeactivateOwnerCompaniesViewSet(APIView):
         return Response({'message': 'Success'})
 
 
-class UserProfileView(APIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
-    lookup_field = "id"
-
-    def get(self, request, *args, **kwargs):
-        response, status_code = get_user_profile(self.request.user, self.serializer_class)
-        return Response(response, status=status_code)
-
-
-class UpdateUserProfileView(UpdateModelMixin, GenericViewSet):
+class UserProfileView(UpdateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
     lookup_field = "pk"
 
+    def get(self, request, *args, **kwargs):
+        serializer = self.serializer_class(self.request.user, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        response, status_code = update_user_profile(instance, serializer,)
+        response, status_code = update_user_profile(request.user, serializer,)
 
         return Response(response, status=status_code)
