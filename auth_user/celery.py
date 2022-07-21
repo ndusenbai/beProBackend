@@ -1,5 +1,5 @@
 import os
-
+from celery.schedules import crontab
 from celery import Celery
 
 # Set the default Django settings module for the 'celery' program.
@@ -20,5 +20,9 @@ app.conf.beat_schedule = {
     'deactivate_tariff': {
         'task': 'companies.tasks.deactivate_tariff',
         'schedule': 3600.0
+    },
+    'absence_check': {
+        'task': 'timesheet.tasks.absence_check',
+        'schedule': crontab(hour=23, minute=50),
     }
 }

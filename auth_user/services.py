@@ -6,33 +6,20 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import HttpRequest
 from django.utils.encoding import force_bytes, force_str
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
-from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
-
-from auth_user.models import AssistantTypes
+from django.utils.timezone import now
+from auth_user.models import AssistantTypes, AcceptCode
 from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
-
+from django.db import IntegrityError
+from auth_user.tasks import send_email
 from companies.models import Role, RoleChoices, Company
 from utils.tools import log_exception
 
 User = get_user_model()
 password_reset_token = PasswordResetTokenGenerator()
-
-
-def send_email(subject: str, to_list: list, template_name: str, context: dict):
-    from_mail = settings.EMAIL_HOST_USER
-    email_tmp = render_to_string(
-        template_name,
-        context
-    )
-    msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
-    msg.attach_alternative(email_tmp, "text/html")
-    msg.send()
 
 
 def change_password(user: User, validated_data: dict) -> None:
@@ -51,7 +38,24 @@ def forgot_password(request: HttpRequest, validated_data: dict):
         'token': password_reset_token.make_token(user),
         'uid': urlsafe_base64_encode(force_bytes(user.pk))
     }
-    send_email(subject='Смена пароля', to_list=[user.email], template_name='reset_password.html', context=context)
+    send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_password.html', context=context)
+
+
+def get_accept_code(user):
+    try:
+        accept_code = AcceptCode.objects.create(user=user)
+        return accept_code.code
+    except IntegrityError:
+        get_accept_code(user)
+
+
+def forgot_password_with_pin(validated_data: dict):
+    user = get_object_or_404(User, **validated_data)
+    accept_code = get_accept_code(user)
+    context = {
+        'accept_code': accept_code,
+    }
+    send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_password_with_pin.html', context=context)
 
 
 def change_password_after_forgot(uid, token, validated_data: dict):
@@ -67,6 +71,21 @@ def change_password_after_forgot(uid, token, validated_data: dict):
         raise serializers.ValidationError('Token expired', code='expired_token')
 
 
+def change_password_with_code_after_forgot(validated_data: dict):
+    code = validated_data.pop('code')
+    validation_dict = check_code_after_forgot(code)
+
+    if not validation_dict['status']:
+        raise serializers.ValidationError(validation_dict['message'], code='code_validation_error')
+
+    accept_code = AcceptCode.objects.select_related('user').get(code=code, is_expired=False, is_accepted=False)
+    accept_code.user.set_password(validated_data.get('password'))
+    accept_code.user.save()
+
+    accept_code.is_accepted = True
+    accept_code.save()
+
+
 def check_link_after_forgot(uid, token) -> bool:
     pk = force_str(urlsafe_base64_decode(uid))
     try:
@@ -76,18 +95,23 @@ def check_link_after_forgot(uid, token) -> bool:
     return bool(user is not None and password_reset_token.check_token(user, token))
 
 
-def send_created_account_notification(request: HttpRequest, user: User, password: str) -> None:
-    subject = 'Добро пожаловать!'
-    from_mail = settings.EMAIL_HOST_USER
-    to_list = [user.email, ]
-    domain = get_domain(request)
-    email_tmp = render_to_string(
-        'company_registered_notification.html',
-        {'domain': domain, 'login': user.email, 'password': password}
-    )
-    msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
-    msg.attach_alternative(email_tmp, "text/html")
-    msg.send()
+def check_code_after_forgot(code) -> dict:
+    if not code:
+        return {'status': False, 'message': 'Input code'}
+
+    accept_code = AcceptCode.objects.filter(code=code, is_accepted=False, is_expired=False)
+
+    if not accept_code.exists():
+        return {'status': False, 'message': 'Wrong code'}
+
+    accept_code = accept_code.first()
+
+    if accept_code.expiration < now():
+        accept_code.is_expired = True
+        accept_code.save()
+        return {'status': False, 'message': 'Code is expired'}
+
+    return {'status': True, 'message': 'Is active'}
 
 
 def get_domain(request: HttpRequest) -> str:
@@ -247,7 +271,7 @@ def update_user_profile(user, serializer):
     full_name = [name.strip() for name in data.pop('full_name').split(" ")]
 
     for index, key in enumerate(("middle_name", "first_name", "last_name")):
-        data[key] = full_name[index] if index < len(full_name) else None
+        data[key] = full_name[index] if index < len(full_name) else ""
 
     serializer = UserModelSerializer(user, data=data, partial=True)
     serializer.is_valid(raise_exception=True)

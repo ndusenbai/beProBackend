@@ -127,7 +127,7 @@ def create_employee(data: dict) -> None:
     role = Role.objects.create(
         company=department.company,
         department=department,
-        role=RoleChoices.EMPLOYEE,
+        role=RoleChoices.HR if department.is_hr else RoleChoices.EMPLOYEE,
         user=employee,
         title=title,
         grade=grade

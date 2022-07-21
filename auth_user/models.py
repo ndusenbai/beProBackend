@@ -5,7 +5,13 @@ from django.contrib.auth.models import PermissionsMixin
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.timezone import now
+from datetime import timedelta
+import random
 
+from auth_user.tasks import send_invitation
+from utils.models import BaseModel
 from utils.tools import log_exception
 
 
@@ -81,16 +87,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def send_mail_invitation(self, password: str) -> None:
         try:
-            subject = 'Добро пожаловать!'
-            from_mail = settings.EMAIL_HOST_USER
-            to_list = [self.email, ]
-            email_tmp = render_to_string(
-                'company_registered_notification.html',
-                {'domain': settings.CURRENT_SITE, 'login': self.email, 'password': password}
-            )
-            msg = EmailMultiAlternatives(subject, email_tmp, from_mail, to_list)
-            msg.attach_alternative(email_tmp, "text/html")
-            msg.send()
+            send_invitation.delay(self.email, password)
         except Exception as e:
             log_exception(e, 'Error in send_mail_invitation')
 
@@ -100,3 +97,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+
+class AcceptCode(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pin_codes")
+    code = models.PositiveIntegerField(validators=[MinValueValidator(1000), MaxValueValidator(9999)], blank=True)
+    expiration = models.DateTimeField(blank=True, editable=False)
+    is_accepted = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user}, Code: {self.code}, Accepted: {self.is_accepted}"
+
+    def set_accept_code(self):
+        self.code = random.randint(1000, 9999)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.expiration = now() + timedelta(days=1)
+            self.set_accept_code()
+        super(AcceptCode, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['code', 'is_accepted']
+        verbose_name = "Код для восстановления пароля"
+        verbose_name_plural = "Коды для восстановления пароля"

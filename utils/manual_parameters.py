@@ -11,6 +11,8 @@ QUERY_STATISTIC_TYPE = openapi.Parameter(
     type=openapi.TYPE_INTEGER,
     enum=[1, 2, 3]
 )
+QUERY_CODE = openapi.Parameter('code', openapi.IN_QUERY, description='accept code(1000-9999)', type=openapi.TYPE_INTEGER)
+
 # applications
 QUERY_APPLICATIONS_STATUS = openapi.Parameter(
     'status', openapi.IN_QUERY,

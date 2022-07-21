@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.transaction import atomic
 from django.http import HttpRequest
 
-from auth_user.services import send_created_account_notification
+from auth_user.tasks import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
 from companies.models import Company, Department, Role, RoleChoices
 from timesheet.models import DepartmentSchedule
@@ -25,7 +25,7 @@ def accept_application_to_create_company(request: HttpRequest, instance: Applica
     company.owner = owner
     company.save()
     update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
-    send_created_account_notification(request, owner, password)
+    send_created_account_notification.delay(request, owner, password)
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:

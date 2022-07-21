@@ -31,6 +31,10 @@ class CheckInSerializer(BaseSerializer):
     file = serializers.FileField(allow_null=True, required=False)
 
 
+class TakeTimeOffSerializer(BaseSerializer):
+    comment = serializers.CharField(allow_blank=True, required=False)
+
+
 class CheckOutSerializer(BaseSerializer):
     latitude = serializers.DecimalField(max_digits=22, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=22, decimal_places=6)
