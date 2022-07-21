@@ -4,11 +4,10 @@ from typing import OrderedDict
 from datetime import datetime, date, timedelta
 
 from django.apps import apps
-from django.db import IntegrityError
 from django.db.transaction import atomic
 from django.db.models import Q
 
-from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType
+from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
 from companies.models import Role, RoleChoices
 from timesheet.models import TimeSheet
@@ -260,3 +259,98 @@ def get_history_stats_for_user(user, data: OrderedDict):
 
             result.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
     return result
+
+
+def generate_stat_pdf(role_id: int, statistic_id: int):
+    role = Role.objects.get(id=role_id)
+    first_day_of_week = date.today() - timedelta(days=date.today().weekday())
+    last_day_of_week = first_day_of_week + timedelta(days=6)
+
+    statistic = Statistic.objects.get(
+        (Q(department=role.department) | Q(role=role)),
+        id=statistic_id)
+
+    user_stat = UserStatistic.objects.filter(
+        statistic=statistic,
+        role=role,
+        day__range=[first_day_of_week, last_day_of_week],
+    ).select_related('statistic').order_by('day')
+
+    user_stat_data = UserStatsSerializer(user_stat, many=True).data
+    user_stat_data_dict = {i['day_num']: i for i in user_stat_data}
+
+    if statistic.statistic_type == StatisticType.GENERAL:
+        generate_general_graph_pdf(user_stat_data_dict, statistic)
+    elif statistic.statistic_type == StatisticType.INVERTED:
+        generate_inverted_graph_pdf(user_stat_data_dict, statistic)
+    elif statistic.statistic_type == StatisticType.DOUBLE:
+        generate_double_graph_pdf(user_stat_data_dict, statistic)
+
+
+def generate_general_graph_pdf(user_stat_data_dict, statistic):
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
+    for i in range(7):
+        if i in user_stat_data_dict:
+            y_axis_values.append(user_stat_data_dict[i]['fact'])
+        else:
+            y_axis_values.append(0)
+
+    _, ax = plt.subplots()
+    plt.plot(days, y_axis_values, marker=".", markersize=14)
+    plt.ylabel(statistic.name)
+    plt.title('Обычная статистика')
+    ax.grid(axis='y')
+
+    plt.savefig(f'media/savepdf.pdf')
+    plt.show()
+
+
+def generate_inverted_graph_pdf(user_stat_data_dict, statistic):
+    inverted_graphs = []
+    x = []
+    y = []
+    for i in range(7):
+        if i in user_stat_data_dict:
+            x.append(i)
+            y.append(user_stat_data_dict[i]['fact'] * -1)
+        else:
+            if len(x) > 0:
+                inverted_graphs.append([x, y])
+                x, y = [], []
+    if len(x) > 0:
+        inverted_graphs.append([x, y])
+
+    _, ax = plt.subplots()
+    ax.set_xticks([0, 1, 2, 3, 4, 5, 6])
+    ax.set_xticklabels(['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'])
+    for graph in inverted_graphs:
+        plt.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
+
+    plt.ylabel(statistic.name)
+    plt.title('Двойная статистика')
+    ax.grid(axis='y')
+    plt.legend(loc='best')
+    plt.savefig('media/savepdf.pdf')
+    plt.show()
+
+
+def generate_double_graph_pdf(user_stat_data_dict, statistic):
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
+    plans = [statistic.plan for i in range(7)]
+    for i in range(7):
+        if i in user_stat_data_dict:
+            y_axis_values.append(user_stat_data_dict[i]['fact'])
+        else:
+            y_axis_values.append(0)
+
+    _, ax = plt.subplots()
+    plt.plot(days, plans, 'r', label='план', marker=".", markersize=14)
+    plt.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
+    plt.ylabel(statistic.name)
+    plt.title('Двойная статистика')
+    ax.grid(axis='y')
+    plt.legend(loc='best')
+    plt.savefig('media/savepdf.pdf')
+    plt.show()

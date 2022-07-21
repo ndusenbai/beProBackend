@@ -2,17 +2,16 @@ from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin
 from rest_framework.filters import SearchFilter
 
 from companies.models import CompanyService
-from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \
+from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer
-from companies.services import update_department, get_department_list, create_company, create_department, \
+from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
@@ -94,15 +93,6 @@ class DepartmentViewSet(ModelViewSet):
     def perform_destroy(self, instance):
         delete_head_of_department_role(instance)
         super().perform_destroy(instance)
-
-
-class DepartmentListView(ListModelMixin, GenericViewSet):
-    pagination_class = None
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DepartmentListSerializer
-
-    def get_queryset(self):
-        return get_department_list(self.request.user.selected_company)
 
 
 class EmployeesViewSet(ModelViewSet):
