@@ -1,3 +1,4 @@
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import OrderedDict
@@ -6,6 +7,7 @@ from datetime import datetime, date, timedelta
 from django.apps import apps
 from django.db.transaction import atomic
 from django.db.models import Q
+from django.utils import timezone
 
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
@@ -261,7 +263,7 @@ def get_history_stats_for_user(user, data: OrderedDict):
     return result
 
 
-def generate_stat_pdf(role_id: int, statistic_id: int):
+def generate_stat_pdf(role_id: int, statistic_id: int) -> str:
     role = Role.objects.get(id=role_id)
     first_day_of_week = date.today() - timedelta(days=date.today().weekday())
     last_day_of_week = first_day_of_week + timedelta(days=6)
@@ -280,14 +282,16 @@ def generate_stat_pdf(role_id: int, statistic_id: int):
     user_stat_data_dict = {i['day_num']: i for i in user_stat_data}
 
     if statistic.statistic_type == StatisticType.GENERAL:
-        generate_general_graph_pdf(user_stat_data_dict, statistic)
+        return generate_general_graph_pdf(user_stat_data_dict, statistic)
     elif statistic.statistic_type == StatisticType.INVERTED:
-        generate_inverted_graph_pdf(user_stat_data_dict, statistic)
+        return generate_inverted_graph_pdf(user_stat_data_dict, statistic)
     elif statistic.statistic_type == StatisticType.DOUBLE:
-        generate_double_graph_pdf(user_stat_data_dict, statistic)
+        return generate_double_graph_pdf(user_stat_data_dict, statistic)
+
+    return 'no_link'
 
 
-def generate_general_graph_pdf(user_stat_data_dict, statistic):
+def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
     days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
     y_axis_values = []
     for i in range(7):
@@ -301,12 +305,12 @@ def generate_general_graph_pdf(user_stat_data_dict, statistic):
     plt.ylabel(statistic.name)
     plt.title('Обычная статистика')
     ax.grid(axis='y')
-
-    plt.savefig(f'media/savepdf.pdf')
+    file_name = save_stat_to_pdf('general_stat')
     plt.show()
+    return file_name
 
 
-def generate_inverted_graph_pdf(user_stat_data_dict, statistic):
+def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
     inverted_graphs = []
     x = []
     y = []
@@ -330,12 +334,12 @@ def generate_inverted_graph_pdf(user_stat_data_dict, statistic):
     plt.ylabel(statistic.name)
     plt.title('Двойная статистика')
     ax.grid(axis='y')
-    plt.legend(loc='best')
-    plt.savefig('media/savepdf.pdf')
+    file_name = save_stat_to_pdf('inverted_stat')
     plt.show()
+    return file_name
 
 
-def generate_double_graph_pdf(user_stat_data_dict, statistic):
+def generate_double_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
     days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
     y_axis_values = []
     plans = [statistic.plan for i in range(7)]
@@ -352,5 +356,21 @@ def generate_double_graph_pdf(user_stat_data_dict, statistic):
     plt.title('Двойная статистика')
     ax.grid(axis='y')
     plt.legend(loc='best')
-    plt.savefig('media/savepdf.pdf')
+    file_name = save_stat_to_pdf('double_stat')
     plt.show()
+    return file_name
+
+
+def save_stat_to_pdf(statistic_type: str) -> str:
+    unique_name = timezone.now().strftime("%y-%m-%d-%H-%M-%S") + '-' + str(random.randint(100, 999))
+
+    match statistic_type:
+        case 'general_stat':
+            file_name = f'media/statistics/general_stats/{unique_name}.pdf'
+        case 'inverted_stat':
+            file_name = f'media/statistics/inverted_stats/{unique_name}.pdf'
+        case 'double_stat':
+            file_name = f'media/statistics/double_stats/{unique_name}.pdf'
+
+    plt.savefig(file_name)
+    return file_name
