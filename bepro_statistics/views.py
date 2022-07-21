@@ -15,7 +15,8 @@ from bepro_statistics.filters import StatisticsFilterSet
 from bepro_statistics.models import UserStatistic, Statistic
 from bepro_statistics.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
-    CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer
+    CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer, \
+    GetStatisticSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
     create_user_statistic, get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf
 from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT, \
@@ -41,6 +42,13 @@ class StatisticViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin,
 
     def get_queryset(self):
         return get_statistics_queryset(self.request)
+
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        if self.action == 'list':
+            return GetStatisticSerializer(*args, **kwargs)
+        return serializer_class(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
