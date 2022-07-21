@@ -1,6 +1,5 @@
 import random
 import matplotlib.pyplot as plt
-import numpy as np
 from typing import OrderedDict
 from datetime import datetime, date, timedelta
 
@@ -33,153 +32,6 @@ def create_statistic(serializer):
         ]
         StatisticObserver.objects.bulk_create(statistic_observers)
     return statistic
-
-
-def get_user_statistic(user):
-    first_day_of_week = date.today() - timedelta(days=date.today().weekday())
-    last_day_of_week = first_day_of_week + timedelta(days=6)
-
-    general_statistic_queryset = Statistic.objects.filter(role=user.role, statistic_type=1)
-
-    double_statistic_queryset = Statistic.objects.filter(role=user.role, statistic_type=2)
-
-    inverted_statistic_queryset = Statistic.objects.filter(role=user.role, statistic_type=3)
-
-    user_statistics_json = {}
-
-    all_generals_list = []
-
-    all_doubles_list = []
-
-    all_inverts_list = []
-
-    general_stats_name_json = {}
-
-    double_stats_name_json = {}
-
-    inverted_stats_name_json = {}
-
-    for general_stat in general_statistic_queryset:
-        general_queryset = apps.get_model(
-            app_label='bepro_statistics',
-            model_name='UserStatistic'
-        ).objects.filter(
-            role=user.role,
-            day__range=[first_day_of_week, last_day_of_week],
-            statistic_id=general_stat.id
-        ).select_related('statistic').order_by('day')
-        serializer = UserStatsSerializer(general_queryset, many=True)
-        general_stats_name_json[general_stat.name] = serializer.data
-        generate_general_statistics_plot(serializer.data, general_stat.name, user)
-    all_generals_list.append(general_stats_name_json)
-
-    for double_stat in double_statistic_queryset:
-        double_queryset = apps.get_model(
-            app_label='bepro_statistics',
-            model_name='UserStatistic'
-        ).objects.filter(
-            role=user.role,
-            day__range=[first_day_of_week, last_day_of_week],
-            statistic_id=double_stat.id
-        ).select_related('statistic').order_by('day')
-        serializer = UserStatsSerializer(double_queryset, many=True)
-
-        double_stats_name_json[double_stat.name] = serializer.data
-
-        # HERE I'M GENERATING PLOT
-        generate_double_statistics_plot(serializer.data, double_stat.name, user)
-    all_doubles_list.append(double_stats_name_json)
-
-    for inverted_stat in inverted_statistic_queryset:
-        inverted_queryset = apps.get_model(
-            app_label='bepro_statistics',
-            model_name='UserStatistic'
-        ).objects.filter(
-            role=user.role,
-            day__range=[first_day_of_week, last_day_of_week],
-            statistic_id=inverted_stat.id
-        ).select_related('statistic').order_by('day')
-        serializer = UserStatsSerializer(inverted_queryset, many=True)
-
-        inverted_stats_name_json[inverted_stat.name] = serializer.data
-        generate_inverted_statistics_plot(serializer.data, inverted_stat.name, user)
-
-    all_inverts_list.append(inverted_stats_name_json)
-
-    user_statistics_json['all_general_stats'] = all_generals_list
-    user_statistics_json['all_double_stats'] = all_doubles_list
-    user_statistics_json['all_inverted_stats'] = all_inverts_list
-
-    return user_statistics_json
-
-
-weekday_list = [0, 1, 2, 3, 4, 5, 6]
-weekday_word_list = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-
-
-def generate_general_statistics_plot(serializer, name, user):
-    some_list = []
-
-    some_dict = {}
-    for s in serializer:
-        some_dict[s['day_num']] = s['fact']
-
-    for weekday in weekday_list:
-        if weekday in some_dict:
-            some_list.append(some_dict[weekday])
-        else:
-            some_list.append(0)
-
-    ypoints = np.array(some_list)
-    xpoints = np.array(weekday_list)
-
-    plt.plot(xpoints, ypoints, marker='o')
-    plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
-    plt.close()
-    pass
-
-
-def generate_inverted_statistics_plot(serializer, name, user):
-    some_list = []
-
-    some_dict = {}
-    for s in serializer:
-        some_dict[s['day_num']] = -abs(s['fact'])
-
-    for weekday in weekday_list:
-        if weekday in some_dict:
-            some_list.append(some_dict[weekday])
-        else:
-            some_list.append(0)
-
-    ypoints = np.array(some_list)
-    xpoints = np.array(weekday_list)
-    plt.plot(xpoints, ypoints, marker='o')
-    plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
-    plt.close()
-    pass
-
-
-def generate_double_statistics_plot(serializer, name, user):
-    some_list = []
-    plan_list = []
-
-    some_dict = {}
-    for s in serializer:
-        some_dict[s['day_num']] = s['fact']
-        if not plan_list:
-            plan_list.append(s['plan'])
-    plan_list = plan_list * 7
-    for weekday in weekday_list:
-        if weekday in some_dict:
-            some_list.append(some_dict[weekday])
-        else:
-            some_list.append(None)
-    plt.style.use('seaborn-whitegrid')
-    plt.plot(weekday_word_list, some_list, plan_list, marker='o')
-    plt.title(f'{name}')
-    plt.savefig(f'media/{name}-{user.full_name}.png', bbox_inches='tight', dpi=100)
-    plt.close()
 
 
 @atomic
@@ -332,7 +184,7 @@ def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic)
         plt.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
 
     plt.ylabel(statistic.name)
-    plt.title('Двойная статистика')
+    plt.title('Перевернутая статистика')
     ax.grid(axis='y')
     file_name = save_stat_to_pdf('inverted_stat')
     plt.show()
@@ -371,6 +223,95 @@ def save_stat_to_pdf(statistic_type: str) -> str:
             file_name = f'media/statistics/inverted_stats/{unique_name}.pdf'
         case 'double_stat':
             file_name = f'media/statistics/double_stats/{unique_name}.pdf'
+        case 'history_stat':
+            file_name = f'media/statistics/history_stats/{unique_name}.pdf'
 
     plt.savefig(file_name)
     return file_name
+
+
+def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
+    statistics = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
+
+    fig, axs = plt.subplots(statistics.count())
+    j = 0
+    for statistic in statistics:
+        user_stat = UserStatistic.objects.filter(
+            statistic=statistic,
+            role=role,
+            day__range=[monday, sunday],
+        ).select_related('statistic').order_by('day')
+        user_stat_data = UserStatsSerializer(user_stat, many=True).data
+        user_stat_data_dict = {i['day_num']: i for i in user_stat_data}
+
+        if statistic.statistic_type == StatisticType.GENERAL:
+            generate_general_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+        elif statistic.statistic_type == StatisticType.INVERTED:
+            generate_inverted_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+        elif statistic.statistic_type == StatisticType.DOUBLE:
+            generate_double_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+
+        j += 1
+
+    fig.tight_layout()
+    file_name = save_stat_to_pdf('history_stat')
+    plt.show()
+    return file_name
+
+
+def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
+    for i in range(7):
+        if i in user_stat_data_dict:
+            y_axis_values.append(user_stat_data_dict[i]['fact'])
+        else:
+            y_axis_values.append(0)
+
+    ax.plot(days, y_axis_values, marker=".", markersize=14)
+    ax.set_ylabel(statistic.name)
+    ax.set_title('Обычная статистика')
+    ax.grid(axis='y')
+
+
+def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
+    inverted_graphs = []
+    x = []
+    y = []
+    for i in range(7):
+        if i in user_stat_data_dict:
+            x.append(i)
+            y.append(user_stat_data_dict[i]['fact'] * -1)
+        else:
+            if len(x) > 0:
+                inverted_graphs.append([x, y])
+                x, y = [], []
+    if len(x) > 0:
+        inverted_graphs.append([x, y])
+
+    ax.set_xticks([0, 1, 2, 3, 4, 5, 6])
+    ax.set_xticklabels(['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'])
+    for graph in inverted_graphs:
+        ax.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
+
+    ax.set_ylabel(statistic.name)
+    ax.set_title('Перевернутая статистика')
+    ax.grid(axis='y')
+
+
+def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
+    plans = [statistic.plan for i in range(7)]
+    for i in range(7):
+        if i in user_stat_data_dict:
+            y_axis_values.append(user_stat_data_dict[i]['fact'])
+        else:
+            y_axis_values.append(0)
+
+    ax.plot(days, plans, 'r', label='план', marker=".", markersize=14)
+    ax.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
+    ax.set_ylabel(statistic.name)
+    ax.set_title('Двойная статистика')
+    ax.grid(axis='y')
+    ax.legend(loc='best')
