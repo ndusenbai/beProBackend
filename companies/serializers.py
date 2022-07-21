@@ -97,6 +97,8 @@ class DepartmentModelSerializer(serializers.ModelSerializer):
 class DepartmentListSerializer(BaseSerializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=22, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=22, decimal_places=6)
 
 
 class RoleSerializer(BaseSerializer):
