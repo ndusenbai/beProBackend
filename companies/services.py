@@ -149,6 +149,7 @@ def update_employee(role: Role, data: dict) -> None:
     update_employee_schedules(role, schedules)
 
     user = role.user
+
     for key, value in data.items():
         setattr(user, key, value)
     user.save()
