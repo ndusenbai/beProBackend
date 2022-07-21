@@ -2,9 +2,8 @@ from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import (ListModelMixin, CreateModelMixin, RetrieveModelMixin,
-                                   UpdateModelMixin, DestroyModelMixin)
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.mixins import (ListModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -18,8 +17,9 @@ from bepro_statistics.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
-    create_user_statistic, get_stats_for_user, get_history_stats_for_user, change_user_statistic
-from utils.manual_parameters import QUERY_USER, QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST
+    create_user_statistic, get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf
+from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT, \
+    QUERY_USER
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -50,6 +50,7 @@ class StatisticViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin,
 
 
 class UserStatisticViewSet(ModelViewSet):
+    # TODO: add permission check
     permission_classes = (IsAuthenticated,)
     serializer_class = UserStatisticModelSerializer
     queryset = UserStatistic.objects.all()
@@ -140,3 +141,12 @@ class ChangeUserStat(CreateModelMixin, GenericViewSet):
         except Exception as e:
             log_exception(e, 'Error in ChangeUserStat.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GenerateStatPdfViewSet(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_STAT])
+    def get(self, request, **kwargs):
+        generate_stat_pdf(**request.query_params.dict())
+        return Response({'link': 'Success'})

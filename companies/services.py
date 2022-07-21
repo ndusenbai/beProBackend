@@ -93,13 +93,6 @@ def bulk_create_department_schedules(department: Department, schedules: list) ->
     DepartmentSchedule.objects.bulk_create(new_schedules)
 
 
-def get_department_list(company):
-    return apps.get_model(
-        app_label='companies',
-        model_name='Department'
-    ).objects.filter(company=company)
-
-
 def get_departments_qs() -> QuerySet[Department]:
     return Department.objects.filter(company__is_deleted=False)\
         .annotate(employees_count=Count('roles')) \

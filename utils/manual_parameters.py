@@ -36,3 +36,4 @@ QUERY_SUNDAY = openapi.Parameter('sunday', openapi.IN_QUERY, description='sunday
 QUERY_STATISTIC_TYPE_LIST = openapi.Parameter('statistic_types', openapi.IN_QUERY, description='GENERAL=1, DOUBLE=2, INVERTED=3',
                                               type=openapi.TYPE_ARRAY,
                                               items=openapi.Items(type=openapi.TYPE_INTEGER),)
+QUERY_STAT = openapi.Parameter('statistic_id', openapi.IN_QUERY, description='statistic id', type=openapi.TYPE_INTEGER)
