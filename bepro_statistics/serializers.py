@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from bepro_statistics.models import Statistic, UserStatistic, StatisticType
-from companies.models import Role, Department
+from companies.models import Role, Department, RoleChoices
 
 from utils.serializers import BaseSerializer
 
@@ -25,7 +25,38 @@ class StatisticSerializer(serializers.ModelSerializer):
         exclude = ('created_at', 'updated_at')
 
 
+class GetStatisticSerializer(serializers.ModelSerializer):
+    employees = serializers.ListSerializer(
+        required=False,
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=Role.objects.only('id')
+        )
+    )
+    plan = serializers.IntegerField(required=False)
+    role = serializers.SerializerMethodField(method_name="get_role")
+    department = serializers.SerializerMethodField(method_name="get_department")
+
+    def get_role(self, obj):
+        return obj.role.get_role_display() if obj.role else ""
+
+    def get_department(self, obj):
+        return obj.department.name if obj.department else ""
+
+    class Meta:
+        model = Statistic
+        exclude = ('created_at', 'updated_at')
+
+
 class StatisticModelSerializer(serializers.ModelSerializer):
+
+    role = serializers.SerializerMethodField(method_name="get_role")
+    department = serializers.SerializerMethodField(method_name="get_department")
+
+    def get_role(self, obj):
+        return obj.role.get_role_display() if obj.role else ""
+
+    def get_department(self, obj):
+        return obj.department.name if obj.department else ""
 
     class Meta:
         model = Statistic
