@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import FileUploadParser
 
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, DepartmentListSerializer, \

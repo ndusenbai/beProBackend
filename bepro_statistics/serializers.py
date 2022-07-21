@@ -49,15 +49,6 @@ class GetStatisticSerializer(serializers.ModelSerializer):
 
 class StatisticModelSerializer(serializers.ModelSerializer):
 
-    role = serializers.SerializerMethodField(method_name="get_role")
-    department = serializers.SerializerMethodField(method_name="get_department")
-
-    def get_role(self, obj):
-        return obj.role.get_role_display() if obj.role else ""
-
-    def get_department(self, obj):
-        return obj.department.name if obj.department else ""
-
     class Meta:
         model = Statistic
         exclude = ('created_at', 'updated_at')
