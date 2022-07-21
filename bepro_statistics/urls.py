@@ -12,7 +12,6 @@ router.register('create-user-stat', views.CreateUserStat, basename='create-user-
 router.register('change-user-stat', views.ChangeUserStat, basename='change-user-stat')
 
 urlpatterns = [
-    path('user-all-stats/', views.UserStatisticAPI.as_view()),
     path('generate-stat-pdf/', views.GenerateStatPdfViewSet.as_view(), name='generate-stat-pdf'),
 ]
 

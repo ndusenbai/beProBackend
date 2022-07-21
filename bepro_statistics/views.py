@@ -17,10 +17,9 @@ from bepro_statistics.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer, \
     GetStatisticSerializer
-from bepro_statistics.services import get_statistics_queryset, create_statistic, get_user_statistic, \
-    create_user_statistic, get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf
-from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT, \
-    QUERY_USER
+from bepro_statistics.services import get_statistics_queryset, create_statistic, create_user_statistic,\
+    get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf
+from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -62,22 +61,6 @@ class UserStatisticViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserStatisticModelSerializer
     queryset = UserStatistic.objects.all()
-
-
-class UserStatisticAPI(APIView):
-
-    @swagger_auto_schema(manual_parameters=[QUERY_USER])
-    def get(self, request):
-        if self.request.GET.get('user_id'):
-
-            try:
-                user = User.objects.get(id=self.request.GET.get('user_id'))
-                user_statistics = get_user_statistic(user)
-                return Response(user_statistics)
-            except User.DoesNotExist:
-                return Response({'message': 'No such user'}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response({'message': 'Enter user id'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StatsForUser(ListModelMixin, GenericViewSet):
