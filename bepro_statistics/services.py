@@ -184,7 +184,7 @@ def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic)
         plt.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
 
     plt.ylabel(statistic.name)
-    plt.title('Двойная статистика')
+    plt.title('Перевернутая статистика')
     ax.grid(axis='y')
     file_name = save_stat_to_pdf('inverted_stat')
     plt.show()
@@ -223,6 +223,95 @@ def save_stat_to_pdf(statistic_type: str) -> str:
             file_name = f'media/statistics/inverted_stats/{unique_name}.pdf'
         case 'double_stat':
             file_name = f'media/statistics/double_stats/{unique_name}.pdf'
+        case 'history_stat':
+            file_name = f'media/statistics/history_stats/{unique_name}.pdf'
 
     plt.savefig(file_name)
     return file_name
+
+
+def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
+    statistics = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
+
+    fig, axs = plt.subplots(statistics.count())
+    j = 0
+    for statistic in statistics:
+        user_stat = UserStatistic.objects.filter(
+            statistic=statistic,
+            role=role,
+            day__range=[monday, sunday],
+        ).select_related('statistic').order_by('day')
+        user_stat_data = UserStatsSerializer(user_stat, many=True).data
+        user_stat_data_dict = {i['day_num']: i for i in user_stat_data}
+
+        if statistic.statistic_type == StatisticType.GENERAL:
+            generate_general_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+        elif statistic.statistic_type == StatisticType.INVERTED:
+            generate_inverted_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+        elif statistic.statistic_type == StatisticType.DOUBLE:
+            generate_double_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+
+        j += 1
+
+    fig.tight_layout()
+    file_name = save_stat_to_pdf('history_stat')
+    plt.show()
+    return file_name
+
+
+def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
+    for i in range(7):
+        if i in user_stat_data_dict:
+            y_axis_values.append(user_stat_data_dict[i]['fact'])
+        else:
+            y_axis_values.append(0)
+
+    ax.plot(days, y_axis_values, marker=".", markersize=14)
+    ax.set_ylabel(statistic.name)
+    ax.set_title('Обычная статистика')
+    ax.grid(axis='y')
+
+
+def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
+    inverted_graphs = []
+    x = []
+    y = []
+    for i in range(7):
+        if i in user_stat_data_dict:
+            x.append(i)
+            y.append(user_stat_data_dict[i]['fact'] * -1)
+        else:
+            if len(x) > 0:
+                inverted_graphs.append([x, y])
+                x, y = [], []
+    if len(x) > 0:
+        inverted_graphs.append([x, y])
+
+    ax.set_xticks([0, 1, 2, 3, 4, 5, 6])
+    ax.set_xticklabels(['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'])
+    for graph in inverted_graphs:
+        ax.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
+
+    ax.set_ylabel(statistic.name)
+    ax.set_title('Перевернутая статистика')
+    ax.grid(axis='y')
+
+
+def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
+    plans = [statistic.plan for i in range(7)]
+    for i in range(7):
+        if i in user_stat_data_dict:
+            y_axis_values.append(user_stat_data_dict[i]['fact'])
+        else:
+            y_axis_values.append(0)
+
+    ax.plot(days, plans, 'r', label='план', marker=".", markersize=14)
+    ax.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
+    ax.set_ylabel(statistic.name)
+    ax.set_title('Двойная статистика')
+    ax.grid(axis='y')
+    ax.legend(loc='best')

@@ -110,3 +110,14 @@ class HistoryStatsForUserSerializer(BaseSerializer):
         data['statistic_types'] = [int(i) for i in data['statistic_types'][0].split(',')]\
             if "," in data['statistic_types'][0] else [int(data['statistic_types'][0])]
         return data
+
+
+class HistoryPdfStatsSerializer(BaseSerializer):
+    role_id = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'))
+    monday = serializers.DateField()
+    sunday = serializers.DateField()
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['role'] = data.pop('role_id')
+        return data

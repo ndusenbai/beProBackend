@@ -16,9 +16,9 @@ from bepro_statistics.models import UserStatistic, Statistic
 from bepro_statistics.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer, \
-    GetStatisticSerializer
-from bepro_statistics.services import get_statistics_queryset, create_statistic, create_user_statistic,\
-    get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf
+    GetStatisticSerializer, HistoryPdfStatsSerializer
+from bepro_statistics.services import get_statistics_queryset, create_statistic, create_user_statistic, \
+    get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf
 from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
 from utils.tools import log_exception
 
@@ -140,4 +140,15 @@ class GenerateStatPdfViewSet(APIView):
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_STAT])
     def get(self, request, **kwargs):
         file_name = generate_stat_pdf(**request.query_params.dict())
+        return Response({'link': file_name})
+
+
+class GenerateHistoryStatPdfViewSet(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONDAY, QUERY_SUNDAY])
+    def get(self, request, **kwargs):
+        serializer = HistoryPdfStatsSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        file_name = generate_history_stat_pdf(**serializer.validated_data)
         return Response({'link': file_name})
