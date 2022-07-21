@@ -152,7 +152,7 @@ def update_employee(role: Role, data: dict) -> None:
         'department_id': data.pop('department_id'),
     }
 
-    Role.objects.filter(role=role.role).update(**role_data)
+    Role.objects.filter(id=role.id).update(**role_data)
     update_employee_schedules(role, schedules)
 
     user = role.user
