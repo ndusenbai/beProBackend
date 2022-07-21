@@ -156,5 +156,5 @@ class GenerateStatPdfViewSet(APIView):
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_STAT])
     def get(self, request, **kwargs):
-        generate_stat_pdf(**request.query_params.dict())
-        return Response({'link': 'Success'})
+        file_name = generate_stat_pdf(**request.query_params.dict())
+        return Response({'link': file_name})
