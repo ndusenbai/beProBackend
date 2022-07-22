@@ -12,7 +12,7 @@ from django.utils.timezone import now
 from django.db.models import Q
 from django.db import IntegrityError
 from django.db.transaction import atomic
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 from auth_user.models import AssistantTypes, AcceptCode
 from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
@@ -142,6 +142,13 @@ def create_observer_and_role(serializer: ObserverCreateSerializer, user):
         )
     else:
         observer = observer.first()
+
+    if apps.get_model(
+        app_label='companies',
+        model_name='Role'
+    ).objects.filter(user=observer).exists():
+        return {'message': 'observer with this email is already created'}, status.HTTP_400_BAD_REQUEST
+
     apps.get_model(
         app_label='companies',
         model_name='Role'
@@ -151,7 +158,8 @@ def create_observer_and_role(serializer: ObserverCreateSerializer, user):
         role=RoleChoices.OBSERVER,
         user=observer
     )
-    return observer
+
+    return {'message': 'created'}, status.HTTP_201_CREATED
 
 
 def get_user_list(company):
