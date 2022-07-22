@@ -156,7 +156,9 @@ def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) 
     plt.plot(days, y_axis_values, marker=".", markersize=14)
     plt.ylabel(statistic.name)
     plt.title('Обычная статистика')
-    ax.grid(axis='y')
+    ax.grid()
+    for a, b in zip(days, y_axis_values):
+        plt.text(a, b, str(b))
     file_name = save_stat_to_pdf('general_stat')
     plt.show()
     return file_name
@@ -184,8 +186,13 @@ def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic)
         plt.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
 
     plt.ylabel(statistic.name)
+    ax.set_yticklabels([item*-1 for item in ax.get_yticks()])
     plt.title('Перевернутая статистика')
-    ax.grid(axis='y')
+    ax.grid()
+    for graph in inverted_graphs:
+        for a, b in zip(graph[0], graph[1]):
+            ax.text(a, b, str(b*-1))
+
     file_name = save_stat_to_pdf('inverted_stat')
     plt.show()
     return file_name
@@ -206,8 +213,10 @@ def generate_double_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -
     plt.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
     plt.ylabel(statistic.name)
     plt.title('Двойная статистика')
-    ax.grid(axis='y')
+    ax.grid()
     plt.legend(loc='best')
+    for a, b in zip(days, y_axis_values):
+        ax.text(a, b, str(b))
     file_name = save_stat_to_pdf('double_stat')
     plt.show()
     return file_name
@@ -270,8 +279,11 @@ def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
 
     ax.plot(days, y_axis_values, marker=".", markersize=14)
     ax.set_ylabel(statistic.name)
-    ax.set_title('Обычная статистика')
-    ax.grid(axis='y')
+    ax.set_title('Обычная статистика', pad=20)
+    ax.grid()
+
+    for a, b in zip(days, y_axis_values):
+        ax.text(a, b, str(b))
 
 
 def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
@@ -295,8 +307,13 @@ def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
         ax.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
 
     ax.set_ylabel(statistic.name)
-    ax.set_title('Перевернутая статистика')
-    ax.grid(axis='y')
+    ax.set_yticklabels([item*-1 for item in ax.get_yticks()])
+    ax.set_title('Перевернутая статистика', pad=20)
+    ax.grid()
+
+    for graph in inverted_graphs:
+        for a, b in zip(graph[0], graph[1]):
+            ax.text(a, b, str(b*-1))
 
 
 def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
@@ -312,6 +329,9 @@ def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.plot(days, plans, 'r', label='план', marker=".", markersize=14)
     ax.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
     ax.set_ylabel(statistic.name)
-    ax.set_title('Двойная статистика')
-    ax.grid(axis='y')
+    ax.set_title('Двойная статистика', pad=20)
+    ax.grid()
     ax.legend(loc='best')
+
+    for a, b in zip(days, y_axis_values):
+        ax.text(a, b, str(b))
