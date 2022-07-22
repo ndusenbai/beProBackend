@@ -13,6 +13,8 @@ from applications.serializers import ApplicationToCreateCompanyModelSerializer, 
     CreateApplicationToCreateCompanySerializer, UpdateApplicationToCreateCompanySerializer, \
     TariffApplicationSerializer, TestApplicationSerializer, ApproveDeclineTariffApplication
 from applications.services import approve_tariff_application, change_status_of_application_to_create_company
+from auth_user.utils import UserAlreadyExists
+from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
 from utils.tools import log_exception
 
@@ -48,6 +50,10 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             change_status_of_application_to_create_company(request, self.get_object(), serializer.validated_data)
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+        except CompanyAlreadyExists as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+        except UserAlreadyExists as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in ApplicationToCreateCompanyViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

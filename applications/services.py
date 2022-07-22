@@ -1,13 +1,16 @@
 from typing import Tuple, OrderedDict
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.db.transaction import atomic
 from django.http import HttpRequest
 
 from auth_user.services import get_domain
 from auth_user.tasks import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
-from companies.models import Company, Department, Role, RoleChoices
+from auth_user.utils import UserAlreadyExists
+from companies.models import Company, Department
+from companies.utils import CompanyAlreadyExists
 from scores.models import Reason
 from timesheet.models import DepartmentSchedule
 
@@ -33,12 +36,15 @@ def accept_application_to_create_company(request: HttpRequest, instance: Applica
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:
-    company = Company.objects.create(
-        name=instance.company_name,
-        legal_name=instance.company_legal_name,
-        years_of_work=instance.years_of_work,
-        max_employees_qty=instance.max_employees_qty,
-    )
+    try:
+        company = Company.objects.create(
+            name=instance.company_name,
+            legal_name=instance.company_legal_name,
+            years_of_work=instance.years_of_work,
+            max_employees_qty=instance.max_employees_qty,
+        )
+    except IntegrityError:
+        raise CompanyAlreadyExists()
     Reason.objects.create(name='Опоздание', score=-10, is_auto=True, company=company)
     hr_department = Department.objects.create(
         name='HR',
@@ -53,14 +59,17 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
 
 
 def create_owner(instance: ApplicationToCreateCompany, company: Company) -> Tuple[User, str]:
-    owner = User.objects.create(
-        email=instance.email,
-        first_name=instance.first_name,
-        last_name=instance.last_name,
-        middle_name=instance.middle_name,
-        phone_number=instance.phone_number,
-        selected_company=company,
-    )
+    try:
+        owner = User.objects.create(
+            email=instance.email,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            middle_name=instance.middle_name,
+            phone_number=instance.phone_number,
+            selected_company=company,
+        )
+    except IntegrityError:
+        raise UserAlreadyExists()
     password = User.objects.make_random_password()
     owner.set_password(password)
     owner.save(update_fields=['password'])
