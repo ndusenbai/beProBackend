@@ -252,20 +252,6 @@ def deactivate_owner_companies(owner_id):
     Company.objects.filter(owner_id=owner_id).update(is_active=False)
 
 
-def get_user_profile(user, serializer_class):
-    data = dict()
-    name_tuple = (user.first_name, user.middle_name, user.last_name)
-    data['id'] = user.id
-    data['full_name'] = " ".join([name.strip() for name in name_tuple if name])
-    data['department_name'] = user.role.department.name
-    data['email'] = user.email
-    data['phone_number'] = user.phone_number
-    serializer = serializer_class(data=data, many=False)
-    serializer.is_valid()
-
-    return serializer.data, 200
-
-
 def update_user_profile(user, serializer):
     data = serializer.validated_data
     full_name = [name.strip() for name in data.pop('full_name').split(" ")]
