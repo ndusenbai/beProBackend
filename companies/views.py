@@ -6,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
-
+from rest_framework.serializers import ValidationError
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
@@ -129,6 +129,8 @@ class EmployeesViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             create_employee(serializer.validated_data)
             return Response({'message': 'created'})
+        except ValidationError as e:
+            return Response(e.detail, status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             log_exception(e, 'Error in EmployeesViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
