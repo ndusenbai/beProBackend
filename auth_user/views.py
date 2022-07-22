@@ -122,6 +122,8 @@ class EmployeeListView(ListModelMixin, GenericViewSet):
 
 class AssistantViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('last_name', 'first_name', 'middle_name', 'phone_number',)
     http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_queryset(self):
