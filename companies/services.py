@@ -6,6 +6,7 @@ from django.db.models.query import QuerySet
 
 from auth_user.services import User
 from companies.models import Department, Company, Role, RoleChoices
+from scores.models import Reason
 from scores.utils import GetScoreForRole
 from timesheet.models import DepartmentSchedule, EmployeeSchedule
 
@@ -21,6 +22,7 @@ def create_company(user: User, data) -> None:
         max_employees_qty=data['max_employees_qty'],
         owner=user,
     )
+    Reason.objects.create(name='Опоздание', score=-10, is_auto=True, company=company)
     hr_department = Department.objects.create(
         name='HR',
         is_hr=True,

@@ -8,6 +8,7 @@ from auth_user.services import get_domain
 from auth_user.tasks import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
 from companies.models import Company, Department, Role, RoleChoices
+from scores.models import Reason
 from timesheet.models import DepartmentSchedule
 
 User = get_user_model()
@@ -38,6 +39,7 @@ def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tu
         years_of_work=instance.years_of_work,
         max_employees_qty=instance.max_employees_qty,
     )
+    Reason.objects.create(name='Опоздание', score=-10, is_auto=True, company=company)
     hr_department = Department.objects.create(
         name='HR',
         is_hr=True,
