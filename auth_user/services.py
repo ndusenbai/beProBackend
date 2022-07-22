@@ -126,6 +126,7 @@ def get_domain(request: HttpRequest) -> str:
     return protocol + domain_name
 
 
+@atomic
 def create_observer_and_role(serializer: ObserverCreateSerializer, user):
     first_name = serializer.validated_data['first_name']
     last_name = serializer.validated_data['last_name']
@@ -259,7 +260,7 @@ def update_user_profile(user, serializer):
     data = serializer.validated_data
     full_name = [name.strip() for name in data.pop('full_name').split(" ")]
 
-    for index, key in enumerate(("middle_name", "first_name", "last_name")):
+    for index, key in enumerate(("last_name", "first_name", "middle_name")):
         data[key] = full_name[index] if index < len(full_name) else ""
 
     serializer = UserModelSerializer(user, data=data, partial=True)
