@@ -1,9 +1,8 @@
-from django.db.transaction import atomic
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin, RetrieveModelMixin
+from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
@@ -106,8 +105,7 @@ class ObserverViewSet(ListModelMixin,
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        with atomic():
-            create_observer_and_role(serializer, request.user)
+        create_observer_and_role(serializer, request.user)
         return Response({'message': 'created'}, status=status.HTTP_201_CREATED)
 
 
