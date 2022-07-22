@@ -44,6 +44,7 @@ def update_company(instance: Company, data: dict) -> None:
 def create_department(user: User, data: dict) -> None:
     head_of_department = None
     schedules = data.pop('schedules')
+
     department = Department.objects.create(
         name=data['name'],
         company=user.selected_company,
