@@ -308,7 +308,7 @@ def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
         ax.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
 
     ax.set_ylabel(statistic.name)
-    ax.set_yticklabels([item*-1 for item in ax.get_yticks()])
+    # ax.set_yticklabels([item*-1 for item in ax.get_yticks()]) # плывет верстка если взять положительные числа
     ax.set_title('Перевернутая статистика', pad=20)
     ax.grid()
 
