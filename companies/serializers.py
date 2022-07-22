@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 
 from rest_framework import serializers
-
 from auth_user.serializers import UserModelSerializer, UserSerializer
 from companies.models import Company, Department, CompanyService
 from timesheet.serializers import ScheduleSerializer
@@ -58,6 +57,13 @@ class DepartmentSerializer(BaseSerializer):
     radius = serializers.IntegerField(default=50)
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
+
+    def validate(self, attrs):
+        if not attrs.get('address'):
+            raise serializers.ValidationError({"address": "Input address"})
+        if not attrs.get('latitude') or not attrs.get('longitude'):
+            raise serializers.ValidationError({"address": "Input latitude or longitude"})
+        return attrs
 
 
 class UpdateDepartmentSerializer(BaseSerializer):
