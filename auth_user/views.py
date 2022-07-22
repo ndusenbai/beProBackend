@@ -12,12 +12,13 @@ from drf_yasg.utils import swagger_auto_schema
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
-    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer
+    ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer, \
+    AssistantUpdateSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
     get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies, \
     update_user_profile, forgot_password_with_pin, check_code_after_forgot, \
-    change_password_with_code_after_forgot
+    change_password_with_code_after_forgot, update_user
 from utils.manual_parameters import QUERY_CODE
 
 User = get_user_model()
@@ -121,17 +122,28 @@ class EmployeeListView(ListModelMixin, GenericViewSet):
 
 class AssistantViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = AssistantSerializer
+    http_method_names = ['get', 'post', 'put', 'delete']
+
+    def get_queryset(self):
+        return assistants_queryset()
+
+    def get_serializer_class(self):
+        if self.action == 'update':
+            return AssistantUpdateSerializer
+        return AssistantSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        with atomic():
-            assistant = create_assistant(serializer)
+        assistant = create_assistant(serializer)
         return Response(self.get_serializer(assistant).data, status=status.HTTP_201_CREATED)
 
-    def get_queryset(self):
-        return assistants_queryset()
+    @swagger_auto_schema(request_body=AssistantUpdateSerializer)
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        update_user(self.get_object(), serializer.validated_data)
+        return Response({'message': 'updated'}, status=status.HTTP_200_OK)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
