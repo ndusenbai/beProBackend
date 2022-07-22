@@ -26,7 +26,7 @@ class ReasonViewSet(ModelViewSet):
 
 class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Score.objects.order_by()
+    queryset = Score.objects.order_by('-created_at')
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('reason__name', 'created_by__first_name', 'created_by__last_name')
     filterset_fields = ('role',)
