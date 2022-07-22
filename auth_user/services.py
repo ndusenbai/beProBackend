@@ -6,16 +6,18 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import HttpRequest
 from django.utils.encoding import force_bytes, force_str
-from rest_framework import serializers
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.apps import apps
 from django.utils.timezone import now
-from auth_user.models import AssistantTypes, AcceptCode
-from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from django.db.models import Q
 from django.db import IntegrityError
+from django.db.transaction import atomic
+from rest_framework import serializers
+
+from auth_user.models import AssistantTypes, AcceptCode
+from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
 from auth_user.tasks import send_email
-from companies.models import Role, RoleChoices, Company
+from companies.models import RoleChoices, Company
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -158,6 +160,7 @@ def get_user_list(company):
     ).objects.filter(company=company)
 
 
+@atomic
 def create_assistant(serializer):
     first_name = serializer.validated_data['first_name']
     last_name = serializer.validated_data['last_name']
@@ -169,7 +172,7 @@ def create_assistant(serializer):
 
     if not assistant.exists():
 
-        assistant = User.objects.create(
+        assistant = User.objects.create_user(
                 first_name=first_name,
                 last_name=last_name,
                 middle_name=middle_name,
@@ -264,3 +267,9 @@ def update_user_profile(user, serializer):
     serializer.save()
 
     return serializer.data, 200
+
+
+def update_user(instance: User, data) -> OrderedDict:
+    for key, value in data.items():
+        setattr(instance, key, value)
+    instance.save()

@@ -78,12 +78,20 @@ class EmployeeListSerializer(BaseSerializer):
 
 
 class AssistantSerializer(BaseSerializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(read_only=True)
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
     middle_name = serializers.CharField(max_length=50, allow_blank=True)
     phone_number = serializers.CharField()
     email = serializers.EmailField()
+    assistant_type = serializers.IntegerField()
+
+
+class AssistantUpdateSerializer(BaseSerializer):
+    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
+    middle_name = serializers.CharField(max_length=50, allow_blank=True)
+    phone_number = serializers.CharField()
     assistant_type = serializers.IntegerField()
 
 
