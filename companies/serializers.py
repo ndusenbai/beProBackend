@@ -137,7 +137,7 @@ class CreateEmployeeSerializer(BaseSerializer):
     middle_name = serializers.CharField(allow_blank=True)
     email = serializers.EmailField()
     phone_number = serializers.CharField(allow_blank=True)
-    avatar = serializers.ImageField(required=False)
+    avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()
     department_id = serializers.IntegerField()
@@ -148,6 +148,8 @@ class CreateEmployeeSerializer(BaseSerializer):
             data = data.dict()
         if isinstance(data['schedules'], str):
             data['schedules'] = json.loads(data['schedules'])
+        if 'avatar' in data and isinstance(data['avatar'], str) and data['avatar'] == 'null':
+            data['avatar'] = None
         data = super().to_internal_value(data)
         return data
 
