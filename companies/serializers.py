@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 
 from rest_framework import serializers
-
 from auth_user.serializers import UserModelSerializer, UserSerializer
 from companies.models import Company, Department, CompanyService
 from timesheet.serializers import ScheduleSerializer
@@ -58,6 +57,11 @@ class DepartmentSerializer(BaseSerializer):
     radius = serializers.IntegerField(default=50)
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
+
+    def validate(self, attrs):
+        if not attrs.get('address'):
+            raise serializers.ValidationError({"address": "Введите адрес"})
+        return attrs
 
 
 class UpdateDepartmentSerializer(BaseSerializer):
@@ -132,16 +136,16 @@ class EmployeesSerializer(BaseSerializer):
 
 
 class CreateEmployeeSerializer(BaseSerializer):
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
+    first_name = serializers.CharField(allow_blank=True)
+    last_name = serializers.CharField(allow_blank=True)
     middle_name = serializers.CharField(allow_blank=True)
-    email = serializers.EmailField()
+    email = serializers.EmailField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()
     department_id = serializers.IntegerField()
-    schedules = ScheduleSerializer(many=True)
+    schedules = ScheduleSerializer(many=True,)
 
     def to_internal_value(self, data):
         if hasattr(data, 'getlist'):
@@ -152,6 +156,33 @@ class CreateEmployeeSerializer(BaseSerializer):
             data['avatar'] = None
         data = super().to_internal_value(data)
         return data
+
+    def validate(self, attrs):
+        validation_errors = []
+
+        if ('first_name' in attrs and not attrs.get('first_name')) or \
+                ('last_name' in attrs and not attrs.get('last_name')):
+            validation_errors.append({'name': 'Введите ФИО'})
+
+        if 'email' in attrs and not attrs.get('email'):
+            validation_errors.append({'email': 'Введите Email'})
+
+        if 'title' in attrs and not attrs.get('title'):
+            validation_errors.append({'title': 'Введите позицию'})
+
+        if 'grade' in attrs and not attrs.get('grade'):
+            validation_errors.append({'grade': 'Укажите градацию'})
+
+        if 'schedules' in attrs and not attrs.get('schedules'):
+            validation_errors.append({'schedules': 'Укажите часы работы'})
+
+        if 'department_id' in attrs and not attrs.get('department_id'):
+            validation_errors.append({'department_id': 'Укажите отдел'})
+
+        if validation_errors:
+            raise serializers.ValidationError(validation_errors)
+
+        return attrs
 
 
 class FilterEmployeesSerializer(BaseSerializer):

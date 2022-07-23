@@ -105,8 +105,8 @@ class ObserverViewSet(ListModelMixin,
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        create_observer_and_role(serializer, request.user)
-        return Response({'message': 'created'}, status=status.HTTP_201_CREATED)
+        response, status_code = create_observer_and_role(serializer, request.user)
+        return Response(response, status=status_code)
 
 
 class EmployeeListView(ListModelMixin, GenericViewSet):
