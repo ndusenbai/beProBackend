@@ -47,6 +47,10 @@ def create_user_statistic(role: Role, data: OrderedDict):
 @atomic
 def bulk_create_observers(data: dict, instance: Statistic):
     employees = data.get('employees')
+
+    if instance.observers.all() and data.get('visibility') != VisibilityType.EMPLOYEES:
+        instance.observers.all().delete()
+
     if employees and data.get('visibility') == VisibilityType.EMPLOYEES:
         instance.observers.all().delete()
         observers = [StatisticObserver(role_id=employee_id, statistic=instance) for employee_id in employees]
