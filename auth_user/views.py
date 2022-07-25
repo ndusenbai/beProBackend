@@ -2,22 +2,20 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, UpdateModelMixin
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 
-from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
-    ObserverListSerializer, ObserverCreateSerializer, EmployeeListSerializer, AssistantSerializer, \
+from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, AssistantSerializer, \
     ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer, \
     AssistantUpdateSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
-    check_link_after_forgot, create_observer_and_role, get_user_list, create_assistant, assistants_queryset, \
-    get_additional_user_info, change_selected_company, activate_owner_companies, deactivate_owner_companies, \
-    update_user_profile, forgot_password_with_pin, check_code_after_forgot, \
-    change_password_with_code_after_forgot, update_user
+    check_link_after_forgot, create_assistant, assistants_queryset, get_additional_user_info, change_selected_company,\
+    activate_owner_companies, deactivate_owner_companies, update_user_profile, forgot_password_with_pin,\
+    check_code_after_forgot, change_password_with_code_after_forgot, update_user
 from utils.manual_parameters import QUERY_CODE
 
 User = get_user_model()
@@ -85,38 +83,6 @@ class ForgotPasswordWithPinView(GenericViewSet):
     @swagger_auto_schema(manual_parameters=[QUERY_CODE])
     def check_code(self, request):
         return Response(check_code_after_forgot(request.GET.get('code')))
-
-
-class ObserverViewSet(ListModelMixin,
-                      CreateModelMixin,
-                      DestroyModelMixin,
-                      GenericViewSet):
-    permission_classes = (IsAuthenticated,)
-    lookup_field = "id"
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ObserverListSerializer
-        elif self.action == 'create':
-            return ObserverCreateSerializer
-
-    def get_queryset(self):
-        return get_user_list(self.request.user.selected_company)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        response, status_code = create_observer_and_role(serializer, request.user)
-        return Response(response, status=status_code)
-
-
-class EmployeeListView(ListModelMixin, GenericViewSet):
-    pagination_class = None
-    permission_classes = (IsAuthenticated,)
-    serializer_class = EmployeeListSerializer
-
-    def get_queryset(self):
-        return get_user_list(self.request.user.selected_company)
 
 
 class AssistantViewSet(ModelViewSet):

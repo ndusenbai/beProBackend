@@ -56,13 +56,6 @@ class EmailSerializer(BaseSerializer):
     email = serializers.EmailField()
 
 
-class ObserverCreateSerializer(BaseSerializer):
-    first_name = serializers.CharField(max_length=50)
-    last_name = serializers.CharField(max_length=50)
-    middle_name = serializers.CharField(max_length=50, allow_blank=True)
-    email = serializers.EmailField()
-
-
 class UserSerializer(BaseSerializer):
     id = serializers.IntegerField()
     first_name = serializers.CharField(max_length=50)
@@ -71,11 +64,6 @@ class UserSerializer(BaseSerializer):
     email = serializers.EmailField()
     phone_number = serializers.CharField()
     avatar = serializers.ImageField()
-
-
-class ObserverListSerializer(BaseSerializer):
-    id = serializers.IntegerField()
-    user = UserSerializer()
 
 
 class EmployeeListSerializer(BaseSerializer):
