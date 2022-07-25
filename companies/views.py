@@ -75,7 +75,11 @@ class DepartmentViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        create_department(request.user, serializer.validated_data)
+        try:
+            create_department(request.user, serializer.validated_data)
+        except Exception as e:
+            if e.args[0]['status'] == 400:
+                return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
         return Response({'message': 'created'})
 
     @swagger_auto_schema(manual_parameters=[QUERY_COMPANY])

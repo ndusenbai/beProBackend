@@ -12,15 +12,17 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.parsers import JSONParser, FormParser
 
 from bepro_statistics.filters import StatisticsFilterSet
-from bepro_statistics.models import UserStatistic, Statistic
+from bepro_statistics.models import UserStatistic, Statistic, VisibilityType, StatisticObserver
 from bepro_statistics.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer, \
     GetStatisticSerializer, HistoryPdfStatsSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, create_user_statistic, \
-    get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf
+    get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf, \
+    bulk_create_observers
 from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
 from utils.tools import log_exception
+from companies.models import Role
 
 User = get_user_model()
 
@@ -54,6 +56,15 @@ class StatisticViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin,
         serializer.is_valid(raise_exception=True)
         create_statistic(serializer)
         return Response({'message': 'created'}, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        response, status_code = bulk_create_observers(serializer.data, instance)
+        return Response(response, status_code)
 
 
 class UserStatisticViewSet(ModelViewSet):
