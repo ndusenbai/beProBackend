@@ -4,6 +4,7 @@ from typing import OrderedDict
 from datetime import datetime, date, timedelta
 
 from django.apps import apps
+from django.conf import settings
 from django.db.transaction import atomic
 from django.db.models import Q
 from django.utils import timezone
@@ -256,7 +257,7 @@ def save_stat_to_pdf(statistic_type: str) -> str:
             file_name = f'media/statistics/history_stats/{unique_name}.pdf'
 
     plt.savefig(file_name)
-    return file_name
+    return f'{settings.CURRENT_SITE}/{file_name}'
 
 
 def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
