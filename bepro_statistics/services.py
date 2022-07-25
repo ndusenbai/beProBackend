@@ -80,7 +80,7 @@ def get_stats_for_user(request):
 
     visibility_level = check_user_permission(request.user, role)
 
-    stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) | Q(**visibility_level))
+    stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) & Q(**visibility_level))
     for stat in stats:
         if not (stat.visibility == VisibilityType.EMPLOYEES and not request.user.role.
                 observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat)):
