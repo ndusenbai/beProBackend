@@ -12,7 +12,7 @@ def check_employees_qty(sender, instance, created, **kwargs):
         if not created:
             return True
         if not instance.company.is_active:
-            raise Exception('Company is not active. Need to renew tariff')
+            raise Exception({'message': 'Company is not active. Need to renew tariff', 'status': 400})
 
         check_employees_qty_in_company(instance)
         # TODO: uncomment after enabling tariffs

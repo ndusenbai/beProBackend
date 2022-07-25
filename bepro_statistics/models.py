@@ -41,6 +41,9 @@ class StatisticObserver(BaseModel):
     def __str__(self):
         return f'{self.statistic} - {self.role}'
 
+    class Meta:
+        unique_together = ('statistic', 'role')
+
 
 class UserStatistic(BaseModel):
     statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE)

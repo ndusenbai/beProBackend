@@ -44,6 +44,26 @@ def create_user_statistic(role: Role, data: OrderedDict):
         fact=data['fact'])
 
 
+@atomic
+def bulk_create_observers(data: dict, instance: Statistic):
+    employees = data.get('employees')
+
+    if instance.observers.all() and data.get('visibility') != VisibilityType.EMPLOYEES:
+        instance.observers.all().delete()
+
+    if employees and data.get('visibility') == VisibilityType.EMPLOYEES:
+        instance.observers.all().delete()
+        observers = [StatisticObserver(role_id=employee_id, statistic=instance) for employee_id in employees]
+        StatisticObserver.objects.bulk_create(observers)
+        return data, 200
+    elif employees and data.get('visibility') != VisibilityType.EMPLOYEES:
+        return {'message': 'Change visibility to Employees'}, 400
+    elif not employees and data.get('visibility') == VisibilityType.EMPLOYEES:
+        return {'message': 'Input employees'}, 400
+    elif not employees and data.get('visibility') != VisibilityType.EMPLOYEES:
+        return data, 200
+
+
 def check_user_permission(user, role):
 
     if user.role == role or user.role.role == RoleChoices.HR:
