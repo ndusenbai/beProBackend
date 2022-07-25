@@ -29,9 +29,10 @@ class ChangePasswordView(GenericViewSet):
     permission_classes = (IsAuthenticated, )
 
     def change_password(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
-        change_password(request.user, serializer.validated_data)
+        user = serializer.validated_data.pop('user', request.user)
+        change_password(user, serializer.validated_data)
         return Response({'message': 'updated'}, status=status.HTTP_200_OK)
 
 
