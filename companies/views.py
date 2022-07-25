@@ -7,13 +7,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
+
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
-    CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer
+    CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
+    ObserverCreateSerializer, ObserverUpdateSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
-    delete_head_of_department_role
+    delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.tools import log_exception
 
@@ -145,3 +147,31 @@ class EmployeesViewSet(ModelViewSet):
         except Exception as e:
             log_exception(e, 'Error in DepartmentViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ObserverViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ['get', 'post', 'put', 'delete']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ObserverListSerializer
+        elif self.action == 'create':
+            return ObserverCreateSerializer
+        elif self.action == 'update':
+            return ObserverUpdateSerializer
+
+    def get_queryset(self):
+        return get_observers_qs(self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response, status_code = create_observer_and_role(serializer.validated_data)
+        return Response(response, status=status_code)
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        update_observer(self.get_object(), serializer.validated_data)
+        return Response({'message': 'updated'})
