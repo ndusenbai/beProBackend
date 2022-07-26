@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 
 from timesheet.models import TimeSheet
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
-    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer
+    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
+    TimeSheetUpdateModelSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
@@ -33,6 +34,10 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
             return qs
         return TimeSheet.objects.all()
 
+    # def get_serializer_class(self):
+    #     if self.action == 'partial_update':
+    #         return TimeSheetUpdateModelSerializer
+
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR])
     def list(self, request, *args, **kwargs):
         """
@@ -50,6 +55,11 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
         except Exception as e:
             log_exception(e, 'Error in TimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # @swagger_auto_schema(request_body=TimeSheetUpdateModelSerializer)
+    # def partial_update(self, request, *args, **kwargs):
+    #     kwargs['partial'] = True
+    #     return self.update(request, *args, **kwargs)
 
 
 class LastTimeSheet(APIView):

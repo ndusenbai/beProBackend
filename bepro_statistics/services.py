@@ -9,6 +9,7 @@ from django.db.transaction import atomic
 from django.db.models import Q
 from django.utils import timezone
 
+from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
 from companies.models import Role, RoleChoices
@@ -67,20 +68,27 @@ def bulk_create_observers(data: dict, instance: Statistic):
 
 def check_user_permission(user, role):
 
-    if user.role == role or user.role.role == RoleChoices.HR:
+    if hasattr(user, 'role'):
+        if user.role == role or user.role.role == RoleChoices.HR:
+            return {"visibility__in": {VisibilityType.HIDDEN,
+                                       VisibilityType.EMPLOYEES,
+                                       VisibilityType.OPEN_DEPARTMENT,
+                                       VisibilityType.OPEN_EVERYONE}}
+        elif user.role.department == role.department:
+            return {"visibility__in": {VisibilityType.OPEN_DEPARTMENT,
+                                       VisibilityType.OPEN_EVERYONE,
+                                       VisibilityType.EMPLOYEES}}
+        elif user.role.company == role.company:
+            return {"visibility__in": {VisibilityType.OPEN_EVERYONE,
+                                       VisibilityType.EMPLOYEES}}
+        else:
+            return {}
+
+    elif not hasattr(user, 'role') and get_user_role(user) == 'owner':
         return {"visibility__in": {VisibilityType.HIDDEN,
                                    VisibilityType.EMPLOYEES,
                                    VisibilityType.OPEN_DEPARTMENT,
                                    VisibilityType.OPEN_EVERYONE}}
-    elif user.role.department == role.department:
-        return {"visibility__in": {VisibilityType.OPEN_DEPARTMENT,
-                                   VisibilityType.OPEN_EVERYONE,
-                                   VisibilityType.EMPLOYEES}}
-    elif user.role.company == role.company:
-        return {"visibility__in": {VisibilityType.OPEN_EVERYONE,
-                                   VisibilityType.EMPLOYEES}}
-    else:
-        return {}
 
 
 def change_user_statistic(data: OrderedDict):

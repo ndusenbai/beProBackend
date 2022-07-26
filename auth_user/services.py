@@ -238,12 +238,3 @@ def update_user(instance: User, data) -> OrderedDict:
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()
-
-
-def check_role_for_user(data: dict) -> bool:
-    user = authenticate(email=data.get('email'), password=data.get('password'))
-
-    if not hasattr(user, 'role') and not user.is_superuser and not user.is_active and not user.is_staff and not user.is_admin:
-        return False
-
-    return True
