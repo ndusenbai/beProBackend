@@ -243,7 +243,7 @@ def update_user(instance: User, data) -> OrderedDict:
 def check_role_for_user(data: dict) -> bool:
     user = authenticate(email=data.get('email'), password=data.get('password'))
 
-    if not hasattr(user, 'role'):
+    if not hasattr(user, 'role') or not user.is_superuser:
         return False
 
     return True
