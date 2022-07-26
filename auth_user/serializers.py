@@ -18,10 +18,18 @@ class UserModelSerializer(serializers.ModelSerializer):
 class ChangePasswordSerializer(BaseSerializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField()
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.only('id'), required=False)
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if 'user_id' in data:
+            data['user'] = data.pop('user_id')
+        return data
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        password_validation.validate_password(attrs.get('new_password'))
+        user = attrs.get('user', self.context['user'])
+        password_validation.validate_password(attrs.get('new_password'), user)
         return attrs
 
 
@@ -48,13 +56,6 @@ class EmailSerializer(BaseSerializer):
     email = serializers.EmailField()
 
 
-class ObserverCreateSerializer(BaseSerializer):
-    first_name = serializers.CharField(max_length=50)
-    last_name = serializers.CharField(max_length=50)
-    middle_name = serializers.CharField(max_length=50, allow_blank=True)
-    email = serializers.EmailField()
-
-
 class UserSerializer(BaseSerializer):
     id = serializers.IntegerField()
     first_name = serializers.CharField(max_length=50)
@@ -63,11 +64,6 @@ class UserSerializer(BaseSerializer):
     email = serializers.EmailField()
     phone_number = serializers.CharField()
     avatar = serializers.ImageField()
-
-
-class ObserverListSerializer(BaseSerializer):
-    id = serializers.IntegerField()
-    user = UserSerializer()
 
 
 class EmployeeListSerializer(BaseSerializer):

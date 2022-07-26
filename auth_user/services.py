@@ -7,15 +7,14 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import HttpRequest
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.apps import apps
 from django.utils.timezone import now
 from django.db.models import Q
 from django.db import IntegrityError
 from django.db.transaction import atomic
-from rest_framework import serializers, status
+from rest_framework import serializers
 
 from auth_user.models import AssistantTypes, AcceptCode
-from auth_user.serializers import ObserverCreateSerializer, UserModelSerializer
+from auth_user.serializers import UserModelSerializer
 from auth_user.tasks import send_email
 from companies.models import RoleChoices, Company
 from utils.tools import log_exception
@@ -124,49 +123,6 @@ def get_domain(request: HttpRequest) -> str:
 
     protocol = 'https://' if request.is_secure() else 'http://'
     return protocol + domain_name
-
-
-@atomic
-def create_observer_and_role(serializer: ObserverCreateSerializer, user):
-    first_name = serializer.validated_data['first_name']
-    last_name = serializer.validated_data['last_name']
-    middle_name = serializer.validated_data['middle_name']
-    email = serializer.validated_data['email']
-    observer = User.objects.filter(email=email)
-    if not observer.exists():
-        observer = User.objects.create_user(
-            first_name=first_name,
-            last_name=last_name,
-            middle_name=middle_name,
-            email=email,
-        )
-    else:
-        observer = observer.first()
-
-    if apps.get_model(
-        app_label='companies',
-        model_name='Role'
-    ).objects.filter(user=observer).exists():
-        return {'message': 'observer with this email is already created'}, status.HTTP_400_BAD_REQUEST
-
-    apps.get_model(
-        app_label='companies',
-        model_name='Role'
-    ).objects.create(
-        company=user.selected_company,
-        department=None,
-        role=RoleChoices.OBSERVER,
-        user=observer
-    )
-
-    return {'message': 'created'}, status.HTTP_201_CREATED
-
-
-def get_user_list(company):
-    return apps.get_model(
-        app_label='companies',
-        model_name='Role'
-    ).objects.filter(company=company)
 
 
 @atomic

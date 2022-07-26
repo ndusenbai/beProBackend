@@ -1,8 +1,10 @@
-from django.apps import apps
+from typing import OrderedDict
+
 from django.db.transaction import atomic
 from django.db.models import Count, Prefetch
 from django.contrib.auth import get_user_model
 from django.db.models.query import QuerySet
+from rest_framework import status
 
 from auth_user.services import User
 from companies.models import Department, Company, Role, RoleChoices
@@ -179,3 +181,40 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
 
 def delete_head_of_department_role(instance: Department) -> None:
     Role.objects.filter(user=instance.head_of_department).delete()
+
+
+def update_observer(instance: Role, data: OrderedDict):
+    user = instance.user
+
+    for key, value in data.items():
+        setattr(user, key, value)
+    user.save()
+
+
+@atomic
+def create_observer_and_role(data: OrderedDict):
+    try:
+        observer = User.objects.get(email=data['email'])
+    except User.DoesNotExist:
+        observer = User.objects.create_user(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            middle_name=data['middle_name'],
+            email=data['email'],
+        )
+    if Role.objects.filter(user=observer).exists():
+        return {'message': 'observer with this email is already created'}, status.HTTP_400_BAD_REQUEST
+
+    Role.objects.create(
+        company=data['company'],
+        department=None,
+        role=RoleChoices.OBSERVER,
+        user=observer
+    )
+
+    return {'message': 'created'}, status.HTTP_201_CREATED
+
+
+def get_observers_qs(owner):
+    owner_companies = Company.objects.filter(owner=owner).values_list('id', flat=True)
+    return Role.objects.filter(role=RoleChoices.OBSERVER, company_id__in=owner_companies)

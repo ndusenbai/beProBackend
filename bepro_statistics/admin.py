@@ -4,7 +4,7 @@ from bepro_statistics.models import Statistic, StatisticObserver, UserStatistic
 
 @admin.register(Statistic)
 class StatisticAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'statistic_type', 'department', 'role')
+    list_display = ('id', 'name', 'statistic_type', 'department', 'department_id', 'role', 'role_id')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
     raw_id_fields = ('department', 'role')

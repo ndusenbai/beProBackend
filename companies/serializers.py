@@ -193,3 +193,23 @@ class FilterEmployeesSerializer(BaseSerializer):
         if 'departments' in data:
             data['departments'] = [int(i) for i in data['departments'][0].split(',')]
         return data
+
+
+class ObserverListSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    user = UserSerializer()
+    company = CompanyModelSerializer()
+
+
+class ObserverCreateSerializer(BaseSerializer):
+    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
+    middle_name = serializers.CharField(max_length=50, allow_blank=True)
+    email = serializers.EmailField()
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
+
+
+class ObserverUpdateSerializer(BaseSerializer):
+    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
+    middle_name = serializers.CharField(max_length=50, allow_blank=True)
