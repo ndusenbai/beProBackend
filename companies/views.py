@@ -78,7 +78,7 @@ class DepartmentViewSet(ModelViewSet):
         try:
             create_department(request.user, serializer.validated_data)
         except Exception as e:
-            if e.args[0]['status'] == 400:
+            if type(e.args[0]) == dict and e.args[0]['status'] == 400:
                 return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
         return Response({'message': 'created'})
 
@@ -138,7 +138,8 @@ class EmployeesViewSet(ModelViewSet):
         except ValidationError as e:
             return Response(e.detail, status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            if e.args[0]['status'] == 400:
+
+            if type(e.args[0]) == dict and e.args[0]['status'] == 400:
                 return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
 
             log_exception(e, 'Error in EmployeesViewSet.create()')
@@ -178,7 +179,7 @@ class ObserverViewSet(ModelViewSet):
             response, status_code = create_observer_and_role(serializer.validated_data)
             return Response(response, status=status_code)
         except Exception as e:
-            if e.args[0]['status'] == 400:
+            if type(e.args[0]) == dict and e.args[0]['status'] == 400:
                 return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
 
     def update(self, request, *args, **kwargs):
