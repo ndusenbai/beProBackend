@@ -34,9 +34,10 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
             return qs
         return TimeSheet.objects.all()
 
-    # def get_serializer_class(self):
-    #     if self.action == 'partial_update':
-    #         return TimeSheetUpdateModelSerializer
+    def get_serializer_class(self):
+        if self.action == 'partial_update':
+            return TimeSheetUpdateModelSerializer
+        return self.serializer_class
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR])
     def list(self, request, *args, **kwargs):
@@ -55,11 +56,6 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
         except Exception as e:
             log_exception(e, 'Error in TimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    # @swagger_auto_schema(request_body=TimeSheetUpdateModelSerializer)
-    # def partial_update(self, request, *args, **kwargs):
-    #     kwargs['partial'] = True
-    #     return self.update(request, *args, **kwargs)
 
 
 class LastTimeSheet(APIView):
