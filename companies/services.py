@@ -140,7 +140,7 @@ def create_employee(data: dict) -> None:
         )
         create_employee_schedules(role, schedules)
     else:
-        raise Exception({'message': 'Company is not active. Need to renew tariff', 'status': 400})
+        raise Exception({'message': 'Тариф компании истек. Необходимо обновить тариф', 'status': 400})
 
 
 @atomic

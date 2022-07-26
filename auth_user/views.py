@@ -118,7 +118,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
         if not check_role_for_user(request.data):
-            return Response({'message': 'Role for this user does not exists'})
+            return Response({'message': 'Данный пользователь не существует'})
 
         resp = super().post(request, *args, **kwargs)
         resp.data['user'] = get_additional_user_info(request.data['email'])
