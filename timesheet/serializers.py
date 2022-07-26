@@ -11,6 +11,16 @@ class TimeSheetModelSerializer(serializers.ModelSerializer):
         exclude = ('created_at', 'updated_at')
 
 
+class TimeSheetUpdateModelSerializer(serializers.ModelSerializer):
+    time_from = serializers.TimeField(required=False)
+    time_to = serializers.TimeField(required=False)
+    day = serializers.DateField(required=False)
+
+    class Meta:
+        model = TimeSheet
+        exclude = ('created_at', 'updated_at', )
+
+
 class TimeSheetListSerializer(BaseSerializer):
     role_id = serializers.IntegerField(required=False)
     month = serializers.IntegerField(min_value=1, max_value=12, required=False)
