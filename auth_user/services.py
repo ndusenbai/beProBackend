@@ -1,6 +1,6 @@
 from typing import OrderedDict
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.shortcuts import get_object_or_404
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -238,3 +238,12 @@ def update_user(instance: User, data) -> OrderedDict:
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()
+
+
+def check_role_for_user(data: dict) -> bool:
+    user = authenticate(email=data.get('email'), password=data.get('password'))
+
+    if not hasattr(user, 'role'):
+        return False
+
+    return True
