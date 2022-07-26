@@ -138,6 +138,9 @@ class EmployeesViewSet(ModelViewSet):
         except ValidationError as e:
             return Response(e.detail, status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            if e.args[0]['status'] == 400:
+                return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
+
             log_exception(e, 'Error in EmployeesViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -169,10 +172,14 @@ class ObserverViewSet(ModelViewSet):
         return get_observers_qs(self.request.user)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        response, status_code = create_observer_and_role(serializer.validated_data)
-        return Response(response, status=status_code)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            response, status_code = create_observer_and_role(serializer.validated_data)
+            return Response(response, status=status_code)
+        except Exception as e:
+            if e.args[0]['status'] == 400:
+                return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
 
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
