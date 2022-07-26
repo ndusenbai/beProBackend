@@ -44,7 +44,6 @@ def update_company(instance: Company, data: dict) -> None:
 def create_department(user: User, data: dict) -> None:
     head_of_department = None
     schedules = data.pop('schedules')
-
     department = Department.objects.create(
         name=data['name'],
         company=user.selected_company,
@@ -123,19 +122,23 @@ def create_employee(data: dict) -> None:
 
     department = Department.objects.get(id=department_id)
     data['selected_company_id'] = department.company_id
-    try:
-        employee = User.objects.get(email=data['email'])
-    except User.DoesNotExist:
-        employee = User.objects.create_user(**data)
-    role = Role.objects.create(
-        company=department.company,
-        department=department,
-        role=RoleChoices.HR if department.is_hr else RoleChoices.EMPLOYEE,
-        user=employee,
-        title=title,
-        grade=grade
-    )
-    create_employee_schedules(role, schedules)
+
+    if department.company.is_active:
+        try:
+            employee = User.objects.get(email=data['email'])
+        except User.DoesNotExist:
+            employee = User.objects.create_user(**data)
+        role = Role.objects.create(
+            company=department.company,
+            department=department,
+            role=RoleChoices.HR if department.is_hr else RoleChoices.EMPLOYEE,
+            user=employee,
+            title=title,
+            grade=grade
+        )
+        create_employee_schedules(role, schedules)
+    else:
+        raise Exception({'message': 'Company is not active. Need to renew tariff', 'status': 400})
 
 
 @atomic

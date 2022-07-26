@@ -45,4 +45,3 @@ class IsHeadOfDepartment(BasePermission):
             return True
         return check_head_of_department(request.user)
 
-
