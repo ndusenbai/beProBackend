@@ -1,3 +1,6 @@
+from datetime import date
+
+from django.utils import timezone
 from rest_framework import serializers
 from django.contrib.auth import password_validation, get_user_model
 
@@ -114,6 +117,7 @@ class UserProfileSerializer(BaseSerializer):
     avatar = serializers.ImageField(required=False, allow_null=True)
     role = serializers.SerializerMethodField(required=False)
     selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
+    score = serializers.SerializerMethodField()
 
     def get_role(self, instance):
         from auth_user.services import get_user_role
@@ -131,3 +135,11 @@ class UserProfileSerializer(BaseSerializer):
                 'department_id': instance.role.department.id,
                 'department_name': '',
             }
+
+    def get_score(self, instance):
+        now = timezone.now()
+        first_date_of_month = date(now.year, now.month, 1)
+        last_date_of_month = date(now.year, now.month + 1, 1)
+        points = instance.role.scores.filter(created_at__range=[first_date_of_month, last_date_of_month]).values_list('points', flat=True)
+        score = sum(point for point in points) + 100
+        return score

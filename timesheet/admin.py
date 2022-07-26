@@ -13,7 +13,7 @@ class DepartmentScheduleAdmin(admin.ModelAdmin):
 class EmployeeScheduleAdmin(admin.ModelAdmin):
     list_display = ('role', 'week_day', 'time_from', 'time_to')
     raw_id_fields = ('role',)
-    search_fields = ('role',)
+    search_fields = ('role__user__email', 'role__user__last_name', 'role__user__first_name', 'role__user__middle_name')
 
 
 @admin.register(TimeSheet)
