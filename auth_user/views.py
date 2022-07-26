@@ -15,7 +15,7 @@ from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, For
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_assistant, assistants_queryset, get_additional_user_info, change_selected_company,\
     activate_owner_companies, deactivate_owner_companies, update_user_profile, forgot_password_with_pin,\
-    check_code_after_forgot, change_password_with_code_after_forgot, update_user, check_role_for_user
+    check_code_after_forgot, change_password_with_code_after_forgot, update_user
 
 from utils.manual_parameters import QUERY_CODE
 
@@ -117,11 +117,14 @@ class AssistantViewSet(ModelViewSet):
 class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
-        if not check_role_for_user(request.data):
-            return Response({'message': 'Данный пользователь не существует'}, status=status.HTTP_400_BAD_REQUEST)
+        user_data = get_additional_user_info(request.data['email'])
 
         resp = super().post(request, *args, **kwargs)
-        resp.data['user'] = get_additional_user_info(request.data['email'])
+        resp.data['user'] = user_data
+
+        if user_data['role'] == 'no_role':
+            return Response({'message': 'Данный пользователь не существует'}, status=status.HTTP_400_BAD_REQUEST)
+
         return resp
 
 
