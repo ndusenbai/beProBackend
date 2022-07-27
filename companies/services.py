@@ -216,5 +216,8 @@ def create_observer_and_role(data: OrderedDict):
 
 
 def get_observers_qs(owner):
-    owner_companies = Company.objects.filter(owner=owner).values_list('id', flat=True)
-    return Role.objects.filter(role=RoleChoices.OBSERVER, company_id__in=owner_companies)
+    if owner.id:
+        owner_companies = Company.objects.filter(owner=owner).values_list('id', flat=True)
+        return Role.objects.filter(role=RoleChoices.OBSERVER, company_id__in=owner_companies)
+
+    return Role.objects.none()

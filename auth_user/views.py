@@ -14,9 +14,9 @@ from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, For
     ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer, \
     AssistantUpdateSerializer, OwnerRetrieveSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
-    check_link_after_forgot, create_assistant, assistants_queryset, get_additional_user_info, change_selected_company,\
-    activate_owner_companies, deactivate_owner_companies, update_user_profile, forgot_password_with_pin,\
-    check_code_after_forgot, change_password_with_code_after_forgot, update_user
+    check_link_after_forgot, create_assistant, assistants_queryset, get_additional_user_info, change_selected_company, \
+    activate_owner_companies, deactivate_owner_companies, update_user_profile, forgot_password_with_pin, \
+    check_code_after_forgot, change_password_with_code_after_forgot, update_user, get_owners_qs
 
 from utils.manual_parameters import QUERY_CODE
 
@@ -149,28 +149,16 @@ class ChangeSelectedCompanyViewSet(UpdateModelMixin, GenericViewSet):
 
 class OwnerViewSet(ListModelMixin, DestroyModelMixin, RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
-    serializer_class = OwnerSerializer
     filter_backends = (SearchFilter,)
     search_fields = ('last_name', 'first_name', 'middle_name', 'phone_number', 'company_name')
 
     def get_queryset(self):
-        from django.db.models import Count, F
-        return User.objects.annotate(
-                employees_count=Count('selected_company__roles', distinct=True),
-                company_name=F('selected_company__name'),
-                is_company_active=F('selected_company__is_active'),)\
-            .alias(owned_companies_count=Count('owned_companies', distinct=True))\
-            .filter(owned_companies_count__gt=0)\
-            .order_by('id')
+        return get_owners_qs()
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return OwnerSerializer
-        elif self.action == 'retrieve':
+        if self.action == 'retrieve':
             return OwnerRetrieveSerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        return OwnerSerializer
 
 
 class ActivateOwnerCompaniesViewSet(APIView):

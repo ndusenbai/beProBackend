@@ -162,12 +162,12 @@ class ObserverViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return ObserverListSerializer
-        elif self.action == 'create':
+        if self.action == 'create':
             return ObserverCreateSerializer
         elif self.action == 'update':
             return ObserverUpdateSerializer
+
+        return ObserverListSerializer
 
     def get_queryset(self):
         return get_observers_qs(self.request.user)
