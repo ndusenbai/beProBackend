@@ -100,6 +100,7 @@ class ChangeSelectedCompanySerializer(BaseSerializer):
 
 class OwnerSerializer(BaseSerializer):
     id = serializers.IntegerField()
+    email = serializers.EmailField()
     last_name = serializers.CharField()
     first_name = serializers.CharField()
     middle_name = serializers.CharField()
@@ -107,6 +108,19 @@ class OwnerSerializer(BaseSerializer):
     company_name = serializers.CharField()
     employees_count = serializers.IntegerField()
     is_company_active = serializers.BooleanField()
+
+
+class CompanySerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    legal_name = serializers.CharField()
+    years_of_work = serializers.IntegerField()
+    is_active = serializers.BooleanField()
+    max_employees_qty = serializers.IntegerField()
+
+
+class OwnerRetrieveSerializer(OwnerSerializer):
+    selected_company = CompanySerializer()
 
 
 class UserProfileSerializer(BaseSerializer):

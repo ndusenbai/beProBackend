@@ -2,16 +2,17 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 
-from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, AssistantSerializer, \
+from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
+    AssistantSerializer, \
     ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer, \
-    AssistantUpdateSerializer
+    AssistantUpdateSerializer, OwnerRetrieveSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_assistant, assistants_queryset, get_additional_user_info, change_selected_company,\
     activate_owner_companies, deactivate_owner_companies, update_user_profile, forgot_password_with_pin,\
@@ -146,7 +147,7 @@ class ChangeSelectedCompanyViewSet(UpdateModelMixin, GenericViewSet):
         return Response({'message': 'updated'})
 
 
-class OwnerViewSet(ListModelMixin, DestroyModelMixin, GenericViewSet):
+class OwnerViewSet(ListModelMixin, DestroyModelMixin, RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = OwnerSerializer
     filter_backends = (SearchFilter,)
@@ -160,8 +161,16 @@ class OwnerViewSet(ListModelMixin, DestroyModelMixin, GenericViewSet):
                 is_company_active=F('selected_company__is_active'),)\
             .alias(owned_companies_count=Count('owned_companies', distinct=True))\
             .filter(owned_companies_count__gt=0)\
-            .only('id', 'last_name', 'first_name', 'middle_name', 'phone_number')\
             .order_by('id')
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return OwnerSerializer
+        elif self.action == 'retrieve':
+            return OwnerRetrieveSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
 
 class ActivateOwnerCompaniesViewSet(APIView):
