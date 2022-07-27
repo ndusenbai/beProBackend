@@ -13,10 +13,11 @@ from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScor
 from scores.models import Reason, Score
 from scores.services import create_score
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS
+from utils.permissions import ReasonPermissions, MonthScorePermissions
 
 
 class ReasonViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ReasonPermissions,)
     serializer_class = ReasonSerializer
     queryset = Reason.objects.order_by('name')
     filter_backends = (DjangoFilterBackend,)
@@ -44,7 +45,7 @@ class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
 
 class MonthScoresViewSet(ListModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (MonthScorePermissions,)
     serializer_class = MonthScoresSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('role',)

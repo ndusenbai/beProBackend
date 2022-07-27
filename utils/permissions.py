@@ -72,6 +72,14 @@ class IsOwner(BasePermission):
         return False
 
 
+class IsOwnerOrSuperuser(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+        if request.user.is_authenticated and (role == 'owner' or role == 'superuser'):
+            return True
+        return False
+
+
 class IsSuperuser(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
@@ -96,12 +104,14 @@ class DepartamentPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
 
-        if not request.GET.get('company'):
-            return False
-
         if view.action in ('retrieve', 'get', 'list'):
+
+            if not request.GET.get('company'):
+                return False
+
             if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
                 return True
+
         else:
             if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
                 return True
@@ -113,10 +123,11 @@ class EmployeesPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
 
-        if not request.GET.get('company'):
-            return False
-
         if view.action in ('retrieve', 'get', 'list'):
+
+            if not request.GET.get('company'):
+                return False
+
             if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
                 return True
         else:
@@ -124,3 +135,59 @@ class EmployeesPermissions(BasePermission):
                 return True
 
         return False
+
+
+class StatisticPermissions(BasePermission):
+
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+
+        if view.action in ('retrieve', 'get', 'list'):
+
+            if not request.GET.get('company'):
+                return False
+
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer', 'employee', 'head_of_department'}):
+                return True
+        else:
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
+                return True
+
+        return False
+
+
+class ReasonPermissions(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+
+        if view.action in ('retrieve', 'get', 'list'):
+
+            if not request.GET.get('company'):
+                return False
+
+        if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
+            return True
+
+        return False
+
+
+class MonthScorePermissions(BasePermission):
+
+    def has_permission(self, request, view):
+        if not request.GET.get('role'):
+            return False
+        return True
+
+
+class TimeSheetPermissions(BasePermission):
+
+    def has_permission(self, request, view):
+        if not request.GET.get('role_id'):
+            return False
+
+        role = get_user_role(request.user)
+
+        if view.action in ('partial_update', 'update') and role in ('employees', 'observer'):
+            return False
+
+        return True

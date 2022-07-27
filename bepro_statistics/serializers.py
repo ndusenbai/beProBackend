@@ -32,9 +32,14 @@ class GetStatisticSerializer(serializers.ModelSerializer):
             queryset=Role.objects.only('id')
         )
     )
+    full_name = serializers.SerializerMethodField()
     plan = serializers.IntegerField(required=False)
-    role = serializers.SerializerMethodField(method_name="get_role")
+    role = serializers.PrimaryKeyRelatedField(read_only=True)
+    role_name = serializers.SerializerMethodField(method_name="get_role")
     department = serializers.SerializerMethodField(method_name="get_department")
+
+    def get_full_name(self, obj):
+        return obj.role.user.full_name if obj.role else ""
 
     def get_role(self, obj):
         return obj.role.get_role_display() if obj.role else ""

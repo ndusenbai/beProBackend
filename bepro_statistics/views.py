@@ -21,6 +21,7 @@ from bepro_statistics.services import get_statistics_queryset, create_statistic,
     get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf, \
     bulk_create_observers
 from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
+from utils.permissions import StatisticPermissions
 from utils.tools import log_exception
 from companies.models import Role
 
@@ -69,7 +70,7 @@ class StatisticViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin,
 
 class UserStatisticViewSet(ModelViewSet):
     # TODO: add permission check
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (StatisticPermissions,)
     serializer_class = UserStatisticModelSerializer
     queryset = UserStatistic.objects.all()
 

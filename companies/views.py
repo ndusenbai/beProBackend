@@ -18,7 +18,7 @@ from companies.services import update_department, create_company, create_departm
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
-from utils.permissions import CompanyPermissions, DepartamentPermissions
+from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -104,7 +104,7 @@ class DepartmentViewSet(ModelViewSet):
 
 
 class EmployeesViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (EmployeesPermissions,)
     serializer_class = EmployeesSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
