@@ -6,7 +6,7 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin, UpdateModelM
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.db import IntegrityError
 from timesheet.models import TimeSheet
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
@@ -126,16 +126,17 @@ class ChangeTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
             ABSENT = 3
         """
         try:
+            instance = self.get_object()
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            change_timesheet(serializer.validated_data)
+            change_timesheet(instance, serializer.validated_data)
             return Response({'message': 'updated'})
         except Exception as e:
             log_exception(e, 'Error in ChangeTimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class VacationTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
+class VacationTimeSheetViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = VacationTimeSheetSerializer
     queryset = TimeSheet.objects.all()
@@ -150,6 +151,8 @@ class VacationTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
             serializer.is_valid(raise_exception=True)
             response, status_code = create_vacation(serializer.validated_data)
             return Response(response, status=status_code)
+        except IntegrityError:
+            return Response({'message': "В указанный промежуток уже есть check_in"}, status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             log_exception(e, 'Error in ChangeTimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
