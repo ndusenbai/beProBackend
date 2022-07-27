@@ -201,6 +201,7 @@ def create_observer_and_role(data: OrderedDict):
             last_name=data['last_name'],
             middle_name=data['middle_name'],
             email=data['email'],
+            selected_company=data['company']
         )
     if Role.objects.filter(user=observer).exists():
         return {'message': 'observer with this email is already created'}, status.HTTP_400_BAD_REQUEST
