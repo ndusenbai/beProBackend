@@ -8,7 +8,7 @@ from django.http import HttpRequest
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.timezone import now
-from django.db.models import Q
+from django.db.models import Q, Count, F
 from django.db import IntegrityError
 from django.db.transaction import atomic
 from rest_framework import serializers
@@ -238,3 +238,13 @@ def update_user(instance: User, data) -> OrderedDict:
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()
+
+
+def get_owners_qs():
+    return User.objects.annotate(
+            employees_count=Count('selected_company__roles', distinct=True),
+            company_name=F('selected_company__name'),
+            is_company_active=F('selected_company__is_active'),) \
+        .alias(owned_companies_count=Count('owned_companies', distinct=True)) \
+        .filter(owned_companies_count__gt=0) \
+        .order_by('id')

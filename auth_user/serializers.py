@@ -110,7 +110,7 @@ class OwnerSerializer(BaseSerializer):
     is_company_active = serializers.BooleanField()
 
 
-class CompanySerializer(BaseSerializer):
+class OwnerCompanySerializer(BaseSerializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     legal_name = serializers.CharField()
@@ -120,7 +120,7 @@ class CompanySerializer(BaseSerializer):
 
 
 class OwnerRetrieveSerializer(OwnerSerializer):
-    selected_company = CompanySerializer()
+    selected_company = OwnerCompanySerializer()
 
 
 class UserProfileSerializer(BaseSerializer):
