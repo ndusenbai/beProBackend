@@ -193,6 +193,7 @@ def bulk_create_vacation_timesheets(data):
             break
 
     TimeSheet.objects.bulk_create(timesheets)
+    return {'message': 'created'}, 201
 
 
 @atomic
@@ -200,9 +201,9 @@ def change_timesheet(data: OrderedDict) -> None:
     new_status = data['status']
     timesheet = data['timesheet']
 
-    if new_status == TimeSheetChoices.ON_VACATION:
-        bulk_create_vacation_timesheets(data)
-        return
+    # if new_status == TimeSheetChoices.ON_VACATION:
+    #     bulk_create_vacation_timesheets(data)
+    #     return
 
     if timesheet.status == TimeSheetChoices.LATE and new_status == TimeSheetChoices.ON_TIME:
         auto_score = Score.objects.filter(role=timesheet.role, created_at__date=timesheet.day, reason__is_auto=True)
@@ -211,3 +212,16 @@ def change_timesheet(data: OrderedDict) -> None:
 
     timesheet.status = new_status
     timesheet.save()
+
+
+@atomic
+def create_vacation(data: OrderedDict):
+
+    if TimeSheet.objects.filter(day=data['start_vacation_date']).exists():
+        return {'message': 'У этого сотрудника уже есть статус check_in на сегодняшний день.'}, 400
+
+    if data['start_vacation_date'] > data['end_vacation_date']:
+        return {'message': 'Дата начала отпуска не может быть позже, чем дата окончания отпуска'}, 400
+
+    return bulk_create_vacation_timesheets(data)
+

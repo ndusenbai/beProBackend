@@ -119,7 +119,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
         user_data = get_additional_user_info(request.data['email'])
-
         resp = super().post(request, *args, **kwargs)
         resp.data['user'] = user_data
 

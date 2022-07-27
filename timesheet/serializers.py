@@ -11,16 +11,6 @@ class TimeSheetModelSerializer(serializers.ModelSerializer):
         exclude = ('created_at', 'updated_at')
 
 
-class TimeSheetUpdateModelSerializer(serializers.ModelSerializer):
-    time_from = serializers.TimeField(required=False)
-    time_to = serializers.TimeField(required=False)
-    day = serializers.DateField(required=False)
-
-    class Meta:
-        model = TimeSheet
-        exclude = ('created_at', 'updated_at', )
-
-
 class TimeSheetListSerializer(BaseSerializer):
     role_id = serializers.IntegerField(required=False)
     month = serializers.IntegerField(min_value=1, max_value=12, required=False)
@@ -84,6 +74,11 @@ class UpdateEmployeeScheduleSerializer(BaseSerializer):
 
 class ChangeTimeSheetSerializer(BaseSerializer):
     timesheet = serializers.PrimaryKeyRelatedField(queryset=TimeSheet.objects.only('id'))
-    start_vacation_date = serializers.DateField(allow_null=True)
-    end_vacation_date = serializers.DateField(allow_null=True)
-    status = serializers.ChoiceField(choices=TimeSheetChoices.choices)
+    status = serializers.ChoiceField(choices=[timesheet_choice for timesheet_choice in TimeSheetChoices.choices
+                                              if timesheet_choice[0] != TimeSheetChoices.ON_VACATION])
+
+
+class VacationTimeSheetSerializer(BaseSerializer):
+    timesheet = serializers.PrimaryKeyRelatedField(queryset=TimeSheet.objects.only('id'))
+    start_vacation_date = serializers.DateField()
+    end_vacation_date = serializers.DateField()

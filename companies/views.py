@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
 
+from auth_user.services import get_user_role
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
