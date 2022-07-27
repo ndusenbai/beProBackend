@@ -9,9 +9,10 @@ from rest_framework.views import APIView
 
 from timesheet.models import TimeSheet
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
-    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer
+    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
+    VacationTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
-    get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off
+    get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off, create_vacation
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
 from utils.tools import log_exception
@@ -111,25 +112,44 @@ class CheckOutViewSet(CreateModelMixin, GenericViewSet):
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class ChangeTimeSheetViewSet(CreateModelMixin, GenericViewSet):
+class ChangeTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangeTimeSheetSerializer
+    queryset = TimeSheet.objects.all()
 
     @swagger_auto_schema(requet_body=ChangeTimeSheetSerializer)
-    def create(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         """
         изменить существующую или заполнить юзер статистику за него. STATUSES:
             ON_TIME = 1
             LATE = 2
             ABSENT = 3
-            ON_VACATION = 4
         """
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             change_timesheet(serializer.validated_data)
-            return Response({'message': 'created'})
+            return Response({'message': 'updated'})
         except Exception as e:
-            log_exception(e, 'Error in ChangeTimeSheetViewSet.create()')
+            log_exception(e, 'Error in ChangeTimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class VacationTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = VacationTimeSheetSerializer
+    queryset = TimeSheet.objects.all()
+
+    @swagger_auto_schema(requet_body=VacationTimeSheetSerializer)
+    def create(self, request, *args, **kwargs):
+        """
+        Создать отпуск для работника
+        """
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            response, status_code = create_vacation(serializer.validated_data)
+            return Response(response, status=status_code)
+        except Exception as e:
+            log_exception(e, 'Error in ChangeTimeSheetViewSet.update()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
