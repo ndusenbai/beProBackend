@@ -16,11 +16,12 @@ from applications.services import approve_tariff_application, change_status_of_a
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
+from utils.permissions import IsAssistantMarketingOrSuperuser
 from utils.tools import log_exception
 
 
 class ApplicationToCreateCompanyViewSet(ModelViewSet):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAssistantMarketingOrSuperuser, )
     serializer_class = ApplicationToCreateCompanyModelSerializer
     queryset = ApplicationToCreateCompany.objects.all()
     filter_backends = (SearchFilter, DjangoFilterBackend)

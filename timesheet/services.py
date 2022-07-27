@@ -201,7 +201,7 @@ def change_timesheet(timesheet: TimeSheet, data: OrderedDict) -> None:
     new_status = data['status']
 
     if timesheet.status == TimeSheetChoices.LATE and new_status == TimeSheetChoices.ON_TIME:
-        auto_score = Score.objects.filter(role=timesheet.role, created_at__date=timesheet.day, reason__is_auto=True)
+        auto_score = Score.objects.filter(role=timesheet.role, created_at__date=timesheet.day)
         if auto_score:
             auto_score.delete()
 

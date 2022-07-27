@@ -19,6 +19,7 @@ from auth_user.services import change_password, forgot_password, change_password
     check_code_after_forgot, change_password_with_code_after_forgot, update_user, get_owners_qs
 
 from utils.manual_parameters import QUERY_CODE
+from utils.permissions import IsAssistantProductOrSuperuser, IsSuperuser
 
 User = get_user_model()
 
@@ -147,7 +148,7 @@ class ChangeSelectedCompanyViewSet(UpdateModelMixin, GenericViewSet):
 
 
 class OwnerViewSet(ListModelMixin, DestroyModelMixin, RetrieveModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAssistantProductOrSuperuser, )
     filter_backends = (SearchFilter,)
     search_fields = ('last_name', 'first_name', 'middle_name', 'phone_number', 'company_name')
 
@@ -161,7 +162,7 @@ class OwnerViewSet(ListModelMixin, DestroyModelMixin, RetrieveModelMixin, Generi
 
 
 class ActivateOwnerCompaniesViewSet(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsSuperuser,)
 
     def post(self, request, **kwargs):
         activate_owner_companies(kwargs['pk'])
@@ -169,7 +170,7 @@ class ActivateOwnerCompaniesViewSet(APIView):
 
 
 class DeactivateOwnerCompaniesViewSet(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsSuperuser,)
 
     def post(self, request, **kwargs):
         deactivate_owner_companies(kwargs['pk'])

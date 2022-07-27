@@ -1,6 +1,8 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.apps import apps
 
+from auth_user.services import get_user_role
+
 
 def check_hr_of_company(user):
     if not user.is_authenticated:
@@ -45,3 +47,80 @@ class IsHeadOfDepartment(BasePermission):
             return True
         return check_head_of_department(request.user)
 
+
+class IsAssistantMarketingOrSuperuser(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+        if request.user.is_authenticated and (role == 'admin_marketing' or role == 'superuser'):
+            return True
+        return False
+
+
+class IsAssistantProductOrSuperuser(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+        if request.user.is_authenticated and (role == 'admin_production_worker' or role == 'superuser'):
+            return True
+        return False
+
+
+class IsOwner(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+        if request.user.is_authenticated and role == 'owner':
+            return True
+        return False
+
+
+class IsSuperuser(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+        if request.user.is_authenticated and role == 'superuser':
+            return True
+        return False
+
+
+class CompanyPermissions(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+        if view.action in ('retrieve', 'get', 'list'):
+            if request.user.is_authenticated and (role in {'owner', 'superuser'}):
+                return True
+        else:
+            if request.user.is_authenticated and (role in {'owner', 'superuser'}):
+                return True
+        return False
+
+
+class DepartamentPermissions(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+
+        if not request.GET.get('company'):
+            return False
+
+        if view.action in ('retrieve', 'get', 'list'):
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
+                return True
+        else:
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
+                return True
+
+        return False
+
+
+class EmployeesPermissions(BasePermission):
+    def has_permission(self, request, view):
+        role = get_user_role(request.user)
+
+        if not request.GET.get('company'):
+            return False
+
+        if view.action in ('retrieve', 'get', 'list'):
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
+                return True
+        else:
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
+                return True
+
+        return False
