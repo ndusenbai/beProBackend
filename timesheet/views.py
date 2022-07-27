@@ -9,8 +9,7 @@ from rest_framework.views import APIView
 
 from timesheet.models import TimeSheet
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
-    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
-    TimeSheetUpdateModelSerializer
+    TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
@@ -33,11 +32,6 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
             qs = get_timesheet_qs_by_month(serializer.validated_data)
             return qs
         return TimeSheet.objects.all()
-
-    def get_serializer_class(self):
-        if self.action == 'partial_update':
-            return TimeSheetUpdateModelSerializer
-        return self.serializer_class
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR])
     def list(self, request, *args, **kwargs):
