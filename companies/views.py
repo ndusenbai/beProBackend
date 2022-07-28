@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
+from django.core.exceptions import PermissionDenied
 
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
@@ -98,6 +99,8 @@ class DepartmentViewSet(ModelViewSet):
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def perform_destroy(self, instance):
+        if instance.is_hr:
+            raise PermissionDenied()
         delete_head_of_department_role(instance)
         super().perform_destroy(instance)
 

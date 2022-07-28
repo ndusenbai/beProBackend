@@ -51,8 +51,8 @@ class IsHeadOfDepartment(BasePermission):
 class IsAssistantMarketingOrSuperuser(BasePermission):
     def has_permission(self, request, view):
 
-        if not request.user.is_authenticated:
-            return False
+        if view.action == 'create':
+            return True
 
         role = get_user_role(request.user)
 
@@ -182,8 +182,7 @@ class ReasonPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
 
-        if view.action in {'retrieve', 'get', 'list'}:
-
+        if view.action == 'list':
             if not request.GET.get('company'):
                 return False
 
