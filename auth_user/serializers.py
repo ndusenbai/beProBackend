@@ -146,7 +146,7 @@ class UserProfileSerializer(BaseSerializer):
             return {
                 'role_id': '',
                 'role': '',
-                'department_id': instance.role.department.id,
+                'department_id': '',
                 'department_name': '',
             }
 
