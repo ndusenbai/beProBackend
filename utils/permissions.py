@@ -178,8 +178,7 @@ class ReasonPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
 
-        if view.action in {'retrieve', 'get', 'list'}:
-
+        if view.action == 'list':
             if not request.GET.get('company'):
                 return False
 
