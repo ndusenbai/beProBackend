@@ -215,7 +215,7 @@ def change_timesheet(timesheet: TimeSheet, data: OrderedDict) -> None:
 @atomic
 def create_vacation(data: OrderedDict):
 
-    if TimeSheet.objects.filter(day=data['start_vacation_date']).exists():
+    if TimeSheet.objects.filter(day=data['start_vacation_date'], role_id=data['role']).exists():
         return {'message': 'У этого сотрудника уже есть статус check_in на указанный промежуток.'}, 400
 
     if data['start_vacation_date'] >= data['end_vacation_date']:
