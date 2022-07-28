@@ -186,6 +186,9 @@ class ObserverViewSet(ModelViewSet):
             if type(e.args[0]) == dict and e.args[0]['status'] == 400:
                 return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
 
+            log_exception(e, 'Error in ObserverViewSet.create()')
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
