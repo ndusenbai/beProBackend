@@ -8,7 +8,7 @@ import geopy.distance
 
 from bepro_statistics.models import Statistic, UserStatistic
 from companies.models import Role, Department
-from scores.models import Score
+from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 
@@ -201,9 +201,12 @@ def change_timesheet(timesheet: TimeSheet, data: OrderedDict) -> None:
     new_status = data['status']
 
     if timesheet.status == TimeSheetChoices.LATE and new_status == TimeSheetChoices.ON_TIME:
-        auto_score = Score.objects.filter(role=timesheet.role, created_at__date=timesheet.day, reason__is_auto=True)
-        if auto_score:
-            auto_score.delete()
+        reason = Reason.objects.filter(is_auto=True, company=timesheet.role.company)
+        if reason.exists():
+            score = reason.first().score
+            auto_score = Score.objects.filter(role=timesheet.role, created_at__date=timesheet.day, points=score)
+            if auto_score:
+                auto_score.delete()
 
     timesheet.status = new_status
     timesheet.save()

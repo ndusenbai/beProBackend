@@ -26,15 +26,19 @@ class StatisticSerializer(serializers.ModelSerializer):
 
 
 class GetStatisticSerializer(serializers.ModelSerializer):
-    employees = serializers.ListSerializer(
-        required=False,
-        child=serializers.PrimaryKeyRelatedField(
-            queryset=Role.objects.only('id')
-        )
-    )
+    employees = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
     plan = serializers.IntegerField(required=False)
-    role = serializers.SerializerMethodField(method_name="get_role")
-    department = serializers.SerializerMethodField(method_name="get_department")
+    role = serializers.PrimaryKeyRelatedField(read_only=True)
+    role_name = serializers.SerializerMethodField(method_name="get_role")
+    department = serializers.PrimaryKeyRelatedField(read_only=True)
+    department_name = serializers.SerializerMethodField(method_name="get_department")
+
+    def get_employees(self, obj):
+        return obj.observers.select_related("role").only('role').values_list('role__id', flat=True)
+
+    def get_full_name(self, obj):
+        return obj.role.user.full_name if obj.role else ""
 
     def get_role(self, obj):
         return obj.role.get_role_display() if obj.role else ""

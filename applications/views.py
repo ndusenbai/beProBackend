@@ -16,11 +16,12 @@ from applications.services import approve_tariff_application, change_status_of_a
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
+from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser, IsSuperuser
 from utils.tools import log_exception
 
 
 class ApplicationToCreateCompanyViewSet(ModelViewSet):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAssistantMarketingOrSuperuser, )
     serializer_class = ApplicationToCreateCompanyModelSerializer
     queryset = ApplicationToCreateCompany.objects.all()
     filter_backends = (SearchFilter, DjangoFilterBackend)
@@ -60,7 +61,7 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
 
 
 class TariffApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsOwnerOrSuperuser,)
     serializer_class = TariffApplicationSerializer
     queryset = TariffApplication.objects.order_by()
     filterset_fields = ('status',)
@@ -71,7 +72,7 @@ class TariffApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
 
 
 class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsOwnerOrSuperuser,)
     serializer_class = TestApplicationSerializer
     queryset = TestApplication.objects.order_by()
     filterset_fields = ('status',)
@@ -82,6 +83,7 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
 
 
 class ApproveTariffApplication(APIView):
+    permission_classes = (IsSuperuser,)
 
     @swagger_auto_schema(request_body=ApproveDeclineTariffApplication)
     def post(self, request):

@@ -38,13 +38,14 @@ class ScoreSerializer(BaseSerializer):
 
 
 class MonthScoresValidationSerializer(BaseSerializer):
-    year = serializers.IntegerField()
-    months = serializers.ListField(child=serializers.CharField())
+    year = serializers.IntegerField(required=False)
+    months = serializers.ListField(child=serializers.CharField(), required=False,)
     role = serializers.IntegerField()
 
     def to_internal_value(self, data):
-        data = super().to_internal_value(data)
-        data['months'] = [int(i) for i in data['months'][0].split(',')]
+        if 'months' in data:
+            data = super().to_internal_value(data)
+            data['months'] = [int(i) for i in data['months'][0].split(',')]
         return data
 
 

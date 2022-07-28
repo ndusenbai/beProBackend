@@ -13,10 +13,11 @@ from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScor
 from scores.models import Reason, Score
 from scores.services import create_score
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS
+from utils.permissions import ReasonPermissions, MonthScorePermissions, ScorePermission
 
 
 class ReasonViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ReasonPermissions,)
     serializer_class = ReasonSerializer
     queryset = Reason.objects.order_by('name')
     filter_backends = (DjangoFilterBackend,)
@@ -25,7 +26,7 @@ class ReasonViewSet(ModelViewSet):
 
 
 class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ScorePermission,)
     queryset = Score.objects.order_by('-created_at')
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('reason__name', 'created_by__first_name', 'created_by__last_name')
@@ -44,7 +45,7 @@ class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
 
 class MonthScoresViewSet(ListModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (MonthScorePermissions,)
     serializer_class = MonthScoresSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('role',)
@@ -57,12 +58,16 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
 
     def filter_queryset(self, queryset):
         data = self.filter_serializer.validated_data
-        return queryset.filter(created_at__year=data['year'], role_id=data['role'], created_at__month__in=data['months'])
+
+        if 'year' in data and 'months' in data:
+            return queryset.filter(created_at__year=data['year'], role_id=data['role'], created_at__month__in=data['months'])
+        else:
+            return queryset.filter(role_id=data['role'])
 
     @swagger_auto_schema(manual_parameters=[QUERY_YEAR, QUERY_MONTHS])
     def list(self, request, *args, **kwargs):
         """
-        Получить кол-во баллов за каждый выбранный месяц в году по роли
+        Получить кол-во баллов за каждый выбранный месяц в году по роли, или за весь период
         """
         self.filter_serializer = MonthScoresValidationSerializer(data=request.query_params)
         self.filter_serializer.is_valid(raise_exception=True)

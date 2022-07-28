@@ -1,17 +1,17 @@
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
 from tariffs.models import Tariff
 from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer
 from tariffs.services import update_tariff_application, delete_tariff
+from utils.permissions import IsOwner
 from utils.tools import log_exception
 
 
 class TariffViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsOwner,)
     serializer_class = TariffModelSerializer
     queryset = Tariff.objects.order_by()
 

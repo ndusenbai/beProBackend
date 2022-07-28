@@ -15,6 +15,7 @@ from timesheet.services import create_check_in_timesheet, get_last_timesheet_act
     get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off, create_vacation
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
+from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
 from utils.tools import log_exception
 
 
@@ -23,7 +24,7 @@ User = get_user_model()
 
 class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TimeSheetModelSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (TimeSheetPermissions,)
     pagination_class = None
 
     def get_queryset(self):
@@ -62,7 +63,7 @@ class LastTimeSheet(APIView):
 
 
 class CheckInViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (CheckPermission,)
 
     @swagger_auto_schema(request_body=CheckInSerializer)
     def create(self, request, *args, **kwargs):
@@ -79,7 +80,7 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
 
 
 class TakeTimeOffView(CreateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (CheckPermission,)
 
     @swagger_auto_schema(request_body=TakeTimeOffSerializer)
     def create(self, request, *args, **kwargs):
@@ -94,7 +95,7 @@ class TakeTimeOffView(CreateModelMixin, GenericViewSet):
 
 
 class CheckOutViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (CheckPermission,)
 
     @swagger_auto_schema(request_body=CheckOutSerializer)
     def create(self, request, *args, **kwargs):
@@ -113,7 +114,7 @@ class CheckOutViewSet(CreateModelMixin, GenericViewSet):
 
 
 class ChangeTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ChangeTimeSheetPermissions,)
     serializer_class = ChangeTimeSheetSerializer
     queryset = TimeSheet.objects.all()
 
@@ -137,7 +138,7 @@ class ChangeTimeSheetViewSet(UpdateModelMixin, GenericViewSet):
 
 
 class VacationTimeSheetViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ChangeTimeSheetPermissions,)
     serializer_class = VacationTimeSheetSerializer
     queryset = TimeSheet.objects.all()
 
