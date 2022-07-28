@@ -116,7 +116,7 @@ class DepartamentPermissions(BasePermission):
                 if not request.GET.get('company'):
                     return False
                 else:
-                    if role not in {"owner", "superuser"} and int(request.GET.get('company')) == request.user.role.department.company_id:
+                    if role not in {"owner", "superuser", "observer"} and int(request.GET.get('company')) == request.user.role.department.company_id:
                         return True
             if view.action == 'retrieve':
                 if role not in {"owner", "superuser"} and int(view.kwargs['pk']) == request.user.role.department_id:
