@@ -151,9 +151,12 @@ class UserProfileSerializer(BaseSerializer):
             }
 
     def get_score(self, instance):
-        now = timezone.now()
-        first_date_of_month = date(now.year, now.month, 1)
-        last_date_of_month = date(now.year, now.month + 1, 1)
-        points = instance.role.scores.filter(created_at__range=[first_date_of_month, last_date_of_month]).values_list('points', flat=True)
-        score = sum(point for point in points) + 100
-        return score
+        if hasattr(instance, 'role'):
+            now = timezone.now()
+            first_date_of_month = date(now.year, now.month, 1)
+            last_date_of_month = date(now.year, now.month + 1, 1)
+            points = instance.role.scores.filter(created_at__range=[first_date_of_month, last_date_of_month]).values_list('points', flat=True)
+            score = sum(point for point in points) + 100
+            return score
+        else:
+            return ""
