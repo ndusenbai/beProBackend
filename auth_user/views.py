@@ -162,7 +162,7 @@ class OwnerViewSet(ListModelMixin, DestroyModelMixin, RetrieveModelMixin, Generi
 
 
 class ActivateOwnerCompaniesViewSet(APIView):
-    permission_classes = (IsSuperuser,)
+    permission_classes = (IsAssistantProductOrSuperuser,)
 
     def post(self, request, **kwargs):
         activate_owner_companies(kwargs['pk'])
@@ -170,7 +170,7 @@ class ActivateOwnerCompaniesViewSet(APIView):
 
 
 class DeactivateOwnerCompaniesViewSet(APIView):
-    permission_classes = (IsSuperuser,)
+    permission_classes = (IsAssistantProductOrSuperuser,)
 
     def post(self, request, **kwargs):
         deactivate_owner_companies(kwargs['pk'])
