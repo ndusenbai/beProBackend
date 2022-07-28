@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from bepro_statistics.models import Statistic, UserStatistic, StatisticType
-from companies.models import Role, Department, RoleChoices
+from bepro_statistics.models import Statistic, UserStatistic
+from companies.models import Role, Department
 
 from utils.serializers import BaseSerializer
 
