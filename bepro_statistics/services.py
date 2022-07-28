@@ -23,8 +23,8 @@ def get_statistics_queryset(request):
     return apps.get_model(
         app_label='bepro_statistics',
         model_name='Statistic'
-    ).objects.filter(Q(department__company=request.user.role.company) |
-                     Q(role__company=request.user.role.company)).order_by()
+    ).objects.filter(Q(department__company=request.user.selected_company) |
+                     Q(role__company=request.user.selected_company)).order_by()
 
 
 @atomic
