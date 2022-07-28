@@ -8,7 +8,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'email', 'full_name')
     list_filter = ('is_active', 'is_superuser')
     raw_id_fields = ('selected_company',)
-    search_fields = ('id', 'email', 'full_name')
+    search_fields = ('id', 'email', 'last_name', 'first_name', 'middle_name')
 
 
 class AcceptCodeAdmin(admin.ModelAdmin):
