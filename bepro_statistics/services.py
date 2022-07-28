@@ -8,12 +8,15 @@ from django.conf import settings
 from django.db.transaction import atomic
 from django.db.models import Q
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
 from companies.models import Role, RoleChoices
 from timesheet.models import TimeSheet
+
+User = get_user_model()
 
 
 def get_statistics_queryset(request):
@@ -68,6 +71,12 @@ def bulk_create_observers(data: dict, instance: Statistic):
 
 def check_user_permission(user, role):
 
+    if get_user_role(user) == 'superuser':
+        return {"visibility__in": {VisibilityType.HIDDEN,
+                                   VisibilityType.EMPLOYEES,
+                                   VisibilityType.OPEN_DEPARTMENT,
+                                   VisibilityType.OPEN_EVERYONE}}
+
     if hasattr(user, 'role'):
         if user.role == role or user.role.role == RoleChoices.HR:
             return {"visibility__in": {VisibilityType.HIDDEN,
@@ -111,8 +120,8 @@ def get_stats_for_user(request):
 
     stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) & Q(**visibility_level))
     for stat in stats:
-        if not (stat.visibility == VisibilityType.EMPLOYEES and not request.user.role.
-                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat)):
+        allowed = is_user_allowed_to_stat(request.user, stat)
+        if allowed:
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
                 .order_by('day')
@@ -120,6 +129,17 @@ def get_stats_for_user(request):
             data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
 
     return data
+
+
+def is_user_allowed_to_stat(user: User, stat: Statistic) -> bool:
+    is_allowed = False
+    try:
+        is_allowed = not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
+                          observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat))
+    except Role.DoesNotExist:
+        if get_user_role(user) == 'superuser':
+            is_allowed = True
+    return is_allowed
 
 
 def get_history_stats_for_user(user, data: OrderedDict):
