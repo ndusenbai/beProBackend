@@ -115,7 +115,9 @@ class DepartamentPermissions(BasePermission):
             if view.action == 'list':
                 if not request.GET.get('company'):
                     return False
-
+                else:
+                    if int(request.GET.get('company')) == request.user.role.department.company_id:
+                        return True
             if view.action == 'retrieve':
                 if int(view.kwargs['pk']) == request.user.role.department_id:
                     return True
