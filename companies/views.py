@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
 
-from auth_user.services import get_user_role
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
@@ -18,7 +17,7 @@ from companies.services import update_department, create_company, create_departm
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
-from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions
+from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -160,7 +159,7 @@ class EmployeesViewSet(ModelViewSet):
 
 
 class ObserverViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ObserverPermission,)
     http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_serializer_class(self):

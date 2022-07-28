@@ -12,8 +12,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.parsers import JSONParser, FormParser
 
 from bepro_statistics.filters import StatisticsFilterSet
-from bepro_statistics.models import UserStatistic, Statistic, VisibilityType, StatisticObserver
-from bepro_statistics.permissions import StatisticsPermission
+from bepro_statistics.models import UserStatistic, Statistic
+from utils.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer, \
     GetStatisticSerializer, HistoryPdfStatsSerializer
@@ -21,9 +21,8 @@ from bepro_statistics.services import get_statistics_queryset, create_statistic,
     get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf, \
     bulk_create_observers
 from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
-from utils.permissions import StatisticPermissions
+from utils.permissions import StatisticPermissions, HistoryStatisticPermissions
 from utils.tools import log_exception
-from companies.models import Role
 
 User = get_user_model()
 
@@ -31,7 +30,7 @@ User = get_user_model()
 class StatisticViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin,
                        DestroyModelMixin, GenericViewSet):
 
-    permission_classes = (IsAuthenticated, StatisticsPermission)
+    permission_classes = (StatisticsPermission, )
     queryset = Statistic.objects.all()
     serializer_class = StatisticSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
@@ -91,7 +90,7 @@ class StatsForUser(ListModelMixin, GenericViewSet):
 
 
 class HistoryStats(ListModelMixin, GenericViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (HistoryStatisticPermissions,)
     queryset = Statistic.objects.all()
     serializer_class = HistoryStatsForUserSerializer
 
@@ -156,7 +155,7 @@ class GenerateStatPdfViewSet(APIView):
 
 
 class GenerateHistoryStatPdfViewSet(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (HistoryStatisticPermissions,)
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONDAY, QUERY_SUNDAY])
     def get(self, request, **kwargs):

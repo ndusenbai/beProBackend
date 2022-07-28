@@ -38,6 +38,11 @@ class GetStatisticSerializer(serializers.ModelSerializer):
     role_name = serializers.SerializerMethodField(method_name="get_role")
     department = serializers.SerializerMethodField(method_name="get_department")
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['employees'] = instance.observers.select_related("role").only('role').values_list('role__id')
+        return ret
+
     def get_full_name(self, obj):
         return obj.role.user.full_name if obj.role else ""
 
