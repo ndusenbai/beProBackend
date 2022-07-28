@@ -116,7 +116,7 @@ class DepartamentPermissions(BasePermission):
                 if not request.GET.get('company'):
                     return False
 
-            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
+            if request.user.is_authenticated and (role in {'owner', 'employee', 'superuser', 'hr', 'observer'}):
                 return True
 
         else:
