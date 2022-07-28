@@ -112,8 +112,9 @@ class DepartamentPermissions(BasePermission):
 
         if view.action in {'retrieve', 'get', 'list'}:
 
-            if not request.GET.get('company'):
-                return False
+            if view.action == 'list':
+                if not request.GET.get('company'):
+                    return False
 
             if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
                 return True
@@ -128,11 +129,11 @@ class DepartamentPermissions(BasePermission):
 class EmployeesPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
-
         if view.action in {'retrieve', 'get', 'list'}:
 
-            if not request.GET.get('company'):
-                return False
+            if view.action == 'list':
+                if not request.GET.get('company'):
+                    return False
 
             if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer', 'employee', 'head_of_department'}):
                 return True
@@ -149,9 +150,6 @@ class StatisticPermissions(BasePermission):
         role = get_user_role(request.user)
 
         if view.action in {'retrieve', 'get', 'list'}:
-
-            if not request.GET.get('company'):
-                return False
 
             if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer', 'employee', 'head_of_department'}):
                 return True
