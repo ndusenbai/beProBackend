@@ -39,14 +39,12 @@ def get_last_timesheet_action(role: Role) -> str:
     return 'check_out'
 
 
-def subtract_scores(role):
+def subtract_scores(role, check_in):
     now_date = date.today()
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
-
     if not time_sheet.exists() or not time_sheet.last().status == TimeSheetChoices.ABSENT:
-        last_score = role.scores.last()
-        last_score.points -= role.company.reasons.get(is_auto=True).score
-        last_score.save()
+        reason = role.company.reasons.get(is_auto=True)
+        Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
         return True
     else:
         return False
@@ -63,10 +61,10 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
     subtraction_result = True
     status = TimeSheetChoices.ON_TIME
+
     if check_in.time() > today_schedule.time_from:
         status = TimeSheetChoices.LATE
-
-        subtraction_result = subtract_scores(role)
+        subtraction_result = subtract_scores(role, check_in)
 
     last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
