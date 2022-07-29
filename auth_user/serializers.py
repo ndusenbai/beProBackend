@@ -159,4 +159,4 @@ class UserProfileSerializer(BaseSerializer):
             score = sum(point for point in points) + 100
             return score
         else:
-            return ""
+            return None
