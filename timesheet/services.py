@@ -44,7 +44,7 @@ def subtract_scores(role, check_in):
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
     if not time_sheet.exists() or not time_sheet.last().status == TimeSheetChoices.ABSENT:
         reason = role.company.reasons.get(is_auto=True)
-        Score.objects.create(role=role, name=reason.name, points=-reason.score, created_at=check_in)
+        Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
         return True
     else:
         return False
