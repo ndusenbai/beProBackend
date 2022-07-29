@@ -91,8 +91,8 @@ class TakeTimeOffView(CreateModelMixin, GenericViewSet):
         try:
             serializer = TakeTimeOffSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            set_took_off(self.request.user.role, serializer.validated_data)
-            return Response({'message': 'created'})
+            message, status_code = set_took_off(self.request.user.role, serializer.validated_data)
+            return Response(message, status_code)
         except Exception as e:
             log_exception(e, 'Error in TookOffViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
