@@ -196,10 +196,17 @@ def get_additional_user_info(email: str) -> dict:
     user = User.objects.get(email=email)
     user_data = UserModelSerializer(user).data
     user_data['role'] = get_user_role(user)
+
     try:
         user_data['role_id'] = user.role.id
     except:
         user_data['role_id'] = None
+
+    try:
+        user_data['departament'] = user.role.department.id
+    except:
+        user_data['departament'] = None
+
     return user_data
 
 
