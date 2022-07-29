@@ -144,8 +144,8 @@ class UserProfileSerializer(BaseSerializer):
             }
         except:
             return {
-                'role_id': '',
-                'role': '',
+                'role_id': 0,
+                'role': get_user_role(instance),
                 'department_id': '',
                 'department_name': '',
             }
