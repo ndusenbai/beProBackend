@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db import IntegrityError
-from timesheet.models import TimeSheet
+from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
     VacationTimeSheetSerializer
@@ -74,6 +74,10 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
             return Response({'message': 'created'})
         except EmployeeTooFarFromDepartment as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+        except EmployeeSchedule.DoesNotExist:
+            return Response({'message': "Сегодня нерабочий день"}, status.HTTP_423_LOCKED)
+        except IntegrityError:
+            return Response({'message': "Вы уже осуществили check in сегодня"}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in CheckInViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
