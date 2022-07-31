@@ -39,3 +39,4 @@ QUERY_STATISTIC_TYPE_LIST = openapi.Parameter('statistic_types', openapi.IN_QUER
                                               type=openapi.TYPE_ARRAY,
                                               items=openapi.Items(type=openapi.TYPE_INTEGER),)
 QUERY_STAT = openapi.Parameter('statistic_id', openapi.IN_QUERY, description='statistic id', type=openapi.TYPE_INTEGER)
+QUERY_ORDERING = openapi.Parameter('ordering', openapi.IN_QUERY, description='Ordering (default -day)', type=openapi.TYPE_STRING)
