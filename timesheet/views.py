@@ -14,7 +14,7 @@ from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeShe
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off, create_vacation
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
-from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
+from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE, QUERY_ORDERING
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
 from utils.tools import log_exception
 
@@ -25,6 +25,7 @@ User = get_user_model()
 class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TimeSheetModelSerializer
     permission_classes = (TimeSheetPermissions,)
+
     pagination_class = None
 
     def get_queryset(self):
@@ -35,7 +36,7 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
             return qs
         return TimeSheet.objects.all()
 
-    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR])
+    @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR, QUERY_ORDERING])
     def list(self, request, *args, **kwargs):
         """
         Получить расписание за определенный месяц на роль

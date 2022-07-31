@@ -18,11 +18,12 @@ User = get_user_model()
 def get_timesheet_qs_by_month(data: dict) -> TimeSheet:
     first_date_of_month = date(data['year'], data['month'], 1)
     last_date_of_month = date(data['year'], data['month'] + 1, 1) - timedelta(days=1)
+    ordering = data.get('ordering', '-day')
 
     return TimeSheet.objects.filter(
             role_id=data['role_id'],
             day__range=[first_date_of_month, last_date_of_month])\
-        .order_by('-day')
+        .order_by(ordering)
 
 
 def update_timesheet(instance: TimeSheet, data: dict) -> None:
@@ -40,8 +41,7 @@ def get_last_timesheet_action(role: Role) -> str:
 
 
 def subtract_scores(role, check_in):
-    now_date = date.today()
-    time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
+    time_sheet = TimeSheet.objects.filter(role=role, day=check_in)
     if not time_sheet.exists() or not time_sheet.last().status == TimeSheetChoices.ABSENT:
         reason = role.company.reasons.get(is_auto=True)
         Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
@@ -107,20 +107,21 @@ def set_took_off(role: Role, data: dict):
     now_date = date.today()
 
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
+    schedule = get_schedule(role, now_date)
+
     if time_sheet.exists():
         if time_sheet.last().check_out:
             return {'message': 'Вы уже осуществили check out на текущий день'}, 400
 
         time_sheet = time_sheet.last()
-        time_sheet.check_in = None
-        time_sheet.check_out = None
+        time_sheet.check_in = schedule.time_from
+        time_sheet.check_out = schedule.time_to
         time_sheet.status = TimeSheetChoices.ABSENT
         time_sheet.save()
     else:
-        schedule = get_schedule(role, now_date)
         if schedule:
-            TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date,
-                                     time_to=schedule.time_to, time_from=schedule.time_from, **data)
+            TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date, check_in=schedule.time_from,
+                                     check_out=schedule.time_to, time_to=schedule.time_to, time_from=schedule.time_from, **data)
 
     return {'message': 'created'}, 201
 
