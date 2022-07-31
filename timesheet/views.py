@@ -25,6 +25,7 @@ User = get_user_model()
 class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TimeSheetModelSerializer
     permission_classes = (TimeSheetPermissions,)
+
     pagination_class = None
 
     def get_queryset(self):

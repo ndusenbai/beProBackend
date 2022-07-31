@@ -22,7 +22,7 @@ def get_timesheet_qs_by_month(data: dict) -> TimeSheet:
     return TimeSheet.objects.filter(
             role_id=data['role_id'],
             day__range=[first_date_of_month, last_date_of_month])\
-        .order_by('-day')
+        .order_by('day')
 
 
 def update_timesheet(instance: TimeSheet, data: dict) -> None:
