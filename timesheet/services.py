@@ -40,8 +40,7 @@ def get_last_timesheet_action(role: Role) -> str:
 
 
 def subtract_scores(role, check_in):
-    now_date = date.today()
-    time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
+    time_sheet = TimeSheet.objects.filter(role=role, day=check_in)
     if not time_sheet.exists() or not time_sheet.last().status == TimeSheetChoices.ABSENT:
         reason = role.company.reasons.get(is_auto=True)
         Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
@@ -107,20 +106,21 @@ def set_took_off(role: Role, data: dict):
     now_date = date.today()
 
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
+    schedule = get_schedule(role, now_date)
+
     if time_sheet.exists():
         if time_sheet.last().check_out:
             return {'message': 'Вы уже осуществили check out на текущий день'}, 400
 
         time_sheet = time_sheet.last()
-        time_sheet.check_in = None
-        time_sheet.check_out = None
+        time_sheet.check_in = schedule.time_from
+        time_sheet.check_out = schedule.time_to
         time_sheet.status = TimeSheetChoices.ABSENT
         time_sheet.save()
     else:
-        schedule = get_schedule(role, now_date)
         if schedule:
-            TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date,
-                                     time_to=schedule.time_to, time_from=schedule.time_from, **data)
+            TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date, check_in=schedule.time_from,
+                                     check_out=schedule.time_to, time_to=schedule.time_to, time_from=schedule.time_from, **data)
 
     return {'message': 'created'}, 201
 
