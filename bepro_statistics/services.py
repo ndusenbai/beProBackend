@@ -125,7 +125,6 @@ def get_stats_for_user(request):
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
                 .order_by('day')
-
             data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
 
     return data

@@ -1,5 +1,6 @@
 import json
-from datetime import datetime
+from datetime import datetime, date
+from django.utils import timezone
 
 from rest_framework import serializers
 from auth_user.serializers import UserModelSerializer, UserSerializer
@@ -119,7 +120,7 @@ class EmployeesSerializer(BaseSerializer):
     role = serializers.IntegerField()
     grade = serializers.IntegerField()
     title = serializers.CharField()
-    score = serializers.IntegerField()
+    score = serializers.SerializerMethodField()
     department = DepartmentListSerializer()
     schedules = ScheduleSerializer(many=True)
     today_schedule = serializers.SerializerMethodField()
@@ -133,6 +134,14 @@ class EmployeesSerializer(BaseSerializer):
             return f'{time_from} - {time_to}'
         except IndexError:
             return ''
+
+    def get_score(self, instance):
+        now = timezone.now()
+        first_date_of_month = date(now.year, now.month, 1)
+        last_date_of_month = date(now.year, now.month + 1, 1)
+        points = instance.scores.filter(created_at__range=[first_date_of_month, last_date_of_month]).values_list('points', flat=True)
+        score = sum(point for point in points) + 100
+        return score
 
 
 class CreateEmployeeSerializer(BaseSerializer):
