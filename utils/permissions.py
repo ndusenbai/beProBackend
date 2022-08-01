@@ -135,6 +135,9 @@ class DepartamentPermissions(BasePermission):
 class EmployeesPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
+        if role == 'superuser':
+            return True
+
         if view.action in {'retrieve', 'get', 'list'}:
 
             if view.action == 'list':
