@@ -193,8 +193,8 @@ def generate_stat_pdf(role_id: int, statistic_id: int) -> str:
 
 
 def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
-    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-    y_axis_values = []
+    days = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = [0]
     for i in range(7):
         if i in user_stat_data_dict:
             y_axis_values.append(user_stat_data_dict[i]['fact'])
@@ -207,7 +207,12 @@ def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) 
     plt.title('Обычная статистика')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
     ax.grid()
+
+    del days[0]
+    del y_axis_values[0]
     for a, b in zip(days, y_axis_values):
         plt.text(a, b, str(b))
     file_name = save_stat_to_pdf('general_stat')
@@ -216,8 +221,8 @@ def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) 
 
 
 def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
-    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-    y_axis_values = []
+    days = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = [0]
     for i in range(7):
         if i in user_stat_data_dict:
             y_axis_values.append(user_stat_data_dict[i]['fact'] * -1)
@@ -231,9 +236,13 @@ def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic)
     plt.title('Перевернутая статистика')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.set_xlim(left=0)
     ax.grid()
+
+    del days[0]
+    del y_axis_values[0]
     for a, b in zip(days, y_axis_values):
-        plt.text(a, b, str(b))
+        plt.text(a, b, str(b * -1))
 
     file_name = save_stat_to_pdf('inverted_stat')
     plt.show()
@@ -241,9 +250,9 @@ def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic)
 
 
 def generate_double_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
-    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-    y_axis_values = []
-    plans = [statistic.plan for i in range(7)]
+    days = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = [0]
+    plans = [statistic.plan if i != 0 else 0 for i in range(8)]
     for i in range(7):
         if i in user_stat_data_dict:
             y_axis_values.append(user_stat_data_dict[i]['fact'])
@@ -257,10 +266,16 @@ def generate_double_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -
     plt.title('Двойная статистика')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
     ax.grid()
     plt.legend(loc='best')
+
+    del days[0]
+    del y_axis_values[0]
     for a, b in zip(days, y_axis_values):
         ax.text(a, b, str(b))
+    ax.text(days[6], plans[6], str(plans[6]))
     file_name = save_stat_to_pdf('double_stat')
     plt.show()
     return file_name
@@ -314,8 +329,8 @@ def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
 
 
 def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
-    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-    y_axis_values = []
+    days = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = [0]
     for i in range(7):
         if i in user_stat_data_dict:
             y_axis_values.append(user_stat_data_dict[i]['fact'])
@@ -327,15 +342,19 @@ def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.set_title('Обычная статистика', pad=20)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
     ax.grid()
 
+    del days[0]
+    del y_axis_values[0]
     for a, b in zip(days, y_axis_values):
         ax.text(a, b, str(b))
 
 
 def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
-    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-    y_axis_values = []
+    days = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = [0]
     for i in range(7):
         if i in user_stat_data_dict:
             y_axis_values.append(user_stat_data_dict[i]['fact'] * -1)
@@ -348,16 +367,19 @@ def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.set_title('Перевернутая статистика', pad=20)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.set_xlim(left=0)
     ax.grid()
 
+    del days[0]
+    del y_axis_values[0]
     for a, b in zip(days, y_axis_values):
-        ax.text(a, b, str(b))
+        ax.text(a, b, str(b * -1))
 
 
 def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
-    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
-    y_axis_values = []
-    plans = [statistic.plan for i in range(7)]
+    days = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = [0]
+    plans = [statistic.plan if i != 0 else 0 for i in range(8)]
     for i in range(7):
         if i in user_stat_data_dict:
             y_axis_values.append(user_stat_data_dict[i]['fact'])
@@ -370,8 +392,13 @@ def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.set_title('Двойная статистика', pad=20)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
     ax.grid()
     ax.legend(loc='best')
 
+    del days[0]
+    del y_axis_values[0]
     for a, b in zip(days, y_axis_values):
         ax.text(a, b, str(b))
+    ax.text(days[6], plans[6], str(plans[6]))

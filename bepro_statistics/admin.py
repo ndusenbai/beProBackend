@@ -27,6 +27,6 @@ class UserStatisticAdmin(admin.ModelAdmin):
             case 1:
                 return 'General'
             case 2:
-                return 'Inverted'
-            case 3:
                 return 'Double'
+            case 3:
+                return 'Inverted'
