@@ -205,6 +205,8 @@ def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) 
     plt.plot(days, y_axis_values, marker=".", markersize=14)
     plt.ylabel(statistic.name)
     plt.title('Обычная статистика')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.grid()
     for a, b in zip(days, y_axis_values):
         plt.text(a, b, str(b))
@@ -227,6 +229,8 @@ def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic)
     plt.ylabel(statistic.name)
     ax.set_yticklabels([item*-1 for item in ax.get_yticks()])
     plt.title('Перевернутая статистика')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.grid()
     for a, b in zip(days, y_axis_values):
         plt.text(a, b, str(b))
@@ -251,6 +255,8 @@ def generate_double_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -
     plt.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
     plt.ylabel(statistic.name)
     plt.title('Двойная статистика')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.grid()
     plt.legend(loc='best')
     for a, b in zip(days, y_axis_values):
@@ -319,6 +325,8 @@ def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.plot(days, y_axis_values, marker=".", markersize=14)
     ax.set_ylabel(statistic.name)
     ax.set_title('Обычная статистика', pad=20)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.grid()
 
     for a, b in zip(days, y_axis_values):
@@ -338,6 +346,8 @@ def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.set_ylabel(statistic.name)
     # ax.set_yticklabels([item*-1 for item in ax.get_yticks()]) # плывет верстка если взять положительные числа
     ax.set_title('Перевернутая статистика', pad=20)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.grid()
 
     for a, b in zip(days, y_axis_values):
@@ -358,6 +368,8 @@ def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.plot(days, y_axis_values, 'C0', label='факт', marker=".", markersize=14)
     ax.set_ylabel(statistic.name)
     ax.set_title('Двойная статистика', pad=20)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     ax.grid()
     ax.legend(loc='best')
 
