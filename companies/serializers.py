@@ -72,7 +72,7 @@ class UpdateDepartmentSerializer(BaseSerializer):
     longitude = serializers.DecimalField(max_digits=22, decimal_places=6, default=0)
     radius = serializers.IntegerField(default=50)
     schedules = ScheduleSerializer(many=True)
-    head_of_department_id = serializers.IntegerField()
+    head_of_department_id = serializers.IntegerField(allow_null=True)
 
 
 class DepartmentList2Serializer(DepartmentSerializer):
