@@ -117,3 +117,4 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
 33. sudo systemctl restart nginx
 34. sudo ufw delete allow 8000
     sudo ufw allow 'Nginx Full'
+35. apt install redis-server
