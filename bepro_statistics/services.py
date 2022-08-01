@@ -214,33 +214,22 @@ def generate_general_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) 
 
 
 def generate_inverted_graph_pdf(user_stat_data_dict: dict, statistic: Statistic) -> str:
-    inverted_graphs = []
-    x = []
-    y = []
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
     for i in range(7):
         if i in user_stat_data_dict:
-            x.append(i)
-            y.append(user_stat_data_dict[i]['fact'] * -1)
+            y_axis_values.append(user_stat_data_dict[i]['fact'] * -1)
         else:
-            if len(x) > 0:
-                inverted_graphs.append([x, y])
-                x, y = [], []
-    if len(x) > 0:
-        inverted_graphs.append([x, y])
+            y_axis_values.append(0)
 
     _, ax = plt.subplots()
-    ax.set_xticks([0, 1, 2, 3, 4, 5, 6])
-    ax.set_xticklabels(['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'])
-    for graph in inverted_graphs:
-        plt.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
-
+    plt.plot(days, y_axis_values, marker=".", markersize=14)
     plt.ylabel(statistic.name)
     ax.set_yticklabels([item*-1 for item in ax.get_yticks()])
     plt.title('Перевернутая статистика')
     ax.grid()
-    for graph in inverted_graphs:
-        for a, b in zip(graph[0], graph[1]):
-            ax.text(a, b, str(b*-1))
+    for a, b in zip(days, y_axis_values):
+        plt.text(a, b, str(b))
 
     file_name = save_stat_to_pdf('inverted_stat')
     plt.show()
@@ -337,33 +326,22 @@ def generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic):
 
 
 def generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic):
-    inverted_graphs = []
-    x = []
-    y = []
+    days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+    y_axis_values = []
     for i in range(7):
         if i in user_stat_data_dict:
-            x.append(i)
-            y.append(user_stat_data_dict[i]['fact'] * -1)
+            y_axis_values.append(user_stat_data_dict[i]['fact'] * -1)
         else:
-            if len(x) > 0:
-                inverted_graphs.append([x, y])
-                x, y = [], []
-    if len(x) > 0:
-        inverted_graphs.append([x, y])
+            y_axis_values.append(0)
 
-    ax.set_xticks([0, 1, 2, 3, 4, 5, 6])
-    ax.set_xticklabels(['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'])
-    for graph in inverted_graphs:
-        ax.plot(graph[0], graph[1], 'C0', marker=".", markersize=14)
-
+    ax.plot(days, y_axis_values, marker=".", markersize=14)
     ax.set_ylabel(statistic.name)
     # ax.set_yticklabels([item*-1 for item in ax.get_yticks()]) # плывет верстка если взять положительные числа
     ax.set_title('Перевернутая статистика', pad=20)
     ax.grid()
 
-    for graph in inverted_graphs:
-        for a, b in zip(graph[0], graph[1]):
-            ax.text(a, b, str(b*-1))
+    for a, b in zip(days, y_axis_values):
+        ax.text(a, b, str(b))
 
 
 def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):

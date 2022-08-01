@@ -20,6 +20,7 @@ class UserStatisticAdmin(admin.ModelAdmin):
     list_display = ('id', 'statistic', 'statistic_id', 'role_id', 'role', 'day', 'fact', 'statistic_type')
     raw_id_fields = ('statistic', 'role')
     search_fields = ('role__user__email',)
+    date_hierarchy = 'day'
 
     def statistic_type(self, instance):
         match instance.statistic.statistic_type:
