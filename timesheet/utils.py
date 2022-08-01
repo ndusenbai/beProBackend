@@ -1,6 +1,6 @@
 class EmployeeTooFarFromDepartment(Exception):
     def __init__(self):
-        self.txt = 'Too far from department'
+        self.txt = 'Вы не находитесь в радиусе вашего отдела'
 
     def __str__(self):
         return self.txt
@@ -8,7 +8,7 @@ class EmployeeTooFarFromDepartment(Exception):
 
 class FillUserStatistic(Exception):
     def __init__(self):
-        self.txt = 'Fill user statistic'
+        self.txt = 'Заполните статистику'
 
     def __str__(self):
         return self.txt
