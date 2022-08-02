@@ -117,8 +117,8 @@ class CreateUserStat(CreateModelMixin, GenericViewSet):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            create_user_statistic(request.user.role, serializer.validated_data)
-            return Response({'message': 'created'})
+            response, status_code = create_user_statistic(request.user.role, serializer.validated_data)
+            return Response(response, status=status_code)
         except IntegrityError:
             return Response({'message': 'Статистика уже заполнена'}, status.HTTP_423_LOCKED)
         except Exception as e:

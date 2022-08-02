@@ -9,7 +9,6 @@ from django.db.transaction import atomic
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-
 from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
@@ -42,11 +41,17 @@ def create_statistic(serializer):
 @atomic
 def create_user_statistic(role: Role, data: OrderedDict):
     last_check_in = TimeSheet.objects.filter(role=role, check_out__isnull=True).order_by('-day').first()
+
+    if not last_check_in:
+        return {'message': 'Вы не осуществляли check in сегодня', }, 400
+
     UserStatistic.objects.create(
         role=role,
         statistic_id=data['statistic_id'],
         day=last_check_in.day,
         fact=data['fact'])
+
+    return {'message': 'created', }, 200
 
 
 @atomic
@@ -125,7 +130,6 @@ def get_stats_for_user(request):
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
                 .order_by('day')
-
             data.append(StatsForUserSerializer({'statistic': stat, 'user_statistics': user_stats}).data)
 
     return data
