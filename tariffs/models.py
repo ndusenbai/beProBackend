@@ -4,6 +4,11 @@ from django.core.validators import MinValueValidator
 from utils.models import BaseModel
 
 
+class TariffPeriod(models.IntegerChoices):
+    MONTHLY = 1, 'Monthly'
+    YEARLY = 2, 'Yearly'
+
+
 class Tariff(BaseModel):
     name = models.CharField(max_length=50, unique=True)
     max_employees_qty = models.IntegerField(validators=[MinValueValidator(0)])

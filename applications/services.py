@@ -1,4 +1,6 @@
 from typing import Tuple, OrderedDict
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
@@ -9,9 +11,10 @@ from auth_user.services import get_domain
 from auth_user.tasks import send_created_account_notification
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
 from auth_user.utils import UserAlreadyExists
-from companies.models import Company, Department
+from companies.models import Company, Department, CompanyService
 from companies.utils import CompanyAlreadyExists
 from scores.models import Reason
+from tariffs.models import TariffPeriod
 from timesheet.models import DepartmentSchedule
 
 User = get_user_model()
@@ -29,10 +32,38 @@ def accept_application_to_create_company(request: HttpRequest, instance: Applica
     owner, password = create_owner(instance, company)
     company.owner = owner
     company.save()
+    create_tariff_application(instance, owner)
+    enable_services_for_company(company)
     update_application_to_create_company(instance, {'status': ApplicationStatus.ACCEPTED})
     domain = get_domain(request)
     email = owner.email
     send_created_account_notification.delay(domain, email, password)
+
+
+def create_tariff_application(instance: ApplicationToCreateCompany, owner: User):
+    start_date = date.today()
+    if instance.period == TariffPeriod.MONTHLY:
+        end_date = start_date + relativedelta(months=1)
+    elif instance.period == TariffPeriod.YEARLY:
+        end_date = start_date + relativedelta(years=1)
+
+    TariffApplication.objects.create(
+        tariff_id=instance.tariff_id,
+        owner=owner,
+        start_date=start_date,
+        end_date=end_date,
+        period=instance.period,
+        status=ApplicationStatus.ACCEPTED,
+    )
+
+
+def enable_services_for_company(company: Company):
+    CompanyService.objects.create(
+        company=company,
+        analytics_enabled=True,
+        time_tracking_enabled=True,
+        tests_enabled=True,
+    )
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:

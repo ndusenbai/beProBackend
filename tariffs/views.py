@@ -6,14 +6,14 @@ from drf_yasg.utils import swagger_auto_schema
 from tariffs.models import Tariff
 from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer
 from tariffs.services import update_tariff_application, delete_tariff
-from utils.permissions import IsOwner
+from utils.permissions import IsSuperuser
 from utils.tools import log_exception
 
 
 class TariffViewSet(ModelViewSet):
-    permission_classes = (IsOwner,)
+    permission_classes = (IsSuperuser,)
     serializer_class = TariffModelSerializer
-    queryset = Tariff.objects.order_by()
+    queryset = Tariff.objects.filter(is_active=True)
 
     @swagger_auto_schema(request_body=UpdateTariffSerializer)
     def update(self, request, *args, **kwargs):

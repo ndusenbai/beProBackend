@@ -2,16 +2,16 @@ from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin, RetrieveModelMixin
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationToCreateCompanySerializer, \
-    TariffApplicationSerializer, TestApplicationSerializer, ApproveDeclineTariffApplication
+    TariffApplicationSerializer, TestApplicationSerializer, ApproveDeclineTariffApplication, \
+    TariffApplicationRetrieveSerializer
 from applications.services import approve_tariff_application, change_status_of_application_to_create_company
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
@@ -36,6 +36,9 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=CreateApplicationToCreateCompanySerializer)
     def create(self, request, *args, **kwargs):
+        """
+        Создание заявки на создание компании. TariffPeriod:1 = MONTHLY, 2 = YEARLY
+        """
         return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=UpdateApplicationToCreateCompanySerializer)
@@ -60,11 +63,16 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class TariffApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
+class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
-    serializer_class = TariffApplicationSerializer
     queryset = TariffApplication.objects.order_by()
     filterset_fields = ('status',)
+    http_method_names = ['get', 'patch']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TariffApplicationRetrieveSerializer
+        return TariffApplicationSerializer
 
     @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
