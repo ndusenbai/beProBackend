@@ -62,6 +62,7 @@ def create_department(user: User, data: dict) -> None:
         try:
             head_of_department = User.objects.get(email=data['head_of_department']['email'])
         except User.DoesNotExist:
+            data['head_of_department']['selected_company_id'] = department.company_id
             head_of_department = User.objects.create_user(**data['head_of_department'])
         head_of_department_role = Role.objects.create(
             company=user.selected_company,
