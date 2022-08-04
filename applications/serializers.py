@@ -9,8 +9,8 @@ from utils.serializers import BaseSerializer
 
 
 class TariffApplicationSerializer(serializers.ModelSerializer):
-    tariff = TariffModelSerializer()
-    owner = UserModelSerializer()
+    tariff = TariffModelSerializer(required=False)
+    owner = UserModelSerializer(required=False)
     period = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
 
