@@ -13,6 +13,6 @@ class ApplicationToCreateCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(TariffApplication)
 class TariffApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tariff', 'owner', 'status')
+    list_display = ('id', 'tariff', 'owner', 'start_date', 'end_date', 'status')
     list_display_filter = ('id', 'tariff', 'owner')
     raw_id_fields = ('tariff', 'owner')

@@ -29,6 +29,8 @@ class MyTariffSerializer(BaseSerializer):
     companies = serializers.SerializerMethodField()
     services = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
 
     def get_period(self, instance):
         if instance.period == TariffPeriod.MONTHLY:
