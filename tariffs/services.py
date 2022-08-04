@@ -29,13 +29,12 @@ def get_my_tariff(owner):
 def prolongate_my_tariff(owner):
     last_tariff_app = TariffApplication.objects.filter(owner=owner, status=ApplicationStatus.ACCEPTED).order_by('-end_date').first()
     if last_tariff_app:
-        start_date = end_date = None
+        start_date = last_tariff_app.end_date + relativedelta(days=1)
+        end_date = None
 
         if last_tariff_app.period == TariffPeriod.MONTHLY:
-            start_date = last_tariff_app.end_date + relativedelta(days=1)
             end_date = start_date + relativedelta(months=1)
         elif last_tariff_app.period == TariffPeriod.YEARLY:
-            start_date = last_tariff_app.end_date + relativedelta(days=1)
             end_date = start_date + relativedelta(years=1)
 
         TariffApplication.objects.create(
@@ -47,3 +46,26 @@ def prolongate_my_tariff(owner):
         )
         return {'message': 'created'}, status.HTTP_200_OK
     return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
+
+
+def change_my_tariff(owner, tariff, period):
+    last_tariff_app = TariffApplication.objects.filter(owner=owner, status=ApplicationStatus.ACCEPTED).order_by('-end_date').first()
+    if last_tariff_app:
+        start_date = last_tariff_app.end_date + relativedelta(days=1)
+        end_date = None
+
+        if period == TariffPeriod.MONTHLY:
+            end_date = start_date + relativedelta(months=1)
+        elif period == TariffPeriod.YEARLY:
+            end_date = start_date + relativedelta(years=1)
+
+        TariffApplication.objects.create(
+            tariff=tariff,
+            owner=owner,
+            start_date=start_date,
+            end_date=end_date,
+            period=period,
+        )
+        return {'message': 'created'}, status.HTTP_200_OK
+    return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
+

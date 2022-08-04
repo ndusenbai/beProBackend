@@ -57,3 +57,8 @@ class MyTariffSerializer(BaseSerializer):
 
     def get_services(self, instance):
         return CompanyServiceSerializer(instance.owner.selected_company.service).data
+
+
+class ChangeTariff(BaseSerializer):
+    tariff = serializers.PrimaryKeyRelatedField(queryset=Tariff.objects.only('id'))
+    period = serializers.ChoiceField(choices=TariffPeriod.choices)

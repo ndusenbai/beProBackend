@@ -5,8 +5,9 @@ from drf_yasg.utils import swagger_auto_schema
 
 from applications.models import TariffApplication
 from tariffs.models import Tariff
-from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, MyTariffSerializer
-from tariffs.services import update_tariff_application, delete_tariff, get_my_tariff, prolongate_my_tariff
+from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, MyTariffSerializer, ChangeTariff
+from tariffs.services import update_tariff_application, delete_tariff, get_my_tariff, prolongate_my_tariff, \
+    change_my_tariff
 from utils.permissions import IsSuperuser, IsOwnerOrSuperuser
 from utils.tools import log_exception
 
@@ -44,4 +45,14 @@ class MyTariffViewSet(GenericViewSet):
 
     def prolongate_tariff(self, request):
         response, status_code = prolongate_my_tariff(request.user)
+        return Response(response, status_code)
+
+    @swagger_auto_schema(request_body=ChangeTariff)
+    def change_tariff(self, request):
+        """
+        Поменять тариф. period: 1=MONTHLY, 2=YEARLY
+        """
+        serializer = ChangeTariff(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response, status_code = change_my_tariff(request.user, **serializer.validated_data)
         return Response(response, status_code)
