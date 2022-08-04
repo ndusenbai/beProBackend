@@ -7,7 +7,7 @@ from applications.models import TariffApplication
 from tariffs.models import Tariff
 from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, MyTariffSerializer, ChangeTariff
 from tariffs.services import update_tariff_application, delete_tariff, get_my_tariff, prolongate_my_tariff, \
-    change_my_tariff
+    change_my_tariff, deactivate_my_tariff
 from utils.permissions import IsSuperuser, IsOwnerOrSuperuser
 from utils.tools import log_exception
 
@@ -56,3 +56,7 @@ class MyTariffViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         response, status_code = change_my_tariff(request.user, **serializer.validated_data)
         return Response(response, status_code)
+
+    def deactivate_tariff(self, request):
+        deactivate_my_tariff(request.user)
+        return Response({'message': 'success'})

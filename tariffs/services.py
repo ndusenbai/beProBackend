@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 from rest_framework import status
 
 from applications.models import TariffApplication, ApplicationStatus
+from companies.models import Company
 from tariffs.models import Tariff, TariffPeriod
 from tariffs.serializers import MyTariffSerializer
 
@@ -69,3 +70,6 @@ def change_my_tariff(owner, tariff, period):
         return {'message': 'created'}, status.HTTP_200_OK
     return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
 
+
+def deactivate_my_tariff(owner):
+    Company.objects.filter(owner=owner).update(is_active=False)
