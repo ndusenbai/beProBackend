@@ -13,6 +13,16 @@ class ApplicationStatus(models.IntegerChoices):
     ACCEPTED = 2, 'Accepted'
     DECLINED = 3, 'Declined'
 
+    @staticmethod
+    def get_status(status):
+        if status == ApplicationStatus.NEW:
+            return 'new'
+        elif status == ApplicationStatus.ACCEPTED:
+            return 'accepted'
+        elif status == ApplicationStatus.DECLINED:
+            return 'declined'
+        return ''
+
 
 class ApplicationToCreateCompany(BaseModel):
     first_name = models.CharField(max_length=50)
