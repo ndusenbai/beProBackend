@@ -58,12 +58,7 @@ def create_tariff_application(instance: ApplicationToCreateCompany, owner: User)
 
 
 def enable_services_for_company(company: Company):
-    CompanyService.objects.create(
-        company=company,
-        analytics_enabled=True,
-        time_tracking_enabled=True,
-        tests_enabled=True,
-    )
+    CompanyService.objects.create(company=company)
 
 
 def create_company_and_hr_department(instance: ApplicationToCreateCompany) -> Tuple[Company, Department]:

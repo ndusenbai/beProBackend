@@ -7,7 +7,7 @@ from django.db.models.query import QuerySet
 from rest_framework import status
 
 from auth_user.services import User
-from companies.models import Department, Company, Role, RoleChoices
+from companies.models import Department, Company, Role, RoleChoices, CompanyService
 from scores.models import Reason
 from scores.utils import GetScoreForRole
 from timesheet.models import DepartmentSchedule, EmployeeSchedule
@@ -24,6 +24,7 @@ def create_company(user: User, data) -> None:
         max_employees_qty=data['max_employees_qty'],
         owner=user,
     )
+    CompanyService.objects.create(company=company)
     Reason.objects.create(name='Опоздание', score=-10, is_auto=True, company=company)
     hr_department = Department.objects.create(
         name='HR',
@@ -223,3 +224,11 @@ def get_observers_qs(owner):
         return Role.objects.filter(role=RoleChoices.OBSERVER, company_id__in=owner_companies)
 
     return Role.objects.none()
+
+
+def update_company_services(data: dict) -> None:
+    for company_service in data['company_services']:
+        instance = CompanyService.objects.get(id=company_service.pop('id'))
+        for key, value in company_service.items():
+            setattr(instance, key, value)
+        instance.save()

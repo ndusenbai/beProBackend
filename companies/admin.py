@@ -32,3 +32,4 @@ class RoleAdmin(admin.ModelAdmin):
 class CompanyServiceAdmin(admin.ModelAdmin):
     list_display = ('company', 'analytics_enabled', 'time_tracking_enabled', 'tests_enabled')
     list_display_links = ('company',)
+    raw_id_fields = ('company',)

@@ -1,33 +1,47 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
-from django.core.exceptions import PermissionDenied
 
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
-    ObserverCreateSerializer, ObserverUpdateSerializer
+    ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
-    delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs
+    delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, update_company_services
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
-from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission
+from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
+    IsOwnerOrSuperuser
 from utils.tools import log_exception
 
 User = get_user_model()
 
 
-class CompanyServiceViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
+    permission_classes = (IsOwnerOrSuperuser,)
     serializer_class = CompanyServiceSerializer
-    queryset = CompanyService.objects.order_by()
+
+    def get_queryset(self):
+        return CompanyService.objects.filter(company__owner=self.request.user)
+
+    @swagger_auto_schema(request_body=CompanyServicesUpdateSerializer)
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = CompanyServicesUpdateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            update_company_services(serializer.validated_data)
+            return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            log_exception(e, 'Error in CompanyServiceViewSet.create()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CompanyViewSet(ModelViewSet):

@@ -67,7 +67,7 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
     permission_classes = (IsOwnerOrSuperuser,)
     queryset = TariffApplication.objects.order_by()
     filterset_fields = ('status',)
-    http_method_names = ['get', 'patch']
+    http_method_names = ['get', 'put']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

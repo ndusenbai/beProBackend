@@ -8,13 +8,6 @@ from timesheet.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
 
 
-class CompanyServiceSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = CompanyService
-        fields = "__all__"
-
-
 class CompanyModelSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -36,6 +29,25 @@ class CompanySerializer(BaseSerializer):
 
     def get_employees_ratio(self, instance):
         return f'{instance.employees_count}/{instance.max_employees_qty}'
+
+
+class CompanyServiceSerializer(serializers.ModelSerializer):
+    company = CompanyModelSerializer()
+
+    class Meta:
+        model = CompanyService
+        fields = "__all__"
+
+
+class CompanyServiceUpdateSerializer(BaseSerializer):
+    analytics_enabled = serializers.BooleanField()
+    time_tracking_enabled = serializers.BooleanField()
+    tests_enabled = serializers.BooleanField()
+    id = serializers.IntegerField()
+
+
+class CompanyServicesUpdateSerializer(BaseSerializer):
+    company_services = CompanyServiceUpdateSerializer(many=True)
 
 
 class CreateHeadDepartmentSerializer(BaseSerializer):
