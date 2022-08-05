@@ -1,11 +1,15 @@
 from dateutil.relativedelta import relativedelta
+from datetime import date, timedelta
 
+from django.contrib.auth import get_user_model
 from rest_framework import status
 
 from applications.models import TariffApplication, ApplicationStatus
 from companies.models import Company
 from tariffs.models import Tariff, TariffPeriod
 from tariffs.serializers import MyTariffSerializer
+
+User = get_user_model()
 
 
 def update_tariff_application(instance: Tariff, data: dict) -> None:
@@ -73,3 +77,27 @@ def change_my_tariff(owner, tariff, period):
 
 def deactivate_my_tariff(owner):
     Company.objects.filter(owner=owner).update(is_active=False)
+
+
+def check_if_tariff_over_soon(owner: User) -> bool:
+    """
+    return True if tariff is over soon
+    """
+    today = date.today()
+    days_from_today = date.today() + timedelta(days=3)
+    tariff = TariffApplication.objects.filter(
+        end_date__gte=today,
+        end_date__lte=days_from_today,
+        owner=owner,
+        status=ApplicationStatus.ACCEPTED).order_by('-end_date').first()
+    if tariff:
+        new_tariff = TariffApplication.objects.filter(
+            owner=tariff.owner,
+            status=ApplicationStatus.NEW,
+            start_date__gt=tariff.end_date).exists()
+        if new_tariff:
+            return False
+        else:
+            return True
+    else:
+        return True
