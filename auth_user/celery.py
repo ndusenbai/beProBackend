@@ -19,7 +19,7 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'deactivate_tariff': {
         'task': 'companies.tasks.deactivate_tariff',
-        'schedule': 3600.0
+        'schedule': crontab(hour=23, minute=50),
     },
     'end_of_tariff_warning': {
         'task': 'companies.tasks.end_of_tariff_warning',
