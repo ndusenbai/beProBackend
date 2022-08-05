@@ -30,8 +30,8 @@ EMAIL_HOST_PASSWORD=''
 1. poetry shell
 2. poetry install
 3. python manage.py migrate
-4. бэкграунд селери: nohup celery -A auth_user worker -l info &
-5. обычный запуск селери: celery -A auth_user worker -l info
+4. бэкграунд селери: nohup celery -A auth_user worker -B -l info &
+5. обычный запуск селери: celery -A auth_user worker -B -l info
 
 
 https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-18-04-ru

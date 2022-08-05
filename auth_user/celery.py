@@ -21,6 +21,10 @@ app.conf.beat_schedule = {
         'task': 'companies.tasks.deactivate_tariff',
         'schedule': 3600.0
     },
+    'end_of_tariff_warning': {
+        'task': 'companies.tasks.end_of_tariff_warning',
+        'schedule': crontab(hour=11, minute=0),
+    },
     'absence_check': {
         'task': 'timesheet.tasks.absence_check',
         'schedule': crontab(hour=23, minute=50),
