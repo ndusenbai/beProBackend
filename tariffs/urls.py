@@ -5,6 +5,7 @@ from tariffs import views
 
 router = DefaultRouter()
 
+router.register('list-tariff', views.ListTariffViewSet, basename='list-tariff-viewset')
 router.register('tariff', views.TariffViewSet, basename='tariff-viewset')
 
 urlpatterns = [

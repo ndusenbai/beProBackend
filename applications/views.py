@@ -4,19 +4,17 @@ from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.response import Response
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, RetrieveModelMixin
-from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
-    CreateApplicationToCreateCompanySerializer, UpdateApplicationToCreateCompanySerializer, \
-    TariffApplicationSerializer, TestApplicationSerializer, ApproveDeclineTariffApplication, \
-    TariffApplicationRetrieveSerializer
-from applications.services import approve_tariff_application, change_status_of_application_to_create_company
+    CreateApplicationToCreateCompanySerializer, UpdateApplicationStatus, \
+    TariffApplicationSerializer, TestApplicationSerializer, TariffApplicationRetrieveSerializer
+from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
-from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser, IsSuperuser
+from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser
 from utils.tools import log_exception
 
 
@@ -41,16 +39,16 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
         """
         return super().create(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=UpdateApplicationToCreateCompanySerializer)
+    @swagger_auto_schema(request_body=UpdateApplicationStatus)
     def update(self, request, *args, **kwargs):
         """
-        Принятие или отклонение статуса заявки на создание компанииc. ApplicationStatus:
+        Принятие или отклонение статуса заявки на создание компании. ApplicationStatus:
             NEW = 1
             ACCEPTED = 2
             DECLINED = 3
         """
         try:
-            serializer = UpdateApplicationToCreateCompanySerializer(data=request.data)
+            serializer = UpdateApplicationStatus(data=request.data)
             serializer.is_valid(raise_exception=True)
             change_status_of_application_to_create_company(request, self.get_object(), serializer.validated_data)
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)
@@ -78,6 +76,23 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @swagger_auto_schema(request_body=UpdateApplicationStatus)
+    def update(self, request, *args, **kwargs):
+        """
+        Принятие или отклонение статуса заявки на продление. ApplicationStatus:
+            NEW = 1
+            ACCEPTED = 2
+            DECLINED = 3
+        """
+        try:
+            serializer = UpdateApplicationStatus(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            change_status_of_tariff_application(self.get_object(), serializer.validated_data['status'])
+            return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            log_exception(e, 'Error in TariffApplicationView.update()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
@@ -88,14 +103,3 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-
-class ApproveTariffApplication(APIView):
-    permission_classes = (IsSuperuser,)
-
-    @swagger_auto_schema(request_body=ApproveDeclineTariffApplication)
-    def post(self, request):
-        serializer = ApproveDeclineTariffApplication(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        approve_tariff_application(**serializer.validated_data)
-        return Response({'message': 'Success'})
