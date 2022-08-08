@@ -118,6 +118,13 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
 34. sudo ufw delete allow 8000
     sudo ufw allow 'Nginx Full'
 35. apt install redis-server
+36. cd media
+37. mkdir statistics
+38. cd statistics
+39. mkdir double_stats
+40. mkdir general_stats
+41. mkdir history_stats
+42. mkdir inverted_stats
 
 
 
