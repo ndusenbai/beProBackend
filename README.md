@@ -118,3 +118,13 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
 34. sudo ufw delete allow 8000
     sudo ufw allow 'Nginx Full'
 35. apt install redis-server
+
+
+
+## server refresh:
+1. git pull
+2. poetry shell
+3. manage.py migrate
+4. kill `celery_pid`
+5. nohup celery -A auth_user worker -B -l info &
+6. systemctl restart gunicorn
