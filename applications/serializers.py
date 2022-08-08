@@ -67,9 +67,5 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
     period = serializers.ChoiceField(choices=TariffPeriod)
 
 
-class UpdateApplicationToCreateCompanySerializer(BaseSerializer):
+class UpdateApplicationStatus(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
-
-
-class ApproveDeclineTariffApplication(BaseSerializer):
-    application_id = serializers.IntegerField()

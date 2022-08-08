@@ -103,10 +103,7 @@ def create_owner(instance: ApplicationToCreateCompany, company: Company) -> Tupl
 
 
 @atomic
-def approve_tariff_application(application_id: int) -> None:
-    tariff_app = TariffApplication.objects.get(id=application_id)
-    if tariff_app.status != ApplicationStatus.NEW:
-        raise Exception('Application must be in NEW status')
+def approve_tariff_application(tariff_app: TariffApplication) -> None:
     Company.objects.filter(owner=tariff_app.owner).update(is_active=True)
     tariff_app.status = ApplicationStatus.ACCEPTED
     tariff_app.save()
@@ -119,5 +116,12 @@ def change_status_of_application_to_create_company(
     application_status = data['status']
     if application_status == ApplicationStatus.ACCEPTED:
         accept_application_to_create_company(request, instance)
+    elif application_status == ApplicationStatus.DECLINED:
+        update_application_to_create_company(instance, {'status': application_status})
+
+
+def change_status_of_tariff_application(instance: TariffApplication, application_status: int) -> None:
+    if application_status == ApplicationStatus.ACCEPTED:
+        approve_tariff_application(instance)
     elif application_status == ApplicationStatus.DECLINED:
         update_application_to_create_company(instance, {'status': application_status})

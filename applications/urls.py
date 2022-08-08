@@ -9,6 +9,4 @@ router.register('test-application', views.TestApplicationView, basename='test-ap
 router.register('tariff-application', views.TariffApplicationView, basename='tariff-application-view')
 router.register('app-to-create-company', views.ApplicationToCreateCompanyViewSet, basename='app-to-create-company')
 
-urlpatterns = [
-    path('approve-tariff-app/', views.ApproveTariffApplication.as_view(), name='approve-tariff-app')
-] + router.urls
+urlpatterns = [] + router.urls
