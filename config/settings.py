@@ -19,7 +19,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-gf%sh-rp#&qk9j(va0tgkd!ypc&4ayd-$r3&h2&3ja3@wbiiwi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
