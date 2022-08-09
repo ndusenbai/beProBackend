@@ -1,5 +1,5 @@
 from typing import OrderedDict
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 
 from django.contrib.auth import get_user_model
 from django.db.transaction import atomic
@@ -11,6 +11,7 @@ from companies.models import Role, Department
 from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
+from utils.tools import log_message
 
 User = get_user_model()
 
@@ -35,6 +36,8 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
 def get_last_timesheet_action(role: Role) -> str:
     last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
+    if last_timesheet and 'Automatically filled' in last_timesheet.comment:
+        return 'check_out'
     if last_timesheet and last_timesheet.check_out is None:
         return 'check_in'
     return 'check_out'
@@ -57,7 +60,7 @@ def check_distance(department: Department, latitude: float, longitude: float) ->
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
-    check_in = data['check_in']
+    check_in = data['check_in'].astimezone(timezone.utc)
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
     subtraction_result = True
     status = TimeSheetChoices.ON_TIME
@@ -66,11 +69,11 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         status = TimeSheetChoices.LATE
         subtraction_result = subtract_scores(role, check_in)
 
-    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    # last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
 
-    if last_timesheet and last_timesheet.check_out is None:
-        last_timesheet.check_out = '23:59'
-        last_timesheet.save()
+    # if last_timesheet and last_timesheet.check_out is None:
+    #     last_timesheet.check_out = '23:59'
+    #     last_timesheet.save()
 
     if subtraction_result:
         TimeSheet.objects.create(
@@ -126,17 +129,26 @@ def set_took_off(role: Role, data: dict):
     return {'message': 'created'}, 201
 
 
-def handle_check_out_timesheet(role: Role, data: dict) -> bool:
-    check_out = data['check_out']
+def handle_check_out_timesheet(role: Role, data: dict):
+    # check_out = data['check_out']
+    check_out = data['check_out'].astimezone(timezone.utc).time()
+    log_message(f'handle_check_out_timesheet: Role_id={role.id}. Checkout: {str(check_out)}')
     last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    last_timesheet.check_out = check_out
+    last_timesheet.save()
 
-    if last_timesheet.day != date.today():
-        if not last_timesheet.check_out:
+
+def handle_check_out_absent_days(role: Role, data: dict) -> bool:
+    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    today = data['check_out'].astimezone(timezone.utc).date()
+
+    if last_timesheet.day != today:
+        if not last_timesheet.check_out and 'Automatically filled' not in last_timesheet.comment:
             last_timesheet.check_out = '23:59'
             last_timesheet.save()
 
         first_absent_day = last_timesheet.day + timedelta(days=1)
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = today - timedelta(days=1)
         absent_days_qty = (yesterday - first_absent_day).days
         time_sheets = []
         for i in range(absent_days_qty + 1):
@@ -155,9 +167,6 @@ def handle_check_out_timesheet(role: Role, data: dict) -> bool:
             )
         TimeSheet.objects.bulk_create(time_sheets)
         return False
-
-    last_timesheet.check_out = check_out
-    last_timesheet.save()
     return True
 
 
@@ -172,9 +181,9 @@ def check_statistics(role: Role, check_out_date) -> None:
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
-    check_distance(role.department, data['latitude'], data['longitude'])
-    check_statistics(role, data['check_out'])
-    return handle_check_out_timesheet(role, data)
+    if not handle_check_out_absent_days(role, data):
+        return False
+    handle_check_out_timesheet(role, data)
 
 
 def bulk_create_vacation_timesheets(data):
