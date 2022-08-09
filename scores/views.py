@@ -31,11 +31,28 @@ class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('reason__name', 'created_by__first_name', 'created_by__last_name')
     filterset_fields = ('role',)
+    filter_serializer = None
 
     def get_serializer_class(self):
         if self.action == 'list':
             return ScoreModelSerializer
         return ScoreSerializer
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+
+        data = self.filter_serializer.validated_data
+
+        if 'year' in data and 'months' in data:
+            return queryset.filter(created_at__year=data['year'], created_at__month__in=data['months'])
+
+        return queryset
+
+    @swagger_auto_schema(manual_parameters=[QUERY_YEAR, QUERY_MONTHS])
+    def list(self, request, *args, **kwargs):
+        self.filter_serializer = MonthScoresValidationSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
