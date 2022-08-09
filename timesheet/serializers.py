@@ -38,8 +38,6 @@ class TakeTimeOffSerializer(BaseSerializer):
 
 
 class CheckOutSerializer(BaseSerializer):
-    latitude = serializers.DecimalField(max_digits=22, decimal_places=6)
-    longitude = serializers.DecimalField(max_digits=22, decimal_places=6)
     check_out = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%S%z')
 
 
