@@ -19,12 +19,11 @@ User = get_user_model()
 def get_timesheet_qs_by_month(data: dict) -> TimeSheet:
     first_date_of_month = date(data['year'], data['month'], 1)
     last_date_of_month = date(data['year'], data['month'] + 1, 1) - timedelta(days=1)
-    ordering = data.get('ordering', '-day')
 
     return TimeSheet.objects.filter(
             role_id=data['role_id'],
             day__range=[first_date_of_month, last_date_of_month])\
-        .order_by(ordering)
+        .order_by('day')
 
 
 def update_timesheet(instance: TimeSheet, data: dict) -> None:
@@ -60,7 +59,10 @@ def check_distance(department: Department, latitude: float, longitude: float) ->
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
-    check_in = data['check_in'].astimezone(timezone.utc)
+    log_message(f"data['check_in'], {data['check_in']}")
+    log_message(f"data['check_in'] as timezone, {data['check_in'].astimezone(timezone.utc)}")
+    check_in = data['check_in']
+    # check_in = data['check_in'].astimezone(timezone.utc)
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
     subtraction_result = True
     status = TimeSheetChoices.ON_TIME
@@ -130,8 +132,10 @@ def set_took_off(role: Role, data: dict):
 
 
 def handle_check_out_timesheet(role: Role, data: dict):
-    # check_out = data['check_out']
-    check_out = data['check_out'].astimezone(timezone.utc).time()
+    log_message(f"data['check_out'], {data['check_out']}")
+    log_message(f"data['check_out'] as timezone, {data['check_out'].astimezone(timezone.utc)}")
+    check_out = data['check_out']
+    # check_out = data['check_out'].astimezone(timezone.utc).time()
     log_message(f'handle_check_out_timesheet: Role_id={role.id}. Checkout: {str(check_out)}')
     last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
     last_timesheet.check_out = check_out
@@ -183,6 +187,7 @@ def check_statistics(role: Role, check_out_date) -> None:
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
     if not handle_check_out_absent_days(role, data):
         return False
+    check_statistics(role, data['check_out'])
     handle_check_out_timesheet(role, data)
 
 
