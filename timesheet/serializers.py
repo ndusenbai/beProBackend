@@ -16,7 +16,6 @@ class TimeSheetListSerializer(BaseSerializer):
     role_id = serializers.IntegerField(required=False)
     month = serializers.IntegerField(min_value=1, max_value=12, required=False)
     year = serializers.IntegerField(min_value=2022, max_value=9999, required=False)
-    ordering = serializers.CharField(required=False)
 
 
 class TimeSheetUpdateSerializer(BaseSerializer):
