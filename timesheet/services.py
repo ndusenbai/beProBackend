@@ -69,6 +69,7 @@ def get_timesheet_by_month(role_id, year, month):
                     'time_from': schedule.time_from,
                     'time_to': schedule.time_to,
                     'comment': '',
+                    'file': None,
                     'status': TimeSheetChoices.ABSENT,
                     'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.ABSENT),
                 })
@@ -82,6 +83,7 @@ def get_timesheet_by_month(role_id, year, month):
                     'time_from': '',
                     'time_to': '',
                     'comment': '',
+                    'file': None,
                     'status': TimeSheetChoices.DAY_OFF,
                     'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
                 })
