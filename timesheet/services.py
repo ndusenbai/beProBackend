@@ -18,7 +18,10 @@ User = get_user_model()
 
 def get_timesheet_qs_by_month(data: dict) -> TimeSheet:
     first_date_of_month = date(data['year'], data['month'], 1)
-    last_date_of_month = date(data['year'], data['month'] + 1, 1) - timedelta(days=1)
+    if data['month'] == 12:
+        last_date_of_month = date(data['year'], 12, 31)
+    else:
+        last_date_of_month = date(data['year'], data['month'] + 1, 1) - timedelta(days=1)
 
     return TimeSheet.objects.filter(
             role_id=data['role_id'],
