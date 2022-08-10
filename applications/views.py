@@ -1,10 +1,11 @@
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin, RetrieveModelMixin
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin, RetrieveModelMixin, DestroyModelMixin, CreateModelMixin
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny
 
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
@@ -18,7 +19,7 @@ from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuse
 from utils.tools import log_exception
 
 
-class ApplicationToCreateCompanyViewSet(ModelViewSet):
+class ApplicationToCreateCompanyViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     permission_classes = (IsAssistantMarketingOrSuperuser, )
     serializer_class = ApplicationToCreateCompanyModelSerializer
     queryset = ApplicationToCreateCompany.objects.all()
@@ -31,13 +32,6 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
     @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-    @swagger_auto_schema(request_body=CreateApplicationToCreateCompanySerializer)
-    def create(self, request, *args, **kwargs):
-        """
-        Создание заявки на создание компании. TariffPeriod:1 = MONTHLY, 2 = YEARLY
-        """
-        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=UpdateApplicationStatus)
     def update(self, request, *args, **kwargs):
@@ -59,6 +53,19 @@ class ApplicationToCreateCompanyViewSet(ModelViewSet):
         except Exception as e:
             log_exception(e, 'Error in ApplicationToCreateCompanyViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ApplicationToCreateCompanyCreateViewSet(CreateModelMixin, GenericViewSet):
+    permission_classes = (AllowAny, )
+    serializer_class = ApplicationToCreateCompanyModelSerializer
+    queryset = ApplicationToCreateCompany.objects.all()
+
+    @swagger_auto_schema(request_body=CreateApplicationToCreateCompanySerializer)
+    def create(self, request, *args, **kwargs):
+        """
+        Создание заявки на создание компании. TariffPeriod:1 = MONTHLY, 2 = YEARLY
+        """
+        return super().create(request, *args, **kwargs)
 
 
 class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):

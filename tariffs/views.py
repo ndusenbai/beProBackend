@@ -42,7 +42,7 @@ class TariffViewSet(ModelViewSet):
 class MyTariffViewSet(GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
     queryset = TariffApplication.objects.order_by()
-    serializer_class = None
+    serializer_class = MyTariffSerializer
     pagination_class = None
 
     @swagger_auto_schema(responses={200: MyTariffSerializer()})
