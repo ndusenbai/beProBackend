@@ -13,6 +13,21 @@ class TimeSheetChoices(models.IntegerChoices):
     LATE = 2, 'Late'
     ABSENT = 3, 'Absent'
     ON_VACATION = 4, 'On vacation'
+    DAY_OFF = 5, 'Day off'
+
+    @staticmethod
+    def get_status(status):
+        if status == TimeSheetChoices.ON_TIME:
+            return 'on_time'
+        elif status == TimeSheetChoices.LATE:
+            return 'late'
+        elif status == TimeSheetChoices.ABSENT:
+            return 'absent'
+        elif status == TimeSheetChoices.ON_VACATION:
+            return 'on_vacation'
+        elif status == TimeSheetChoices.DAY_OFF:
+            return 'day_off'
+        return ''
 
 
 class TimeSheet(BaseModel):
@@ -68,6 +83,7 @@ class EmployeeSchedule(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=['role', 'week_day'], name='unique schedule'),
         ]
+        ordering = ('week_day',)
 
     def __str__(self):
         return f'{self.role} - {WeekDayChoices.choices[self.week_day][1]}'

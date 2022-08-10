@@ -12,7 +12,7 @@ from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeShe
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
     VacationTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
-    get_timesheet_qs_by_month, update_timesheet, change_timesheet, set_took_off, create_vacation
+    update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
@@ -25,25 +25,18 @@ User = get_user_model()
 class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TimeSheetModelSerializer
     permission_classes = (TimeSheetPermissions,)
-
+    queryset = TimeSheet.objects.all()
     pagination_class = None
-
-    def get_queryset(self):
-        if self.action == 'list':
-            serializer = TimeSheetListSerializer(data=self.request.query_params)
-            serializer.is_valid(raise_exception=True)
-            qs = get_timesheet_qs_by_month(serializer.validated_data)
-            return qs
-        return TimeSheet.objects.all()
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR])
     def list(self, request, *args, **kwargs):
         """
         Получить расписание за определенный месяц на роль
         """
-
-        resp = super().list(request, *args, **kwargs)
-        return resp.data
+        serializer = TimeSheetListSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        data = get_timesheet_by_month(**serializer.validated_data)
+        return Response(data=data)
 
     @swagger_auto_schema(request_body=TimeSheetUpdateSerializer)
     def update(self, request, *args, **kwargs):

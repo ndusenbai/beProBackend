@@ -6,10 +6,14 @@ from utils.serializers import BaseSerializer
 
 
 class TimeSheetModelSerializer(serializers.ModelSerializer):
+    status_decoded = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TimeSheet
         exclude = ('created_at', 'updated_at')
+
+    def get_status_decoded(self, instance):
+        return TimeSheetChoices.get_status(instance.status)
 
 
 class TimeSheetListSerializer(BaseSerializer):
