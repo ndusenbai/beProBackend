@@ -61,6 +61,7 @@ def get_timesheet_by_month(role_id, year, month):
             schedule = get_schedule_for_weekday(schedules, _date.weekday())
             if schedule:
                 result.append({
+                    'id': None,
                     'role': role_id,
                     'day': date_formatted,
                     'check_in': '',
@@ -73,6 +74,7 @@ def get_timesheet_by_month(role_id, year, month):
                 })
             else:
                 result.append({
+                    'id': None,
                     'role': role_id,
                     'day': date_formatted,
                     'check_in': '',
