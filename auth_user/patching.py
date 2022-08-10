@@ -19,16 +19,16 @@ class PatchedAPIView(OriginalAPIView):
         role = get_user_role(request.user)
 
         if role in ['superuser', 'admin_marketing', 'admin_production_worker']:
-            return super().check_permissions(self, request)
+            return super().check_permissions(request)
         for url in allowed_urls:
             if request.path.startswith(url):
-                return super().check_permissions(self, request)
+                return super().check_permissions(request)
 
         if not request.user.id:
             return JsonResponse({'message': 'Залогиньтесь'}, status=status.HTTP_403_FORBIDDEN)
 
         if request.user.selected_company.is_active:
-            return super().check_permissions(self, request)
+            return super().check_permissions(request)
 
         return JsonResponse({'message': 'Тариф закончился. Ваша компания не активна'}, status=status.HTTP_403_FORBIDDEN)
 

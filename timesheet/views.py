@@ -41,7 +41,9 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
         """
         Получить расписание за определенный месяц на роль
         """
-        return super().list(request, *args, **kwargs)
+
+        resp = super().list(request, *args, **kwargs)
+        return resp.data
 
     @swagger_auto_schema(request_body=TimeSheetUpdateSerializer)
     def update(self, request, *args, **kwargs):
