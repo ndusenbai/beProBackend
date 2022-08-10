@@ -183,6 +183,7 @@ def check_statistics(role: Role, check_out_date) -> None:
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
     if not handle_check_out_absent_days(role, data):
         return False
+    check_statistics(role, data['check_out'])
     handle_check_out_timesheet(role, data)
 
 
