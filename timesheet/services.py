@@ -1,4 +1,5 @@
 from typing import OrderedDict
+from calendar import monthrange
 from datetime import date, timedelta, timezone
 
 from django.contrib.auth import get_user_model
@@ -10,23 +11,80 @@ from bepro_statistics.models import Statistic, UserStatistic
 from companies.models import Role, Department
 from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
+from timesheet.serializers import TimeSheetModelSerializer
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 from utils.tools import log_message
 
 User = get_user_model()
 
 
-def get_timesheet_qs_by_month(data: dict) -> TimeSheet:
-    first_date_of_month = date(data['year'], data['month'], 1)
-    if data['month'] == 12:
-        last_date_of_month = date(data['year'], 12, 31)
+def get_timesheet_qs_by_month(role_id, year, month) -> TimeSheet:
+    first_date_of_month = date(year, month, 1)
+    if month == 12:
+        last_date_of_month = date(year, 12, 31)
     else:
-        last_date_of_month = date(data['year'], data['month'] + 1, 1) - timedelta(days=1)
+        last_date_of_month = date(year, month + 1, 1) - timedelta(days=1)
 
     return TimeSheet.objects.filter(
-            role_id=data['role_id'],
+            role_id=role_id,
             day__range=[first_date_of_month, last_date_of_month])\
         .order_by('day')
+
+
+def get_timesheet_for_day(timesheets, day):
+    for timesheet in timesheets:
+        if timesheet['day'] == day:
+            return timesheet
+    return None
+
+
+def get_schedule_for_weekday(schedules, num_day_of_month):
+    for schedule in schedules:
+        if schedule.week_day == num_day_of_month:
+            return schedule
+    return None
+
+
+def get_timesheet_by_month(role_id, year, month):
+    qs = get_timesheet_qs_by_month(role_id, year, month)
+    timesheets = TimeSheetModelSerializer(qs, many=True).data
+    schedules = EmployeeSchedule.objects.filter(role_id=role_id)
+    first_weekday, num_days_of_month = monthrange(year, month)
+    result = []
+    for num_day_of_month in range(1, num_days_of_month+1):
+        _date = date(year, month, num_day_of_month)
+        date_formatted = _date.strftime('%Y-%m-%d')
+        timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
+        if timesheet_for_day:
+            result.append(timesheet_for_day)
+        else:
+            schedule = get_schedule_for_weekday(schedules, _date.weekday())
+            if schedule:
+                result.append({
+                    'role': role_id,
+                    'day': date_formatted,
+                    'check_in': '',
+                    'check_out': '',
+                    'time_from': schedule.time_from,
+                    'time_to': schedule.time_to,
+                    'comment': '',
+                    'status': TimeSheetChoices.ABSENT,
+                    'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.ABSENT),
+                })
+            else:
+                result.append({
+                    'role': role_id,
+                    'day': date_formatted,
+                    'check_in': '',
+                    'check_out': '',
+                    'time_from': '',
+                    'time_to': '',
+                    'comment': '',
+                    'status': TimeSheetChoices.DAY_OFF,
+                    'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+                })
+
+    return result
 
 
 def update_timesheet(instance: TimeSheet, data: dict) -> None:
