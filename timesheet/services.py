@@ -1,11 +1,11 @@
-from typing import OrderedDict
 from calendar import monthrange
 from datetime import date, timedelta, timezone
+from typing import OrderedDict
 
-from django.contrib.auth import get_user_model
-from django.db.transaction import atomic
-from django.db.models import Q
 import geopy.distance
+from django.contrib.auth import get_user_model
+from django.db.models import Q
+from django.db.transaction import atomic
 
 from bepro_statistics.models import Statistic, UserStatistic
 from companies.models import Role, Department
@@ -51,42 +51,78 @@ def get_timesheet_by_month(role_id, year, month):
     schedules = EmployeeSchedule.objects.filter(role_id=role_id)
     first_weekday, num_days_of_month = monthrange(year, month)
     result = []
+    today = date.today()
     for num_day_of_month in range(1, num_days_of_month+1):
         _date = date(year, month, num_day_of_month)
         date_formatted = _date.strftime('%Y-%m-%d')
-        timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
-        if timesheet_for_day:
-            result.append(timesheet_for_day)
-        else:
-            schedule = get_schedule_for_weekday(schedules, _date.weekday())
-            if schedule:
-                result.append({
-                    'id': None,
-                    'role': role_id,
-                    'day': date_formatted,
-                    'check_in': '',
-                    'check_out': '',
-                    'time_from': schedule.time_from,
-                    'time_to': schedule.time_to,
-                    'comment': '',
-                    'file': None,
-                    'status': TimeSheetChoices.ABSENT,
-                    'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.ABSENT),
-                })
+        if _date <= today:
+            timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
+            if timesheet_for_day:
+                result.append(timesheet_for_day)
             else:
-                result.append({
-                    'id': None,
-                    'role': role_id,
-                    'day': date_formatted,
-                    'check_in': '',
-                    'check_out': '',
-                    'time_from': '',
-                    'time_to': '',
-                    'comment': '',
-                    'file': None,
-                    'status': TimeSheetChoices.DAY_OFF,
-                    'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
-                })
+                is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
+                if is_workday_schedule:
+                    result.append({
+                        'id': None,
+                        'role': role_id,
+                        'day': date_formatted,
+                        'check_in': '',
+                        'check_out': '',
+                        'time_from': is_workday_schedule.time_from,
+                        'time_to': is_workday_schedule.time_to,
+                        'comment': '',
+                        'file': None,
+                        'status': TimeSheetChoices.ABSENT,
+                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.ABSENT),
+                    })
+                else:
+                    result.append({
+                        'id': None,
+                        'role': role_id,
+                        'day': date_formatted,
+                        'check_in': '',
+                        'check_out': '',
+                        'time_from': '',
+                        'time_to': '',
+                        'comment': '',
+                        'file': None,
+                        'status': TimeSheetChoices.DAY_OFF,
+                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+                    })
+        else:
+            timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
+            if timesheet_for_day:
+                result.append(timesheet_for_day)
+            else:
+                is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
+                if is_workday_schedule:
+                    result.append({
+                        'id': None,
+                        'role': role_id,
+                        'day': date_formatted,
+                        'check_in': '',
+                        'check_out': '',
+                        'time_from': is_workday_schedule.time_from,
+                        'time_to': is_workday_schedule.time_to,
+                        'comment': '',
+                        'file': None,
+                        'status': TimeSheetChoices.FUTURE_DAY,
+                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.FUTURE_DAY),
+                    })
+                else:
+                    result.append({
+                        'id': None,
+                        'role': role_id,
+                        'day': date_formatted,
+                        'check_in': '',
+                        'check_out': '',
+                        'time_from': '',
+                        'time_to': '',
+                        'comment': '',
+                        'file': None,
+                        'status': TimeSheetChoices.DAY_OFF,
+                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+                    })
 
     return result
 
@@ -124,10 +160,7 @@ def check_distance(department: Department, latitude: float, longitude: float) ->
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
-    log_message(f"data['check_in'], {data['check_in']}")
-    log_message(f"data['check_in'] as timezone, {data['check_in'].astimezone(timezone.utc)}")
     check_in = data['check_in']
-    # check_in = data['check_in'].astimezone(timezone.utc)
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
     subtraction_result = True
     status = TimeSheetChoices.ON_TIME
@@ -197,10 +230,7 @@ def set_took_off(role: Role, data: dict):
 
 
 def handle_check_out_timesheet(role: Role, data: dict):
-    log_message(f"data['check_out'], {data['check_out']}")
-    log_message(f"data['check_out'] as timezone, {data['check_out'].astimezone(timezone.utc)}")
     check_out = data['check_out']
-    # check_out = data['check_out'].astimezone(timezone.utc).time()
     log_message(f'handle_check_out_timesheet: Role_id={role.id}. Checkout: {str(check_out)}')
     last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
     last_timesheet.check_out = check_out
