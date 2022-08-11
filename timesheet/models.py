@@ -14,6 +14,7 @@ class TimeSheetChoices(models.IntegerChoices):
     ABSENT = 3, 'Absent'
     ON_VACATION = 4, 'On vacation'
     DAY_OFF = 5, 'Day off'
+    FUTURE_DAY = 6, 'Future day'
 
     @staticmethod
     def get_status(status):
@@ -27,6 +28,8 @@ class TimeSheetChoices(models.IntegerChoices):
             return 'on_vacation'
         elif status == TimeSheetChoices.DAY_OFF:
             return 'day_off'
+        elif status == TimeSheetChoices.FUTURE_DAY:
+            return 'future_day'
         return ''
 
 
