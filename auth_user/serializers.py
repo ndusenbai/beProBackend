@@ -128,7 +128,7 @@ class UserProfileSerializer(BaseSerializer):
     full_name = serializers.CharField()
     phone_number = serializers.CharField()
     email = serializers.EmailField(required=False, read_only=True)
-    avatar = serializers.ImageField(required=False, allow_null=True, use_url=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
     role = serializers.SerializerMethodField(required=False)
     selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
     score = serializers.SerializerMethodField()
