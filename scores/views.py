@@ -3,8 +3,7 @@ from django.db.models.functions import TruncMonth
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 
@@ -25,7 +24,7 @@ class ReasonViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'delete']
 
 
-class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
+class ScoreViewSet(ListModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet):
     permission_classes = (ScorePermission,)
     queryset = Score.objects.order_by('-created_at')
     filter_backends = (SearchFilter, DjangoFilterBackend)
@@ -41,10 +40,11 @@ class ScoreViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
 
-        data = self.filter_serializer.validated_data
+        if self.filter_serializer:
+            data = self.filter_serializer.validated_data
 
-        if 'year' in data and 'months' in data:
-            return queryset.filter(created_at__year=data['year'], created_at__month__in=data['months'])
+            if 'year' in data and 'months' in data:
+                return queryset.filter(created_at__year=data['year'], created_at__month__in=data['months'])
 
         return queryset
 
