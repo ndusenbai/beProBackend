@@ -9,6 +9,16 @@ from auth_user.services import get_user_role
 
 class PatchedAPIView(OriginalAPIView):
     def check_permissions(self, request):
+        message = self.check_is_company_active(request)
+        if message:
+            self.permission_denied(
+                request,
+                message=message,
+                code=403
+            )
+        return super().check_permissions(request)
+
+    def check_is_company_active(self, request):
         allowed_urls = [
             '/swagger/',
             '/api/auth/token/',
@@ -19,18 +29,18 @@ class PatchedAPIView(OriginalAPIView):
         role = get_user_role(request.user)
 
         if role in ['superuser', 'admin_marketing', 'admin_production_worker']:
-            return super().check_permissions(request)
+            return None
         for url in allowed_urls:
             if request.path.startswith(url):
-                return super().check_permissions(request)
+                return None
 
         if not request.user.id:
-            return JsonResponse({'message': 'Залогиньтесь'}, status=status.HTTP_403_FORBIDDEN)
+            return 'Залогиньтесь'
 
         if request.user.selected_company.is_active:
-            return super().check_permissions(request)
+            return None
 
-        return JsonResponse({'message': 'Тариф закончился. Ваша компания не активна'}, status=status.HTTP_403_FORBIDDEN)
+        return 'Тариф закончился. Ваша компания не активна'
 
 
 # We replace the Django REST view with our patched one
