@@ -184,7 +184,7 @@ class UserProfileView(UpdateModelMixin, GenericViewSet):
     lookup_field = "pk"
 
     def get(self, request, *args, **kwargs):
-        serializer = self.serializer_class(self.request.user, many=False)
+        serializer = self.serializer_class(self.request.user, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):

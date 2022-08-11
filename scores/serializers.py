@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from django.apps import apps
 from django.contrib.auth import get_user_model
 
 from auth_user.serializers import UserSerializer
+from scores.models import Score, Reason
 from utils.serializers import BaseSerializer
 
 User = get_user_model()
@@ -10,10 +10,7 @@ User = get_user_model()
 
 class ReasonSerializer(serializers.ModelSerializer):
     class Meta:
-        model = apps.get_model(
-            app_label='scores',
-            model_name='Reason'
-        )
+        model = Reason
         fields = "__all__"
 
 
@@ -23,10 +20,7 @@ class ScoreModelSerializer(serializers.ModelSerializer):
     created_by = UserSerializer()
 
     class Meta:
-        model = apps.get_model(
-            app_label='scores',
-            model_name='Score'
-        )
+        model = Score
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 
