@@ -48,6 +48,7 @@ class TimeSheet(BaseModel):
         constraints = [
             models.UniqueConstraint(fields=['role', 'day'], name='unique timesheet'),
         ]
+        ordering = ('day',)
 
     def __str__(self):
         return f'{self.role} @{self.day}'

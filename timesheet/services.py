@@ -134,7 +134,7 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
 
 
 def get_last_timesheet_action(role: Role) -> str:
-    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
 
     if last_timesheet and 'Automatically filled' in last_timesheet.comment:
         return 'check_out'
@@ -231,14 +231,13 @@ def set_took_off(role: Role, data: dict):
 
 def handle_check_out_timesheet(role: Role, data: dict):
     check_out = data['check_out']
-    log_message(f'handle_check_out_timesheet: Role_id={role.id}. Checkout: {str(check_out)}')
-    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
     last_timesheet.check_out = check_out
     last_timesheet.save()
 
 
 def handle_check_out_absent_days(role: Role, data: dict) -> bool:
-    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
     today = data['check_out'].astimezone(timezone.utc).date()
 
     if last_timesheet.day != today:
