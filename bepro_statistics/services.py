@@ -40,7 +40,7 @@ def create_statistic(serializer):
 
 @atomic
 def create_user_statistic(role: Role, data: OrderedDict):
-    last_check_in = TimeSheet.objects.filter(role=role, check_out__isnull=True).order_by('-day').first()
+    last_check_in = TimeSheet.objects.filter(role=role, check_out__isnull=True, day__lte=date.today()).order_by('-day').first()
 
     if not last_check_in:
         return {'message': 'Вы не осуществляли check in сегодня', }, 400
