@@ -231,8 +231,7 @@ def set_took_off(role: Role, data: dict):
 
 def handle_check_out_timesheet(role: Role, data: dict):
     check_out = data['check_out']
-    log_message(f'handle_check_out_timesheet: Role_id={role.id}. Checkout: {str(check_out)}')
-    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
     last_timesheet.check_out = check_out
     last_timesheet.save()
 
