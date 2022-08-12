@@ -89,7 +89,10 @@ class PatchedAPIView(OriginalAPIView):
         allowed_url = self.check_if_allowed_url(request)
         if allowed_url:
             return ''
-        company_services = CompanyService.objects.get(company=request.user.selected_company)
+        try:
+            company_services = CompanyService.objects.get(company=request.user.selected_company)
+        except CompanyService.DoesNotExist:
+            return f'Нужно создать CompanyService для company_id={request.user.selected_company_id}'
 
         is_statistic_disabled = self.check_if_statistic_disabled(request, company_services)
         if is_statistic_disabled:
