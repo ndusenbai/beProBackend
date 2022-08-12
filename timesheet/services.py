@@ -134,7 +134,7 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
 
 
 def get_last_timesheet_action(role: Role) -> str:
-    last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
 
     if last_timesheet and 'Automatically filled' in last_timesheet.comment:
         return 'check_out'
