@@ -325,8 +325,8 @@ def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
 
         j += 1
 
-    fig.tight_layout()
-    fig.set_size_inches(10, 20)
+    # fig.tight_layout()
+    fig.set_size_inches(10, 30)
     file_name = save_stat_to_pdf('history_stat')
     plt.show()
     return file_name
