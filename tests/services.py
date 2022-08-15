@@ -295,7 +295,7 @@ class TestTwoAnswers:
 
 def process_test_two(data: OrderedDict):
     answers = data['answers']
-    is_man = data['sex']
+    is_man = data['is_man']
     correct_answers = getattr(TestTwoAnswers, data['version'])
     result = 0
 

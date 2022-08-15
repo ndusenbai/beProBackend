@@ -17,7 +17,7 @@ class TestFourSerializer(BaseSerializer):
 class TestTwoSerializer(BaseSerializer):
     answers = serializers.ListField(child=serializers.CharField())
     version = serializers.ChoiceField(choices=TestTwoVersion.choices)
-    sex = serializers.BooleanField()
+    is_man = serializers.BooleanField()
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
