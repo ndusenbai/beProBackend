@@ -9,5 +9,6 @@ urlpatterns = [
     path('', include('bepro_statistics.urls'), name='stats'),
     path('timesheet/', include('timesheet.urls'), name='timesheet'),
     path('tariffs/', include('tariffs.urls'), name='tariffs'),
+    path('', include('tests.urls'), name='tariffs'),
 ]
 

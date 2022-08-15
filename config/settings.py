@@ -54,6 +54,7 @@ LOCAL_APPS = [
     'bepro_statistics.apps.BeproStatisticsConfig',
     'timesheet.apps.TimesheetConfig',
     'tariffs.apps.TariffsConfig',
+    'tests.apps.TestsConfig',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS

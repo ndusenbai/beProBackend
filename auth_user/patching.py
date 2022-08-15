@@ -25,6 +25,7 @@ class PatchedAPIView(OriginalAPIView):
             '/api/auth/token/',
             '/api/tariffs/list-tariff/',
             '/api/app-to-create-company/create/',
+            '/api/tests/test-four/',
         ]
 
         role = get_user_role(request.user)
