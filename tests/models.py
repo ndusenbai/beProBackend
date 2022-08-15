@@ -1,3 +1,6 @@
 from django.db import models
 
-# Create your models here.
+
+class TestTwoVersion(models.TextChoices):
+    A = 'A', 'A'
+    B = 'B', 'B'

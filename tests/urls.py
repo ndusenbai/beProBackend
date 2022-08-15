@@ -6,5 +6,6 @@ from . import views
 router = DefaultRouter()
 
 urlpatterns = [
-    path('tests/test-four/', views.TestFourView.as_view(), name='test'),
+    path('tests/test-four/', views.TestFourView.as_view(), name='test-four'),
+    path('tests/test-two/', views.TestTwoView.as_view(), name='test-two'),
 ] + router.urls

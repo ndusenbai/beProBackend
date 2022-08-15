@@ -26,15 +26,15 @@ class PatchedAPIView(OriginalAPIView):
             '/api/tariffs/list-tariff/',
             '/api/app-to-create-company/create/',
             '/api/tests/test-four/',
+            '/api/tests/test-two/',
         ]
-
-        role = get_user_role(request.user)
-
-        if role in ['superuser', 'admin_marketing', 'admin_production_worker']:
-            return True
         for url in allowed_urls:
             if request.path.startswith(url):
                 return True
+
+        role = get_user_role(request.user)
+        if role in ['superuser', 'admin_marketing', 'admin_production_worker']:
+            return True
 
     def check_if_company_is_active(self, request) -> str:
         allowed_url = self.check_if_allowed_url(request)
