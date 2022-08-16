@@ -25,8 +25,9 @@ class PatchedAPIView(OriginalAPIView):
             '/api/auth/token/',
             '/api/tariffs/list-tariff/',
             '/api/app-to-create-company/create/',
-            '/api/tests/test-four/',
+            '/api/tests/test-one/',
             '/api/tests/test-two/',
+            '/api/tests/test-four/',
         ]
         for url in allowed_urls:
             if request.path.startswith(url):

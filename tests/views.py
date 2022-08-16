@@ -3,18 +3,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 
-from tests.serializers import TestFourSerializer, TestTwoSerializer
-from tests.services import process_test_four, process_test_two
+from tests.serializers import TestFourSerializer, TestTwoSerializer, TestOneSerializer
+from tests.services import process_test_four, process_test_two, process_test_one
 
 
-class TestFourView(APIView):
+class TestOneView(APIView):
     permission_classes = (AllowAny,)
 
-    @swagger_auto_schema(request_body=TestFourSerializer)
+    @swagger_auto_schema(request_body=TestOneSerializer)
     def post(self, request):
-        serializer = TestFourSerializer(data=request.data)
+        serializer = TestOneSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result = process_test_four(serializer.validated_data['answers'])
+        result = process_test_one(serializer.validated_data)
         return Response({'result': result})
 
 
@@ -26,4 +26,15 @@ class TestTwoView(APIView):
         serializer = TestTwoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = process_test_two(serializer.validated_data)
+        return Response({'result': result})
+
+
+class TestFourView(APIView):
+    permission_classes = (AllowAny,)
+
+    @swagger_auto_schema(request_body=TestFourSerializer)
+    def post(self, request):
+        serializer = TestFourSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = process_test_four(serializer.validated_data['answers'])
         return Response({'result': result})
