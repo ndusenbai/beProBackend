@@ -2,16 +2,16 @@ from typing import OrderedDict
 
 
 class TestOneScores:
-    feature_1 = {1, 8, 15, 17, 42, 46, 52, 58, 83, 87, 93, 96, 124, 128, 131, 138, 165, 169, 173, 176}
-    feature_2 = {21, 27, 33, 36, 62, 68, 71, 78, 101, 106, 113, 116, 141, 148, 151, 181, 188, 192, 196}
-    feature_3 = {2, 6, 11, 18, 43, 47, 53, 56, 81, 86, 91, 97, 122, 130, 132, 136, 164, 166, 171, 177}
-    feature_4 = {22, 26, 32, 40, 61, 67, 73, 76, 102, 108, 111, 117, 142, 146, 153, 156, 184, 186, 191, 197}
-    feature_5 = {3, 7, 12, 16, 41, 48, 51, 57, 85, 90, 92, 99, 121, 127, 134, 137, 162, 168, 175, 179}
-    feature_6 = {23, 29, 31, 38, 65, 66, 72, 79, 103, 107, 114, 120, 145, 147, 154, 159, 185, 187, 195, 199}
-    feature_7 = {4, 10, 13, 20, 45, 49, 55, 60, 82, 89, 95, 100, 123, 126, 133, 140, 161, 167, 172, 180}
-    feature_8 = {24, 30, 35, 37, 63, 70, 74, 80, 105, 109, 115, 119, 143, 150, 152, 152, 157, 182, 189, 194, 198}
-    feature_9 = {5, 9, 14, 19, 44, 50, 54, 59, 84, 88, 94, 98, 125, 129, 135, 139, 163, 170, 174, 178}
-    feature_10 = {25, 28, 34, 39, 64, 59, 75, 77, 104, 110, 112, 118, 144, 149, 155, 160, 183, 190, 193, 200}
+    feature_a = {1, 8, 15, 17, 42, 46, 52, 58, 83, 87, 93, 96, 124, 128, 131, 138, 165, 169, 173, 176}
+    feature_b = {21, 27, 33, 36, 62, 68, 71, 78, 101, 106, 113, 116, 141, 148, 151, 158, 181, 188, 192, 196}
+    feature_c = {2, 6, 11, 18, 43, 47, 53, 56, 81, 86, 91, 97, 122, 130, 132, 136, 164, 166, 171, 177}
+    feature_d = {22, 26, 32, 40, 61, 67, 73, 76, 102, 108, 111, 117, 142, 146, 153, 156, 184, 186, 191, 197}
+    feature_e = {3, 7, 12, 16, 41, 48, 51, 57, 85, 90, 92, 99, 121, 127, 134, 137, 162, 168, 175, 179}
+    feature_f = {23, 29, 31, 38, 65, 66, 72, 79, 103, 107, 114, 120, 145, 147, 154, 159, 185, 187, 195, 199}
+    feature_g = {4, 10, 13, 20, 45, 49, 55, 60, 82, 89, 95, 100, 123, 126, 133, 140, 161, 167, 172, 180}
+    feature_h = {24, 30, 35, 37, 63, 70, 74, 80, 105, 109, 115, 119, 143, 150, 152, 152, 157, 182, 189, 194, 198}
+    feature_i = {5, 9, 14, 19, 44, 50, 54, 59, 84, 88, 94, 98, 125, 129, 135, 139, 163, 170, 174, 178}
+    feature_j = {25, 28, 34, 39, 64, 59, 75, 77, 104, 110, 112, 118, 144, 149, 155, 160, 183, 190, 193, 200}
 
     scores = {
         '1': (2, 4, 6),
@@ -428,8 +428,37 @@ class TestFourGroups:
     group_7 = {19, 20, 21, 40, 41, 42, 61, 62, 63, 83, 84, 104, 105}
 
 
-def process_test_one(data: OrderedDict):
-    pass
+def process_test_one(answers: list, is_man: bool):
+    points_a = points_b = points_c = points_d = points_e = points_f = points_g = points_h = points_i = points_j = 0
+    for i, answer in enumerate(answers):
+        j = i + 1
+        if answer == 1:
+            score_position = 0
+        elif answer == 0:
+            score_position = 1
+        elif answer == -1:
+            score_position = 2
+        if j in TestOneScores.feature_a:
+            points_a += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_b:
+            points_b += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_c:
+            points_c += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_d:
+            points_d += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_e:
+            points_e += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_f:
+            points_f += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_g:
+            points_g += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_h:
+            points_h += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_i:
+            points_i += TestOneScores.scores[str(j)][score_position]
+        elif j in TestOneScores.feature_j:
+            points_j += TestOneScores.scores[str(j)][score_position]
+
 
 
 def process_test_two(data: OrderedDict):

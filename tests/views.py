@@ -14,7 +14,7 @@ class TestOneView(APIView):
     def post(self, request):
         serializer = TestOneSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result = process_test_one(serializer.validated_data)
+        result = process_test_one(**serializer.validated_data)
         return Response({'result': result})
 
 
