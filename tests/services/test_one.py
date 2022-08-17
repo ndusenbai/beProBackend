@@ -1378,10 +1378,10 @@ class TestOne:
             '54': -100,
         }
 
-    RANGE_1 = range(70, 101)
-    RANGE_2 = range(20, 70)
-    RANGE_3 = range(-39, 20)
-    RANGE_4 = range(-100, -39)
+    RANGE_1 = {'min': 70, 'max': 100}
+    RANGE_2 = {'min': 20, 'max': 69}
+    RANGE_3 = {'min': -39, 'max': 19}
+    RANGE_4 = {'min': -100, 'max': -40}
 
 
 def process_test_one(answers: list, is_man: bool):
@@ -1519,98 +1519,98 @@ def get_result_for_test_one(percents, unstables):
     unstable_b, unstable_e = unstables
     result = {}
 
-    if percent_a in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_a <= TestOne.RANGE_1['max']:
         result['a'] = 1
-    elif percent_a in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_a <= TestOne.RANGE_2['max']:
         result['a'] = 2
-    elif percent_a in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_a <= TestOne.RANGE_3['max']:
         result['a'] = 3
-    elif percent_a in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_a <= TestOne.RANGE_4['max']:
         result['a'] = 4
 
     if unstable_b:
         result['b'] = 0
-    elif percent_b in TestOne.RANGE_1:
+    elif TestOne.RANGE_1['min'] <= percent_b <= TestOne.RANGE_1['max']:
         result['b'] = 1
-    elif percent_b in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_b <= TestOne.RANGE_2['max']:
         result['b'] = 2
-    elif percent_b in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_b <= TestOne.RANGE_3['max']:
         result['b'] = 3
-    elif percent_b in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_b <= TestOne.RANGE_4['max']:
         result['b'] = 4
 
-    if percent_c in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_c <= TestOne.RANGE_1['max']:
         result['c'] = 1
-    elif percent_c in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_c <= TestOne.RANGE_2['max']:
         result['c'] = 2
-    elif percent_c in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_c <= TestOne.RANGE_3['max']:
         result['c'] = 3
-    elif percent_c in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_c <= TestOne.RANGE_4['max']:
         result['c'] = 4
 
-    if percent_d in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_d <= TestOne.RANGE_1['max']:
         result['d'] = 1
-    elif percent_d in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_d <= TestOne.RANGE_2['max']:
         result['d'] = 2
-    elif percent_d in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_d <= TestOne.RANGE_3['max']:
         result['d'] = 3
-    elif percent_d in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_d <= TestOne.RANGE_4['max']:
         result['d'] = 4
 
     if unstable_e:
         result['e'] = 0
-    elif percent_e in TestOne.RANGE_1:
+    elif TestOne.RANGE_1['min'] <= percent_e <= TestOne.RANGE_1['max']:
         result['e'] = 1
-    elif percent_e in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_e <= TestOne.RANGE_2['max']:
         result['e'] = 2
-    elif percent_e in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_e <= TestOne.RANGE_3['max']:
         result['e'] = 3
-    elif percent_e in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_e <= TestOne.RANGE_4['max']:
         result['e'] = 4
 
-    if percent_f in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_f <= TestOne.RANGE_1['max']:
         result['f'] = 1
-    elif percent_f in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_f <= TestOne.RANGE_2['max']:
         result['f'] = 2
-    elif percent_f in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_f <= TestOne.RANGE_3['max']:
         result['f'] = 3
-    elif percent_f in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_f <= TestOne.RANGE_4['max']:
         result['f'] = 4
 
-    if percent_g in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_g <= TestOne.RANGE_1['max']:
         result['g'] = 1
-    elif percent_g in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_g <= TestOne.RANGE_2['max']:
         result['g'] = 2
-    elif percent_g in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_g <= TestOne.RANGE_3['max']:
         result['g'] = 3
-    elif percent_g in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_g <= TestOne.RANGE_4['max']:
         result['g'] = 4
 
-    if percent_h in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_h <= TestOne.RANGE_1['max']:
         result['h'] = 1
-    elif percent_h in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_h <= TestOne.RANGE_2['max']:
         result['h'] = 2
-    elif percent_h in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_h <= TestOne.RANGE_3['max']:
         result['h'] = 3
-    elif percent_h in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_h <= TestOne.RANGE_4['max']:
         result['h'] = 4
 
-    if percent_i in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_i <= TestOne.RANGE_1['max']:
         result['i'] = 1
-    elif percent_i in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_i <= TestOne.RANGE_2['max']:
         result['i'] = 2
-    elif percent_i in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_i <= TestOne.RANGE_3['max']:
         result['i'] = 3
-    elif percent_i in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_i <= TestOne.RANGE_4['max']:
         result['i'] = 4
 
-    if percent_j in TestOne.RANGE_1:
+    if TestOne.RANGE_1['min'] <= percent_j <= TestOne.RANGE_1['max']:
         result['j'] = 1
-    elif percent_j in TestOne.RANGE_2:
+    elif TestOne.RANGE_2['min'] <= percent_j <= TestOne.RANGE_2['max']:
         result['j'] = 2
-    elif percent_j in TestOne.RANGE_3:
+    elif TestOne.RANGE_3['min'] <= percent_j <= TestOne.RANGE_3['max']:
         result['j'] = 3
-    elif percent_j in TestOne.RANGE_4:
+    elif TestOne.RANGE_4['min'] <= percent_j <= TestOne.RANGE_4['max']:
         result['j'] = 4
 
     return result
