@@ -148,9 +148,6 @@ def subtract_scores(role, check_in):
     if not time_sheet.exists() or not time_sheet.last().status == TimeSheetChoices.ABSENT:
         reason = role.company.reasons.get(is_auto=True)
         Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
-        return True
-    else:
-        return False
 
 
 def check_distance(department: Department, latitude: float, longitude: float) -> None:
@@ -162,31 +159,23 @@ def check_distance(department: Department, latitude: float, longitude: float) ->
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
     check_in = data['check_in']
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
-    subtraction_result = True
     status = TimeSheetChoices.ON_TIME
 
     if check_in.time() > today_schedule.time_from:
         status = TimeSheetChoices.LATE
-        subtraction_result = subtract_scores(role, check_in)
+        subtract_scores(role, check_in)
 
-    # last_timesheet = TimeSheet.objects.filter(role=role).order_by('-day').first()
-
-    # if last_timesheet and last_timesheet.check_out is None:
-    #     last_timesheet.check_out = '23:59'
-    #     last_timesheet.save()
-
-    if subtraction_result:
-        TimeSheet.objects.create(
-            role=role,
-            day=check_in.date(),
-            check_in=check_in.time(),
-            check_out=None,
-            time_from=today_schedule.time_from,
-            time_to=today_schedule.time_to,
-            status=status,
-            comment=data.get('comment', ''),
-            file=data.get('file', None),
-        )
+    TimeSheet.objects.create(
+        role=role,
+        day=check_in.date(),
+        check_in=check_in.time(),
+        check_out=None,
+        time_from=today_schedule.time_from,
+        time_to=today_schedule.time_to,
+        status=status,
+        comment=data.get('comment', ''),
+        file=data.get('file', None),
+    )
 
 
 @atomic
