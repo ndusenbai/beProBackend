@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import serializers
 
 from tests.models import TestTwoVersion
@@ -23,6 +25,19 @@ class TestTwoSerializer(BaseSerializer):
     def validate(self, attrs):
         attrs = super().validate(attrs)
         if len(attrs['answers']) != 80:
+            raise serializers.ValidationError({"answers": "Неправильное количество ответов"})
+        return attrs
+
+
+class TestThreeSerializer(BaseSerializer):
+    answers = serializers.JSONField()
+    version = serializers.ChoiceField(choices=TestTwoVersion.choices)
+    time = serializers.TimeField()
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        attrs['answers'] = json.loads(attrs['answers'])
+        if len(attrs['answers']) != 12:
             raise serializers.ValidationError({"answers": "Неправильное количество ответов"})
         return attrs
 

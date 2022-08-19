@@ -27,6 +27,7 @@ class PatchedAPIView(OriginalAPIView):
             '/api/app-to-create-company/create/',
             '/api/tests/test-one/',
             '/api/tests/test-two/',
+            '/api/tests/test-three/',
             '/api/tests/test-four/',
         ]
         for url in allowed_urls:
