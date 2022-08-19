@@ -238,5 +238,5 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
 }
