@@ -1,20 +1,22 @@
-from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin, RetrieveModelMixin, DestroyModelMixin, CreateModelMixin
 from rest_framework.filters import SearchFilter
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin, RetrieveModelMixin, DestroyModelMixin, \
+    CreateModelMixin
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationStatus, \
-    TariffApplicationSerializer, TestApplicationSerializer, TariffApplicationRetrieveSerializer
+    TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer, \
+    UpdateTestApplicationStatus
 from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
-from utils.manual_parameters import QUERY_APPLICATIONS_STATUS
+from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS
 from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser
 from utils.tools import log_exception
 
@@ -103,10 +105,25 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 
 class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
-    serializer_class = TestApplicationSerializer
-    queryset = TestApplication.objects.order_by()
+    queryset = TestApplication.objects.all()
     filterset_fields = ('status',)
+    http_method_names = ['get', 'put']
 
-    @swagger_auto_schema(manual_parameters=[QUERY_APPLICATIONS_STATUS])
+    @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        if self.action == 'update':
+            return UpdateTestApplicationStatus
+        return TestApplicationModelSerializer
+
+    def update(self, request, *args, **kwargs):
+        """
+        Принятие или отклонение статуса заявки на тест. TestApplicationStatus:
+            NEW = 1
+            ACCEPTED = 2
+            DECLINED = 3
+            USED = 4
+        """
+        return super().update(request, *args, **kwargs)

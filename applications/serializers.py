@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
+from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication, \
+    TestApplicationStatus
 from auth_user.serializers import UserModelSerializer
 from companies.serializers import CompanyServiceSerializer
 from tariffs.models import Tariff, TariffPeriod
@@ -38,11 +39,12 @@ class TariffApplicationRetrieveSerializer(TariffApplicationSerializer):
         return CompanyServiceSerializer(instance.owner.selected_company.service).data
 
 
-class TestApplicationSerializer(serializers.ModelSerializer):
+class TestApplicationModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestApplication
         fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at')
 
 
 class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
@@ -69,3 +71,7 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
 
 class UpdateApplicationStatus(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
+
+
+class UpdateTestApplicationStatus(BaseSerializer):
+    status = serializers.ChoiceField(choices=TestApplicationStatus.choices)

@@ -9,7 +9,7 @@ from django.http import HttpRequest
 
 from auth_user.services import get_domain
 from auth_user.tasks import send_created_account_notification
-from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication
+from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
 from auth_user.utils import UserAlreadyExists
 from companies.models import Company, Department, CompanyService
 from companies.utils import CompanyAlreadyExists
@@ -21,6 +21,18 @@ User = get_user_model()
 
 
 def update_application_to_create_company(instance: ApplicationToCreateCompany, data: dict) -> None:
+    for key, value in data.items():
+        setattr(instance, key, value)
+    instance.save()
+
+
+def update_tariff_application(instance: TariffApplication, data: dict) -> None:
+    for key, value in data.items():
+        setattr(instance, key, value)
+    instance.save()
+
+
+def update_test_application(instance: TestApplication, data: dict) -> None:
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()
@@ -124,4 +136,11 @@ def change_status_of_tariff_application(instance: TariffApplication, application
     if application_status == ApplicationStatus.ACCEPTED:
         approve_tariff_application(instance)
     elif application_status == ApplicationStatus.DECLINED:
-        update_application_to_create_company(instance, {'status': application_status})
+        update_tariff_application(instance, {'status': application_status})
+
+
+def change_status_of_test_application(instance: TestApplication, application_status: int) -> None:
+    if application_status == ApplicationStatus.ACCEPTED:
+        update_test_application(instance, {'status': application_status})
+    elif application_status == ApplicationStatus.DECLINED:
+        update_test_application(instance, {'status': application_status})

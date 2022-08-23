@@ -2,7 +2,7 @@ import json
 
 from rest_framework import serializers
 
-from tests.models import TestTwoVersion
+from tests.models import TestTwoVersion, Test
 from utils.serializers import BaseSerializer
 
 
@@ -50,3 +50,11 @@ class TestFourSerializer(BaseSerializer):
         if len(attrs['answers']) != 105:
             raise serializers.ValidationError({"answers": "Неправильное количество ответов"})
         return attrs
+
+
+class TestModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Test
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at')

@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 from tariffs.models import TariffPeriod
+from tests.models import TestType
 from utils.models import BaseModel
 
 from django.contrib.auth import get_user_model
@@ -57,9 +58,18 @@ class TariffApplication(BaseModel):
         return f'{self.owner} tariff:{self.owner} status:{self.status}'
 
 
-class TestApplication(BaseModel):
-    # Temporary replacement for fk to Test's
-    test = models.PositiveSmallIntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='test_applications')
-    status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
+class TestApplicationStatus(models.IntegerChoices):
+    NEW = 1, 'New'
+    ACCEPTED = 2, 'Accepted'
+    DECLINED = 3, 'Declined'
+    USED = 4, 'Used'
 
+
+class TestApplication(BaseModel):
+    test_type = models.IntegerField(choices=TestType.choices)
+    company = models.ForeignKey('companies.Company', null=True, on_delete=models.CASCADE, related_name='test_applications')
+    quantity = models.PositiveSmallIntegerField()
+    status = models.IntegerField(choices=TestApplicationStatus.choices, default=TestApplicationStatus.NEW)
+
+    class Meta:
+        ordering = ('-created_at',)
