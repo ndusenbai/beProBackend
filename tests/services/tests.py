@@ -25,7 +25,7 @@ def create_test(data):
 
     encoded_test_id = urlsafe_base64_encode(force_bytes(test.id))
     link = f'{settings.CURRENT_SITE}/test/?code={encoded_test_id}'
-    link = f'{settings.CURRENT_SITE_WA}/test/?code={encoded_test_id}'
+    # link = f'{settings.CURRENT_SITE_WA}/test/?code={encoded_test_id}'
     whatsapp_text = quote_plus(f'Для прохождения теста перейдите по ссылке:\n{link}')
     whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
     return {
