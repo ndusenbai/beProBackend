@@ -22,13 +22,30 @@ class TestStatus(models.IntegerChoices):
     FINISHED = 2, 'Finished'
 
 
+class Genders(models.IntegerChoices):
+    MALE = 1, 'Male'
+    FEMALE = 0, 'Female'
+
+
 class Test(BaseModel):
+    FREE_TESTS = [TestType.TWO_BRAIN, TestType.FOUR_HEART]
+    PAID_TESTS = [TestType.ONE_HEART_PRO, TestType.THREE_BRAIN_PRO]
+
     test_type = models.IntegerField(choices=TestType.choices)
-    company = models.ForeignKey('companies.Company', on_delete=models.CASCADE, related_name='tests')
-    role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, null=True)
-    email = models.EmailField
-    first_name = models.CharField(max_length=50, blank=True)
-    last_name = models.CharField(max_length=50, blank=True)
-    is_man = models.BooleanField()
-    finished_at = models.DateField(null=True)
+    company = models.ForeignKey('companies.Company', on_delete=models.CASCADE, related_name='tests', null=True, blank=True)
+    email = models.EmailField(blank=True)
+    phone_number = models.CharField(max_length=15, default='')
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    middle_name = models.CharField(max_length=50, blank=True)
+    gender = models.PositiveSmallIntegerField(choices=Genders.choices, null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    address = models.CharField(max_length=300, blank=True)
+    hobbies = models.TextField(blank=True)
+    version = models.CharField(choices=TestTwoVersion.choices, max_length=1, blank=True)
+    finished_at = models.DateField(null=True, blank=True)
     status = models.IntegerField(choices=TestStatus.choices, default=TestStatus.AWAIT)
+    result = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ('-created_at',)

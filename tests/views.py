@@ -3,12 +3,17 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
-from tests.serializers import TestFourSerializer, TestTwoSerializer, TestOneSerializer, TestThreeSerializer
-from tests.services.test_one import process_test_one
-from tests.services.test_two import process_test_two
-from tests.services.test_three import process_test_three
+from tests.exceptions import VersionAlreadyExists
+from tests.models import Test
+from tests.serializers import TestFourSerializer, TestTwoSerializer, TestOneSerializer, TestThreeSerializer, \
+    CreateTestSerializer, TestModelSerializer
 from tests.services.test_four import process_test_four
+from tests.services.test_one import process_test_one
+from tests.services.test_three import process_test_three
+from tests.services.test_two import process_test_two
+from tests.services.tests import create_test
 from utils.tools import log_exception
 
 
@@ -62,3 +67,23 @@ class TestFourView(APIView):
         serializer.is_valid(raise_exception=True)
         result = process_test_four(serializer.validated_data['answers'])
         return Response({'result': result})
+
+
+class TestViewSet(ModelViewSet):
+    permission_classes = (AllowAny,)
+    queryset = Test.objects.all()
+    serializer_class = TestModelSerializer
+    http_method_names = ['get', 'post', 'put', 'delete']
+
+    @swagger_auto_schema(request_body=CreateTestSerializer)
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = CreateTestSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            links = create_test(serializer.validated_data)
+            return Response(links)
+        except VersionAlreadyExists as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+        except Exception as e:
+            log_exception(e, 'Error in ApplicationToCreateCompanyViewSet.update()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -13,7 +13,6 @@ from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.serializers import TimeSheetModelSerializer
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
-from utils.tools import log_message
 
 User = get_user_model()
 

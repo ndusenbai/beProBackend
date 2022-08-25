@@ -2,7 +2,8 @@ import json
 
 from rest_framework import serializers
 
-from tests.models import TestTwoVersion, Test
+from companies.models import Company
+from tests.models import TestTwoVersion, Test, TestType, Genders
 from utils.serializers import BaseSerializer
 
 
@@ -58,3 +59,18 @@ class TestModelSerializer(serializers.ModelSerializer):
         model = Test
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
+
+
+class CreateTestSerializer(BaseSerializer):
+    test_type = serializers.ChoiceField(choices=TestType.choices)
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
+    email = serializers.EmailField(allow_blank=True)
+    phone_number = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    middle_name = serializers.CharField(allow_blank=True)
+    gender = serializers.ChoiceField(choices=Genders.choices, allow_null=True)
+    date_of_birth = serializers.DateField(allow_null=True)
+    hobbies = serializers.CharField(allow_blank=True)
+    version = serializers.ChoiceField(choices=TestTwoVersion.choices, allow_blank=True)
+    force_version = serializers.BooleanField(required=False, default=False)
