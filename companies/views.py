@@ -24,12 +24,6 @@ from utils.tools import log_exception
 User = get_user_model()
 
 
-class CompanyServiceViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = CompanyServiceSerializer
-    queryset = CompanyService.objects.order_by()
-
-
 class CompanyViewSet(ModelViewSet):
     permission_classes = (CompanyPermissions,)
     serializer_class = CompanyModelSerializer

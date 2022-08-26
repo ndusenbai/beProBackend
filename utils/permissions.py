@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.apps import apps
 
 from auth_user.services import get_user_role
+from companies.models import Role
 
 
 def check_hr_of_company(user):
@@ -273,8 +274,13 @@ class ScorePermission(BasePermission):
 
         role = get_user_role(request.user)
 
-        if request.user.is_authenticated and role in {'superuser', 'owner', 'hr'}:
+        if request.user.is_authenticated and role == 'superuser':
             return True
+
+        score_user_company_id = Role.objects.get(id=request.GET['role']).company_id
+        if request.user.selected_company_id == score_user_company_id:
+            return True
+
         return False
 
 
