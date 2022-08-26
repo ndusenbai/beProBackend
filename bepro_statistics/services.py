@@ -13,7 +13,7 @@ from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
 from companies.models import Role, RoleChoices
-from timesheet.models import TimeSheet
+from timesheet.models import TimeSheet, TimeSheetChoices
 
 User = get_user_model()
 
@@ -40,6 +40,17 @@ def create_statistic(serializer):
 
 @atomic
 def create_user_statistic(role: Role, data: OrderedDict):
+    try:
+        today_timesheet = TimeSheet.objects.get(role=role, day=date.today())
+        if today_timesheet.status == TimeSheetChoices.ABSENT:
+            return {'message': 'Вы отпросились, нельзя заполнить статистику'}, 400
+        if today_timesheet.status == TimeSheetChoices.ON_VACATION:
+            return {'message': 'В отпуске нельзя заполнить статистику'}, 400
+        if today_timesheet.check_in and today_timesheet.check_out:
+            return {'message': 'Чек-ин и чек-аут заполнены. Нельзя заполнить статистику'}, 400
+    except TimeSheet.DoesNotExist:
+        pass
+
     last_check_in = TimeSheet.objects.filter(role=role, check_out__isnull=True, day__lte=date.today()).order_by('-day').first()
 
     if not last_check_in:
