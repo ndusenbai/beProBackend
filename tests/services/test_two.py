@@ -245,7 +245,7 @@ class TestTwo:
     }
 
 
-def process_test_two(data: OrderedDict):
+def process_test_two(data: OrderedDict) -> dict:
     points = calculate_points_test_two(data)
     return get_result_test_two(points)
 

@@ -50,7 +50,8 @@ def submit_test(uid, data):
     if test.test_type == TestType.ONE_HEART_PRO:
         serializer = TestOneSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        result = process_test_one(**serializer.validated_data)
+        test.result = process_test_one(**serializer.validated_data)
+        test.save()
     elif test.test_type == TestType.TWO_BRAIN:
         serializer = TestTwoSerializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -64,7 +65,8 @@ def submit_test(uid, data):
     elif test.test_type == TestType.FOUR_HEART:
         serializer = TestFourSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        result = process_test_four(serializer.validated_data['answers'])
+        test.result = process_test_four(serializer.validated_data['answers'])
+        test.save()
     else:
         raise Exception('Неправильный тип теста')
 

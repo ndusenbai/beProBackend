@@ -28,7 +28,7 @@ class TestThree:
     }
 
 
-def process_test_three(data: OrderedDict):
+def process_test_three(data: OrderedDict) -> dict:
     answers = data['answers']
     time = data['time']
     version = data['version']
