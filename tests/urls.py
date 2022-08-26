@@ -8,8 +8,7 @@ router = DefaultRouter()
 router.register('tests/test', views.TestViewSet, basename='test')
 
 urlpatterns = [
-    path('tests/test-one/', views.TestOneView.as_view(), name='test-one'),
-    path('tests/test-two/', views.TestTwoView.as_view(), name='test-two'),
-    path('tests/test-three/', views.TestThreeView.as_view(), name='test-three'),
-    path('tests/test-four/', views.TestFourView.as_view(), name='test-four'),
+    path('tests/<str:uid>/retrieve/', views.RetrieveTestViewSet.as_view(), name='retrieve-test'),
+    path('tests/<str:uid>/submit/', views.SubmitTestViewSet.as_view(), name='submit-test'),
+    path('tests/<int:id>/encode/', views.DecodeIDViewSet.as_view(), name='decode-id'),
 ] + router.urls

@@ -1,7 +1,7 @@
 from typing import OrderedDict
 
 
-class TestTwoAnswers:
+class TestTwo:
     A = {
         '1': 'c',
         '2': 'c',
@@ -182,21 +182,114 @@ class TestTwoAnswers:
         '80': 'c',
     }
 
+    VERY_HIGH_RESULT = {
+        'classification': 'очень высокий',
+        'percent': 5,
+        'summary': 'старший руководитель – может руководить работниками   напрямую или руководить несколькими руководителями, которые, в свою очередь, непосредственно управляют работниками. Кроме этого, может руководить самой большой или самой важной группой или группами в компании.'
+    }
+    HIGH_RESULT = {
+        'classification': 'высокий',
+        'percent': 10,
+        'summary': 'старший или младший руководитель– может руководить работниками   напрямую. В основном осуществляет контроль за выполнением производственных заданий. Часто отвечает за непосредственное использование выделенных ему ресурсов.'
+    }
+    ABOVE_AVERAGE_RESULT = {
+        'classification': 'выше среднего',
+        'percent': 35,
+        'summary': 'не руководящий пост – рекомендуется не давать высокие должности. Не может руководить другими. Но можно поручить менее ответственные задания.'
+    }
+    BELOW_AVERAGE_RESULT = {
+        'classification': 'ниже среднего',
+        'percent': 35,
+        'summary': 'не руководящий пост, рекомендуется назначать в область, которая хорошо известна и в которой есть опыт работы'
+    }
+    LOW_RESULT = {
+        'classification': 'низкий',
+        'percent': 10,
+        'summary': 'не руководящий пост, рекомендуется назначать в область, где доказано предварительное обучение или квалификация'
+    }
+    VERY_LOW_RESULT = {
+        'classification': 'очень низкий',
+        'percent': 5,
+        'summary': 'если не является больным или в некотором отношении неспособным работать, следует поручать только область, в которой доказаны компетентность и квалификация.'
+    }
+
+    VERY_HIGH = {
+        'min': 135,
+        'max': 999,
+        'result': VERY_HIGH_RESULT,
+    }
+    HIGH = {
+        'min': 110,
+        'max': 134,
+        'result': HIGH_RESULT,
+    }
+    ABOVE_AVERAGE = {
+        'min': 100,
+        'max': 109,
+        'result': ABOVE_AVERAGE_RESULT,
+    }
+    BELOW_AVERAGE = {
+        'min': 90,
+        'max': 99,
+        'result': BELOW_AVERAGE_RESULT,
+    }
+    LOW = {
+        'min': 80,
+        'max': 89,
+        'result': LOW_RESULT,
+    }
+    VERY_LOW = {
+        'min': -999,
+        'max': 79,
+        'result': VERY_LOW_RESULT,
+    }
+
 
 def process_test_two(data: OrderedDict):
+    points = calculate_points_test_two(data)
+    return get_result_test_two(points)
+
+
+def calculate_points_test_two(data: OrderedDict) -> int:
     answers = data['answers']
     is_man = data['is_man']
-    correct_answers = getattr(TestTwoAnswers, data['version'])
-    result = 0
+    correct_answers = getattr(TestTwo, data['version'])
+    points = 0
 
     for i, value in enumerate(answers):
         j = i + 1
         if value == correct_answers[str(j)]:
-            result += 1
+            points += 1
 
     if is_man:
-        result += 75
+        points += 75
     else:
-        result += 70
+        points += 70
 
+    return points
+
+
+def get_result_test_two(points: int) -> dict:
+    if TestTwo.VERY_HIGH['min'] <= points <= TestTwo.VERY_HIGH['max']:
+        result = TestTwo.VERY_HIGH['result']
+
+    elif TestTwo.HIGH['min'] <= points <= TestTwo.HIGH['max']:
+        result = TestTwo.HIGH['result']
+
+    elif TestTwo.ABOVE_AVERAGE['min'] <= points <= TestTwo.ABOVE_AVERAGE['max']:
+        result = TestTwo.ABOVE_AVERAGE['result']
+
+    elif TestTwo.BELOW_AVERAGE['min'] <= points <= TestTwo.BELOW_AVERAGE['max']:
+        result = TestTwo.BELOW_AVERAGE['result']
+
+    elif TestTwo.LOW['min'] <= points <= TestTwo.LOW['max']:
+        result = TestTwo.LOW['result']
+
+    elif TestTwo.VERY_LOW['min'] <= points <= TestTwo.VERY_LOW['max']:
+        result = TestTwo.VERY_LOW['result']
+
+    else:
+        raise Exception('TestTwo ошибка значений очков')
+
+    result['points'] = points
     return result

@@ -2,6 +2,32 @@ from typing import OrderedDict
 from datetime import timedelta
 
 
+class TestThree:
+    HIGH = {
+        'min': 90,
+        'max': 999,
+        'result': {'description': 'ВЫСОКИЙ УРОВЕНЬ. Очень хорошая способность к воспроизведению. Такой человек всё понимает и схватывает на лету, и его уровень воспроизведения достаточен для руководителя высшего звена.'}
+    }
+
+    GOOD = {
+        'min': 80,
+        'max': 89,
+        'result': {'description': 'ХОРОШИЙ УРОВЕНЬ. Человек с таким воспроизведением хорошо понимает и разбирается в том, что происходит в какой-то определенной области. Такой уровень воспроизведения является достаточным для руководителя высшего или среднего звена.'}
+    }
+
+    ACCEPTABLE = {
+        'min': 65,
+        'max': 79,
+        'result': {'description': 'ПРИЕМЛЕМЫЙ УРОВЕНЬ. Человек воспроизводит посредственно, но отнюдь не всегда медленно. Такой уровень достаточен для руководителя низшего звена или для человека, не занимающего руководящую должность.'}
+    }
+
+    LOW = {
+        'min': -999,
+        'max': 64,
+        'result': {'description': 'НИЗКИЙ УРОВЕНЬ. Такой человек может быть подвержен несчастным случаям, и ему тяжело приспосабливаться к обстоятельствам. Он может выполнять простые приказы, если он понял, что от него требуется. Человека с таким уровнем воспроизведения не рекомендуется принимать на работу, связанную с управлением каким-либо оборудованием.'}
+    }
+
+
 def process_test_three(data: OrderedDict):
     answers = data['answers']
     time = data['time']
@@ -29,7 +55,8 @@ def process_test_three(data: OrderedDict):
             points = process_question_11(answer, points)
 
     time_penalty = time.hour*60 + time.minute + time.second*100/60/100
-    result = 100 - points - time_penalty
+    final_points = 100 - points - time_penalty
+    result = get_result_test_three(final_points)
     return result
 
 
@@ -188,3 +215,23 @@ def process_question_11(answer: list, points: int) -> int:
         points += 10
 
     return points
+
+
+def get_result_test_three(points: int) -> dict:
+    if TestThree.HIGH['min'] <= points <= TestThree.HIGH['max']:
+        result = TestThree.HIGH['result']
+
+    elif TestThree.GOOD['min'] <= points <= TestThree.GOOD['max']:
+        result = TestThree.GOOD['result']
+
+    elif TestThree.ACCEPTABLE['min'] <= points <= TestThree.ACCEPTABLE['max']:
+        result = TestThree.ACCEPTABLE['result']
+
+    elif TestThree.LOW['min'] <= points <= TestThree.LOW['max']:
+        result = TestThree.LOW['result']
+
+    else:
+        raise Exception('TestThree ошибка значений очков')
+
+    result['points'] = points
+    return result

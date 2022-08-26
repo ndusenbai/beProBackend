@@ -2,6 +2,7 @@ import sys
 
 from rest_framework import status
 from rest_framework.views import APIView as OriginalAPIView
+from rest_framework.permissions import AllowAny
 
 from auth_user.services import get_user_role
 from companies.models import CompanyService
@@ -9,6 +10,8 @@ from companies.models import CompanyService
 
 class PatchedAPIView(OriginalAPIView):
     def check_permissions(self, request):
+        if AllowAny in self.permission_classes:
+            return super().check_permissions(request)
         company_message = self.check_if_company_is_active(request)
         if company_message:
             self.permission_denied(request, message=company_message, code=status.HTTP_403_FORBIDDEN)
@@ -19,6 +22,7 @@ class PatchedAPIView(OriginalAPIView):
 
         return super().check_permissions(request)
 
+    # TODO: delete if turns out not needed
     def check_if_allowed_url(self, request):
         allowed_urls = [
             '/swagger/',
@@ -89,9 +93,10 @@ class PatchedAPIView(OriginalAPIView):
                 return 'Данный функционал отключен'
 
     def check_if_user_has_access_to_service(self, request) -> str:
-        allowed_url = self.check_if_allowed_url(request)
-        if allowed_url:
-            return ''
+        # allowed_url = self.check_if_allowed_url(request)
+        # if allowed_url:
+        #     return ''
+
         try:
             company_services = CompanyService.objects.get(company=request.user.selected_company)
         except CompanyService.DoesNotExist:
