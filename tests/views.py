@@ -5,6 +5,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from tests.exceptions import VersionAlreadyExists
 from tests.models import Test
@@ -14,9 +16,13 @@ from utils.tools import log_exception
 
 
 class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet):
+    # TODO: permission
     permission_classes = (AllowAny,)
     queryset = Test.objects.all()
     serializer_class = TestModelSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('first_name', 'last_name', 'middle_name', 'created_at')
+    filterset_fields = ('company', 'status', 'test_type', 'finished_at')
     http_method_names = ['get', 'post', 'delete']
 
     @swagger_auto_schema(request_body=CreateTestSerializer)

@@ -2,10 +2,11 @@ from urllib.parse import quote_plus
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.utils.timezone import now
 from django.conf import settings
 
 from tests.exceptions import VersionAlreadyExists
-from tests.models import Test, TestType
+from tests.models import Test, TestType, TestStatus
 from tests.serializers import TestOneSerializer, TestTwoSerializer, TestThreeSerializer, TestFourSerializer
 from tests.services.test_one import process_test_one
 from tests.services.test_two import process_test_two
@@ -50,25 +51,26 @@ def submit_test(uid, data):
     if test.test_type == TestType.ONE_HEART_PRO:
         serializer = TestOneSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        test.result = process_test_one(**serializer.validated_data)
-        test.save()
+        result = process_test_one(**serializer.validated_data)
     elif test.test_type == TestType.TWO_BRAIN:
         serializer = TestTwoSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        test.result = process_test_two(serializer.validated_data)
-        test.save()
+        result = process_test_two(serializer.validated_data)
     elif test.test_type == TestType.THREE_BRAIN_PRO:
         serializer = TestThreeSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        test.result = process_test_three(serializer.validated_data)
-        test.save()
+        result = process_test_three(serializer.validated_data)
     elif test.test_type == TestType.FOUR_HEART:
         serializer = TestFourSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        test.result = process_test_four(serializer.validated_data['answers'])
-        test.save()
+        result = process_test_four(serializer.validated_data['answers'])
     else:
         raise Exception('Неправильный тип теста')
+
+    test.result = result
+    test.status = TestStatus.FINISHED
+    test.finished_at = now().date()
+    test.save()
 
 
 def test_id_encode(_id):
