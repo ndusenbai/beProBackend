@@ -5,7 +5,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.timezone import now
 from django.conf import settings
 
-from tests.exceptions import VersionAlreadyExists
+from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished
 from tests.models import Test, TestType, TestStatus
 from tests.serializers import TestOneSerializer, TestTwoSerializer, TestThreeSerializer, TestFourSerializer
 from tests.services.test_one import process_test_one
@@ -48,6 +48,10 @@ def retrieve_test(uid):
 def submit_test(uid, data):
     decoded_id = force_str(urlsafe_base64_decode(uid))
     test = Test.objects.get(id=decoded_id)
+
+    if test.status == TestStatus.FINISHED:
+        raise TestAlreadyFinished()
+
     if 'hobbies' in data:
         test.hobbies = data['hobbies']
     if 'gender' in data:

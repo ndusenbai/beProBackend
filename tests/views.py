@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from tests.exceptions import VersionAlreadyExists
+from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished
 from tests.models import Test
 from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer
 from tests.services.tests import create_test, retrieve_test, submit_test, test_id_encode
@@ -51,10 +51,13 @@ class SubmitTestViewSet(APIView):
 
     @swagger_auto_schema(request_body=SubmitTestSerializer)
     def post(self, request, *args, **kwargs):
-        serializer = SubmitTestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        submit_test(kwargs['uid'], serializer.validated_data)
-        return Response({'message': 'success'})
+        try:
+            serializer = SubmitTestSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            submit_test(kwargs['uid'], serializer.validated_data)
+            return Response({'message': 'success'})
+        except TestAlreadyFinished as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
 
 
 # TODO: Delete when not needed
