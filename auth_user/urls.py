@@ -13,7 +13,7 @@ router.register('owner', views.OwnerViewSet, basename='owner')
 
 urlpatterns = [
     path('auth/token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/token/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/change-password/', views.ChangePasswordView.as_view({'post': 'change_password'}), name='change-password'),
     path('auth/reset-password/<str:uid>/<str:token>/', views.ForgotPasswordView.as_view(
         {'post': 'new_password', 'get': 'check_link'}), name='new-password'),

@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin, RetrieveModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
@@ -117,6 +117,11 @@ class AssistantViewSet(ModelViewSet):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Takes a set of user credentials and returns an access and refresh JSON web
+    token pair to prove the authentication of those credentials.
+    """
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         user_data = get_additional_user_info(request.data['email'])
@@ -127,6 +132,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             return Response({'message': 'Данный пользователь не существует'}, status=status.HTTP_400_BAD_REQUEST)
 
         return resp
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Takes a refresh type JSON web token and returns an access type JSON web
+    token if the refresh token is valid.
+    """
+    # пустое переопределения для того, чтобы сработала логика проверка пермишенов из auth_user.patching.py
+    permission_classes = (AllowAny,)
 
 
 class ChangeSelectedCompanyViewSet(UpdateModelMixin, GenericViewSet):
