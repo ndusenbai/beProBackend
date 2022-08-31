@@ -97,6 +97,9 @@ class PatchedAPIView(OriginalAPIView):
         # if allowed_url:
         #     return ''
 
+        if request.user.is_superuser:
+            return ''
+
         try:
             company_services = CompanyService.objects.get(company=request.user.selected_company)
         except CompanyService.DoesNotExist:
