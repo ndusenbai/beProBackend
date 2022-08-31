@@ -10,7 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from tests.exceptions import VersionAlreadyExists
 from tests.models import Test
-from tests.serializers import CreateTestSerializer, TestModelSerializer
+from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer
 from tests.services.tests import create_test, retrieve_test, submit_test, test_id_encode
 from utils.tools import log_exception
 
@@ -49,8 +49,11 @@ class RetrieveTestViewSet(APIView):
 class SubmitTestViewSet(APIView):
     permission_classes = (AllowAny,)
 
+    @swagger_auto_schema(request_body=SubmitTestSerializer)
     def post(self, request, *args, **kwargs):
-        submit_test(kwargs['uid'], request.data)
+        serializer = SubmitTestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        submit_test(kwargs['uid'], serializer.validated_data)
         return Response({'message': 'success'})
 
 

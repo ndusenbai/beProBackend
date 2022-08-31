@@ -48,20 +48,25 @@ def retrieve_test(uid):
 def submit_test(uid, data):
     decoded_id = force_str(urlsafe_base64_decode(uid))
     test = Test.objects.get(id=decoded_id)
+    if 'hobbies' in data:
+        test.hobbies = data['hobbies']
+    if 'gender' in data:
+        test.gender = data['gender']
+
     if test.test_type == TestType.ONE_HEART_PRO:
-        serializer = TestOneSerializer(data=data)
+        serializer = TestOneSerializer(data=data['test_data'])
         serializer.is_valid(raise_exception=True)
         result = process_test_one(**serializer.validated_data)
     elif test.test_type == TestType.TWO_BRAIN:
-        serializer = TestTwoSerializer(data=data)
+        serializer = TestTwoSerializer(data=data['test_data'])
         serializer.is_valid(raise_exception=True)
         result = process_test_two(serializer.validated_data)
     elif test.test_type == TestType.THREE_BRAIN_PRO:
-        serializer = TestThreeSerializer(data=data)
+        serializer = TestThreeSerializer(data=data['test_data'])
         serializer.is_valid(raise_exception=True)
         result = process_test_three(serializer.validated_data)
     elif test.test_type == TestType.FOUR_HEART:
-        serializer = TestFourSerializer(data=data)
+        serializer = TestFourSerializer(data=data['test_data'])
         serializer.is_valid(raise_exception=True)
         result = process_test_four(serializer.validated_data['answers'])
     else:

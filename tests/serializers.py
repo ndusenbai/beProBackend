@@ -42,6 +42,11 @@ class TestThreeSerializer(BaseSerializer):
             raise serializers.ValidationError({"answers": "Неправильное количество ответов"})
         return attrs
 
+    def to_internal_value(self, data):
+        data['answers'] = json.dumps(data['answers'])
+        data = super().to_internal_value(data)
+        return data
+
 
 class TestFourSerializer(BaseSerializer):
     answers = serializers.ListField(child=serializers.BooleanField())
@@ -69,8 +74,13 @@ class CreateTestSerializer(BaseSerializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     middle_name = serializers.CharField(allow_blank=True)
-    gender = serializers.ChoiceField(choices=Genders.choices, allow_null=True)
     date_of_birth = serializers.DateField(allow_null=True)
-    hobbies = serializers.CharField(allow_blank=True)
+    job_title = serializers.CharField()
     version = serializers.ChoiceField(choices=TestTwoVersion.choices, allow_blank=True)
     force_version = serializers.BooleanField(required=False, default=False)
+
+
+class SubmitTestSerializer(BaseSerializer):
+    gender = serializers.ChoiceField(choices=Genders.choices, required=False)
+    hobbies = serializers.CharField(required=False)
+    test_data = serializers.DictField()

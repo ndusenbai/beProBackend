@@ -38,6 +38,7 @@ class Test(BaseModel):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True)
+    job_title = models.CharField(max_length=100, blank=True)
     gender = models.PositiveSmallIntegerField(choices=Genders.choices, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     address = models.CharField(max_length=300, blank=True)
