@@ -1,10 +1,10 @@
 import sys
 
 from rest_framework import status
-from rest_framework.views import APIView as OriginalAPIView
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView as OriginalAPIView
 
-from auth_user.services import get_user_role
+from auth_user.models import AssistantTypes
 from companies.models import CompanyService
 
 
@@ -12,7 +12,11 @@ class PatchedAPIView(OriginalAPIView):
     def check_permissions(self, request):
         if AllowAny in self.permission_classes:
             return super().check_permissions(request)
-        company_message = self.check_if_company_is_active(request)
+
+        if request.user.is_superuser or request.user.assistant_type in [AssistantTypes.MARKETING, AssistantTypes.PRODUCTION_WORKERS]:
+            return super().check_permissions(request)
+
+        company_message = self.check_if_company_is_active_or_deleted(request)
         if company_message:
             self.permission_denied(request, message=company_message, code=status.HTTP_403_FORBIDDEN)
 
@@ -22,35 +26,15 @@ class PatchedAPIView(OriginalAPIView):
 
         return super().check_permissions(request)
 
-    # TODO: delete if turns out not needed
-    def check_if_allowed_url(self, request):
-        allowed_urls = [
-            '/swagger/',
-            '/api/auth/token/',
-            '/api/tariffs/list-tariff/',
-            '/api/app-to-create-company/create/',
-            '/api/tests/test-one/',
-            '/api/tests/test-two/',
-            '/api/tests/test-three/',
-            '/api/tests/test-four/',
-        ]
-        for url in allowed_urls:
-            if request.path.startswith(url):
-                return True
-
-        role = get_user_role(request.user)
-        if role in ['superuser', 'admin_marketing', 'admin_production_worker']:
-            return True
-
-    def check_if_company_is_active(self, request) -> str:
-        allowed_url = self.check_if_allowed_url(request)
-        if allowed_url:
-            return ''
+    def check_if_company_is_active_or_deleted(self, request) -> str:
         if not request.user.id:
             return 'Залогиньтесь'
 
         if not request.user.selected_company.is_active:
             return 'Тариф закончился. Ваша компания не активна'
+
+        if request.user.selected_company.is_deleted:
+            return 'Ваша компания удалена'
 
         return ''
 
@@ -87,19 +71,13 @@ class PatchedAPIView(OriginalAPIView):
 
     def check_if_test_disabled(self, request, company_services):
         tests_urls = [
+            '/api/tests/'
         ]
         for url in tests_urls:
             if request.path.startswith(url) and not company_services.tests_enabled:
                 return 'Данный функционал отключен'
 
     def check_if_user_has_access_to_service(self, request) -> str:
-        # allowed_url = self.check_if_allowed_url(request)
-        # if allowed_url:
-        #     return ''
-
-        if request.user.is_superuser:
-            return ''
-
         try:
             company_services = CompanyService.objects.get(company=request.user.selected_company)
         except CompanyService.DoesNotExist:
