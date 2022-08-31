@@ -201,10 +201,12 @@ def set_took_off(role: Role, data: dict):
     schedule = get_schedule(role, now_date)
 
     if time_sheet.exists():
-        if time_sheet.last().check_out:
+        time_sheet = time_sheet.last()
+        if time_sheet.status == TimeSheetChoices.ON_VACATION:
+            return {'message': 'Нельзя отпроситься на время отпуска'}, 400
+        if time_sheet.check_out:
             return {'message': 'Вы уже осуществили check out на текущий день'}, 400
 
-        time_sheet = time_sheet.last()
         time_sheet.check_in = schedule.time_from
         time_sheet.check_out = schedule.time_to
         time_sheet.status = TimeSheetChoices.ABSENT

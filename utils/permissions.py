@@ -271,15 +271,20 @@ class ObserverPermission(BasePermission):
 class ScorePermission(BasePermission):
 
     def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
 
         role = get_user_role(request.user)
 
         if request.user.is_authenticated and role == 'superuser':
             return True
-
-        score_user_company_id = Role.objects.get(id=request.GET['role']).company_id
-        if request.user.selected_company_id == score_user_company_id:
-            return True
+        if view.action == 'list':
+            score_user_company_id = Role.objects.get(id=request.GET['role']).company_id
+            if request.user.selected_company_id == score_user_company_id:
+                return True
+        elif view.action in ['create', 'destroy']:
+            if role in ['hr', 'owner']:
+                return True
 
         return False
 
