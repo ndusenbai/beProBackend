@@ -5,7 +5,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.timezone import now
 from django.conf import settings
 
-from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished
+from auth_user.tasks import send_email
+from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished, NoEmailTestException, \
+    TestAlreadyFinishedEmailException
 from tests.models import Test, TestType, TestStatus
 from tests.serializers import TestOneSerializer, TestTwoSerializer, TestThreeSerializer, TestFourSerializer
 from tests.services.test_one import process_test_one
@@ -80,6 +82,20 @@ def submit_test(uid, data):
     test.status = TestStatus.FINISHED
     test.finished_at = now().date()
     test.save()
+
+
+def send_email_invitation(uid):
+    decoded_id = force_str(urlsafe_base64_decode(uid))
+    test = Test.objects.get(id=decoded_id)
+    if not test.email:
+        raise NoEmailTestException()
+    if test.status != TestStatus.AWAIT:
+        raise TestAlreadyFinishedEmailException()
+
+    context = {
+        'link': f'{settings.CURRENT_SITE}/test/?code={uid}',
+    }
+    send_email.delay(subject='Пройдите тест на BePRO.kz', to_list=[test.email], template_name='test_invitation.html', context=context)
 
 
 def test_id_encode(_id):

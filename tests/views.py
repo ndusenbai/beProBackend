@@ -8,10 +8,11 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished
+from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished, TestAlreadyFinishedEmailException, \
+    NoEmailTestException
 from tests.models import Test
 from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer
-from tests.services.tests import create_test, retrieve_test, submit_test, test_id_encode
+from tests.services.tests import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation
 from utils.tools import log_exception
 
 
@@ -57,6 +58,19 @@ class SubmitTestViewSet(APIView):
             submit_test(kwargs['uid'], serializer.validated_data)
             return Response({'message': 'success'})
         except TestAlreadyFinished as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+
+
+class SendEmailViewSet(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            send_email_invitation(kwargs['uid'])
+            return Response({'message': 'success'})
+        except NoEmailTestException as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+        except TestAlreadyFinishedEmailException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
 
 

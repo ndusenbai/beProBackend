@@ -8,7 +8,23 @@ class VersionAlreadyExists(Exception):
 
 class TestAlreadyFinished(Exception):
     def __init__(self):
-        self.txt = 'Компания с таким названием уже существует'
+        self.txt = 'Тест уже пройден и не может быть сдан повторно'
+
+    def __str__(self):
+        return self.txt
+
+
+class NoEmailTestException(Exception):
+    def __init__(self):
+        self.txt = 'Невозможно отправить приглашение, т.к. не указана электронная почта'
+
+    def __str__(self):
+        return self.txt
+
+
+class TestAlreadyFinishedEmailException(Exception):
+    def __init__(self):
+        self.txt = 'Невозможно отправить приглашение, т.к. тест уже пройден'
 
     def __str__(self):
         return self.txt

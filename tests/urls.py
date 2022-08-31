@@ -10,5 +10,6 @@ router.register('tests/test', views.TestViewSet, basename='test')
 urlpatterns = [
     path('tests/<str:uid>/retrieve/', views.RetrieveTestViewSet.as_view(), name='retrieve-test'),
     path('tests/<str:uid>/submit/', views.SubmitTestViewSet.as_view(), name='submit-test'),
+    path('tests/<str:uid>/send-email/', views.SendEmailViewSet.as_view(), name='send-email'),
     path('tests/<int:id>/encode/', views.DecodeIDViewSet.as_view(), name='decode-id'),
 ] + router.urls
