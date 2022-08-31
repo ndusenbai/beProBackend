@@ -60,7 +60,10 @@ def create_user_statistic(role: Role, data: OrderedDict):
         role=role,
         statistic_id=data['statistic_id'],
         day=last_check_in.day,
-        fact=data['fact'])
+        fact=data['fact'],
+        created_by=role.user,
+        updated_by=role.user,
+    )
 
     return {'message': 'created', }, 200
 
@@ -116,12 +119,13 @@ def check_user_permission(user, role):
                                    VisibilityType.OPEN_EVERYONE}}
 
 
-def change_user_statistic(data: OrderedDict):
+def change_user_statistic(user: User, data: OrderedDict):
+    defaults = {'fact': data['fact'], 'updated_by': user}
     UserStatistic.objects.update_or_create(
         role=data['role'],
         statistic=data['statistic'],
         day=data['date'],
-        defaults={'fact': data['fact']})
+        defaults=defaults)
 
 
 def get_stats_for_user(request):
