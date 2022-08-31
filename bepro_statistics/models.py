@@ -50,6 +50,8 @@ class UserStatistic(BaseModel):
     role = models.ForeignKey('companies.Role', on_delete=models.CASCADE)
     day = models.DateField()
     fact = models.FloatField()
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='user_stats_created_by')
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='user_stats_updated_by')
 
     class Meta:
         constraints = [

@@ -138,7 +138,7 @@ class ChangeUserStat(CreateModelMixin, GenericViewSet):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            change_user_statistic(serializer.validated_data)
+            change_user_statistic(request.user, serializer.validated_data)
             return Response({'message': 'created'})
         except Exception as e:
             log_exception(e, 'Error in ChangeUserStat.create()')
