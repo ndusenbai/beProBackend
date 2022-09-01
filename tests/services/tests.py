@@ -38,7 +38,8 @@ def create_test(data):
     whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
     return {
         'link': link,
-        'whatsapp_link': whatsapp_link
+        'whatsapp_link': whatsapp_link,
+        'uid': encoded_test_id,
     }
 
 

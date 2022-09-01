@@ -84,3 +84,9 @@ class SubmitTestSerializer(BaseSerializer):
     gender = serializers.ChoiceField(choices=Genders.choices, required=False)
     hobbies = serializers.CharField(required=False)
     test_data = serializers.DictField()
+
+
+class SubmitTestResponseSerializer(BaseSerializer):
+    link = serializers.CharField()
+    whatsapp_link = serializers.CharField()
+    uid = serializers.CharField()
