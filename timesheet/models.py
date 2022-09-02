@@ -41,6 +41,7 @@ class TimeSheet(BaseModel):
     time_from = models.TimeField()
     time_to = models.TimeField()
     comment = models.TextField(blank=True)
+    debug_comment = models.TextField(blank=True)
     file = models.FileField(upload_to='timesheet/', null=True, blank=True,)
     status = models.PositiveSmallIntegerField(choices=TimeSheetChoices.choices, default=TimeSheetChoices.ON_TIME)
 
