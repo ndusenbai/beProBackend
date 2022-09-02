@@ -74,7 +74,7 @@ def get_timesheet_by_month(role_id, year, month):
                 if is_workday_schedule:
                     result.append(fake_future_day_timesheet(role_id, date_formatted, is_workday_schedule))
                 else:
-                    result.append(fake_future_day_off_timesheet(role_id, date_formatted, is_workday_schedule))
+                    result.append(fake_future_day_off_timesheet(role_id, date_formatted))
 
     return result
 
