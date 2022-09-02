@@ -88,35 +88,34 @@ def bulk_create_observers(data: dict, instance: Statistic):
         return data, 200
 
 
-def check_user_permission(user, role):
+def check_user_permission(observer_user: User, role: Role) -> dict:
+    observer_user_role = get_user_role(observer_user)
+    is_superuser = get_user_role(observer_user) == 'superuser'
+    is_owner_or_hr = observer_user.selected_company == role.user.selected_company and observer_user_role in ['owner', 'hr']
 
-    if get_user_role(user) == 'superuser':
+    if is_superuser or is_owner_or_hr:
         return {"visibility__in": {VisibilityType.HIDDEN,
                                    VisibilityType.EMPLOYEES,
                                    VisibilityType.OPEN_DEPARTMENT,
                                    VisibilityType.OPEN_EVERYONE}}
 
-    if hasattr(user, 'role'):
-        if user.role == role or user.role.role == RoleChoices.HR:
+    if hasattr(observer_user, 'role'):
+        if observer_user.role == role:
             return {"visibility__in": {VisibilityType.HIDDEN,
                                        VisibilityType.EMPLOYEES,
                                        VisibilityType.OPEN_DEPARTMENT,
                                        VisibilityType.OPEN_EVERYONE}}
-        elif user.role.department == role.department:
+        elif observer_user.role.department == role.department:
             return {"visibility__in": {VisibilityType.OPEN_DEPARTMENT,
                                        VisibilityType.OPEN_EVERYONE,
                                        VisibilityType.EMPLOYEES}}
-        elif user.role.company == role.company:
+        elif observer_user.role.company == role.company:
             return {"visibility__in": {VisibilityType.OPEN_EVERYONE,
                                        VisibilityType.EMPLOYEES}}
         else:
             return {}
 
-    elif not hasattr(user, 'role') and get_user_role(user) == 'owner':
-        return {"visibility__in": {VisibilityType.HIDDEN,
-                                   VisibilityType.EMPLOYEES,
-                                   VisibilityType.OPEN_DEPARTMENT,
-                                   VisibilityType.OPEN_EVERYONE}}
+    return {}
 
 
 def change_user_statistic(user: User, data: OrderedDict):
@@ -140,7 +139,7 @@ def get_stats_for_user(request):
 
     stats = Statistic.objects.filter((Q(department=role.department) | Q(role=role)) & Q(**visibility_level))
     for stat in stats:
-        allowed = is_user_allowed_to_stat(request.user, stat)
+        allowed = is_user_allowed_to_stat(request.user, stat, role)
         if allowed:
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[monday, sunday]) \
@@ -150,14 +149,27 @@ def get_stats_for_user(request):
     return data
 
 
-def is_user_allowed_to_stat(user: User, stat: Statistic) -> bool:
+def is_user_allowed_to_stat(observer_user: User, stat: Statistic, role: Role) -> bool:
     is_allowed = False
     try:
-        is_allowed = not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
-                          observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat))
+        observer_user_role = get_user_role(observer_user)
+        if observer_user.role == role:
+            return True
+        if not stat.visibility == VisibilityType.EMPLOYEES:
+            return True
+
+        is_hr = observer_user.selected_company == role.user.selected_company and observer_user_role == 'hr'
+        if is_hr:
+            return True
+
+        observer_user_in_statistic_observers = observer_user.role.observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat).exists()
+        return observer_user_in_statistic_observers
     except Role.DoesNotExist:
-        if get_user_role(user) == 'superuser':
-            is_allowed = True
+        is_superuser = observer_user_role == 'superuser'
+        is_owner = observer_user.selected_company == role.user.selected_company and observer_user_role == 'owner'
+
+        if is_superuser or is_owner:
+            return True
     return is_allowed
 
 
