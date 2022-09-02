@@ -32,8 +32,7 @@ def create_test(data):
     test = Test.objects.create(**data)
 
     encoded_test_id = urlsafe_base64_encode(force_bytes(test.id))
-    link = f'{settings.CURRENT_SITE}/test/?code={encoded_test_id}'
-    # link = f'{settings.CURRENT_SITE_WA}/test/?code={encoded_test_id}'
+    link = f'{settings.CURRENT_SITE}/test/registration/{encoded_test_id}/'
     whatsapp_text = quote_plus(f'Для прохождения теста перейдите по ссылке:\n{link}')
     whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
     return {
@@ -94,7 +93,7 @@ def send_email_invitation(uid):
         raise TestAlreadyFinishedEmailException()
 
     context = {
-        'link': f'{settings.CURRENT_SITE}/test/?code={uid}',
+        'link': f'{settings.CURRENT_SITE}/test/registration/{uid}/',
     }
     send_email.delay(subject='Пройдите тест на BePRO.kz', to_list=[test.email], template_name='test_invitation.html', context=context)
 

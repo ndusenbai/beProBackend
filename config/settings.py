@@ -227,13 +227,6 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
 }
 
-CURRENT_SITE = env('CURRENT_SITE')
-# TODO: Delete this after testing
-try:
-    CURRENT_SITE_WA = env('CURRENT_SITE_WA')
-except:
-    CURRENT_SITE_WA = 'http://bepro.kz'
-
 CELERY_TIMEZONE = "Asia/Almaty"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
