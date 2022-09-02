@@ -103,11 +103,11 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
+class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
     queryset = TestApplication.objects.all()
     filterset_fields = ('status',)
-    http_method_names = ['get', 'put']
+    http_method_names = ['get', 'put', 'post']
 
     @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
