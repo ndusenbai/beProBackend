@@ -54,40 +54,16 @@ def get_timesheet_by_month(role_id, year, month):
     for num_day_of_month in range(1, num_days_of_month+1):
         _date = date(year, month, num_day_of_month)
         date_formatted = _date.strftime('%Y-%m-%d')
-        if _date <= today:
+        if _date < today:
             timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
             if timesheet_for_day:
                 result.append(timesheet_for_day)
             else:
                 is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
                 if is_workday_schedule:
-                    result.append({
-                        'id': None,
-                        'role': role_id,
-                        'day': date_formatted,
-                        'check_in': '',
-                        'check_out': '',
-                        'time_from': is_workday_schedule.time_from,
-                        'time_to': is_workday_schedule.time_to,
-                        'comment': '',
-                        'file': None,
-                        'status': TimeSheetChoices.ABSENT,
-                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.ABSENT),
-                    })
+                    result.append(create_absent_timesheet(role_id, date_formatted, is_workday_schedule))
                 else:
-                    result.append({
-                        'id': None,
-                        'role': role_id,
-                        'day': date_formatted,
-                        'check_in': '',
-                        'check_out': '',
-                        'time_from': '',
-                        'time_to': '',
-                        'comment': '',
-                        'file': None,
-                        'status': TimeSheetChoices.DAY_OFF,
-                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
-                    })
+                    result.append(create_day_off_timesheet(role_id, date_formatted))
         else:
             timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
             if timesheet_for_day:
@@ -95,35 +71,95 @@ def get_timesheet_by_month(role_id, year, month):
             else:
                 is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
                 if is_workday_schedule:
-                    result.append({
-                        'id': None,
-                        'role': role_id,
-                        'day': date_formatted,
-                        'check_in': '',
-                        'check_out': '',
-                        'time_from': is_workday_schedule.time_from,
-                        'time_to': is_workday_schedule.time_to,
-                        'comment': '',
-                        'file': None,
-                        'status': TimeSheetChoices.FUTURE_DAY,
-                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.FUTURE_DAY),
-                    })
+                    result.append(fake_future_day_timesheet(role_id, date_formatted, is_workday_schedule))
                 else:
-                    result.append({
-                        'id': None,
-                        'role': role_id,
-                        'day': date_formatted,
-                        'check_in': '',
-                        'check_out': '',
-                        'time_from': '',
-                        'time_to': '',
-                        'comment': '',
-                        'file': None,
-                        'status': TimeSheetChoices.DAY_OFF,
-                        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
-                    })
+                    result.append(fake_future_day_off_timesheet(role_id, date_formatted))
 
     return result
+
+
+def create_absent_timesheet(role_id, date_formatted, is_workday_schedule):
+    absent_timesheet = TimeSheet.objects.create(
+        role_id=role_id,
+        day=date_formatted,
+        check_in=None,
+        check_out=None,
+        time_from=is_workday_schedule.time_from,
+        time_to=is_workday_schedule.time_to,
+        debug_comment='Created automatically within get_timesheet_by_month()',
+        status=TimeSheetChoices.ABSENT,
+    )
+    return {
+        'id': absent_timesheet.id,
+        'role': role_id,
+        'day': date_formatted,
+        'check_in': '',
+        'check_out': '',
+        'time_from': is_workday_schedule.time_from,
+        'time_to': is_workday_schedule.time_to,
+        'comment': '',
+        'file': None,
+        'status': TimeSheetChoices.ABSENT,
+        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.ABSENT),
+    }
+
+
+def create_day_off_timesheet(role_id, date_formatted):
+    day_off_timesheet = TimeSheet.objects.create(
+        role_id=role_id,
+        day=date_formatted,
+        check_in=None,
+        check_out=None,
+        time_from=None,
+        time_to=None,
+        debug_comment='Created automatically within get_timesheet_by_month()',
+        status=TimeSheetChoices.DAY_OFF,
+    )
+    return {
+        'id': day_off_timesheet.id,
+        'role': role_id,
+        'day': date_formatted,
+        'check_in': '',
+        'check_out': '',
+        'time_from': '',
+        'time_to': '',
+        'comment': '',
+        'file': None,
+        'status': TimeSheetChoices.DAY_OFF,
+        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+    }
+
+
+def fake_future_day_timesheet(role_id, date_formatted, is_workday_schedule):
+    return {
+        'id': None,
+        'role': role_id,
+        'day': date_formatted,
+        'check_in': '',
+        'check_out': '',
+        'time_from': is_workday_schedule.time_from,
+        'time_to': is_workday_schedule.time_to,
+        'comment': '',
+        'file': None,
+        'status': TimeSheetChoices.FUTURE_DAY,
+        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.FUTURE_DAY),
+    }
+
+
+def fake_future_day_off_timesheet(role_id, date_formatted):
+    return {
+        'id': None,
+        'role': role_id,
+        'day': date_formatted,
+        'check_in': '',
+        'check_out': '',
+        'time_from': '',
+        'time_to': '',
+        'comment': '',
+        'file': None,
+        'status': TimeSheetChoices.DAY_OFF,
+        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+    }
 
 
 def update_timesheet(instance: TimeSheet, data: dict) -> None:
@@ -135,7 +171,7 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
 def get_last_timesheet_action(role: Role) -> str:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
 
-    if last_timesheet and 'Automatically filled' in last_timesheet.comment:
+    if last_timesheet and last_timesheet.debug_comment:
         return 'check_out'
     if last_timesheet and last_timesheet.check_out is None:
         return 'check_in'
@@ -231,7 +267,7 @@ def handle_check_out_absent_days(role: Role, data: dict) -> bool:
     today = data['check_out'].astimezone(timezone.utc).date()
 
     if last_timesheet.day != today:
-        if not last_timesheet.check_out and 'Automatically filled' not in last_timesheet.comment:
+        if not last_timesheet.check_out and not last_timesheet.debug_comment:
             last_timesheet.check_out = '23:59'
             last_timesheet.save()
 
@@ -248,7 +284,7 @@ def handle_check_out_absent_days(role: Role, data: dict) -> bool:
                     check_out=None,
                     time_from='00:00',
                     time_to='23:59',
-                    comment='Automatically filled',
+                    debug_comment='Created automatically within handle_check_out_absent_days()',
                     file=None,
                     status=TimeSheetChoices.ABSENT,
                 )

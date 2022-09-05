@@ -13,7 +13,7 @@ def create_absent_timesheet(role, now_date, now_time):
                              time_from=now_time,
                              time_to=now_time,
                              status=TimeSheetChoices.ABSENT,
-                             comment='Automatically filled by auto check')
+                             debug_comment='Created automatically within absence_check task')
 
 
 def absence_check_request(request):
