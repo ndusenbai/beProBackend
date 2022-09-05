@@ -75,7 +75,3 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
 
 class UpdateApplicationStatus(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
-
-
-class UpdateTestApplicationStatus(BaseSerializer):
-    status = serializers.ChoiceField(choices=TestApplicationStatus.choices)

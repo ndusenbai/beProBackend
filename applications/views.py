@@ -11,9 +11,9 @@ from rest_framework.viewsets import GenericViewSet
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationStatus, \
-    TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer, \
-    UpdateTestApplicationStatus
-from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application
+    TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer
+from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application, \
+    change_status_of_test_application
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS
@@ -106,6 +106,9 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
     queryset = TestApplication.objects.all()
+    serializer_class = TestApplicationModelSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
     filterset_fields = ('status',)
     http_method_names = ['get', 'put', 'post']
 
@@ -113,11 +116,7 @@ class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, Ge
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    def get_serializer_class(self):
-        if self.action == 'update':
-            return UpdateTestApplicationStatus
-        return TestApplicationModelSerializer
-
+    @swagger_auto_schema(request_body=UpdateApplicationStatus)
     def update(self, request, *args, **kwargs):
         """
         Принятие или отклонение статуса заявки на тест. TestApplicationStatus:
@@ -126,4 +125,12 @@ class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, Ge
             DECLINED = 3
             USED = 4
         """
-        return super().update(request, *args, **kwargs)
+        try:
+            serializer = UpdateApplicationStatus(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            change_status_of_test_application(self.get_object(), serializer.validated_data['status'])
+            return Response({'message': 'updated'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            log_exception(e, 'Error in TestApplicationView.update()')
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
