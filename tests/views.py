@@ -9,11 +9,11 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished, TestAlreadyFinishedEmailException, \
-    NoEmailTestException
+    NoEmailTestException, NoPaidTestException
 from tests.models import Test
 from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer, \
     SubmitTestResponseSerializer
-from tests.services.tests import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation
+from tests.services.test_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation
 from utils.tools import log_exception
 
 
@@ -38,6 +38,8 @@ class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyM
             links = create_test(serializer.validated_data)
             return Response(links)
         except VersionAlreadyExists as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+        except NoPaidTestException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in TestViewSet.create()')

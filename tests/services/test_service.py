@@ -1,13 +1,17 @@
 from urllib.parse import quote_plus
+from typing import OrderedDict
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils.timezone import now
 from django.conf import settings
+from django.db.transaction import atomic
+from django.db.models import F
 
+from applications.models import TestApplication, TestApplicationStatus
 from auth_user.tasks import send_email
 from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished, NoEmailTestException, \
-    TestAlreadyFinishedEmailException
+    TestAlreadyFinishedEmailException, NoPaidTestException
 from tests.models import Test, TestType, TestStatus
 from tests.serializers import TestOneSerializer, TestTwoSerializer, TestThreeSerializer, TestFourSerializer
 from tests.services.test_one import process_test_one
@@ -16,7 +20,47 @@ from tests.services.test_three import process_test_three
 from tests.services.test_four import process_test_four
 
 
-def create_test(data):
+@atomic
+def create_test(data: OrderedDict) -> dict:
+    test_app = get_test_application(data)
+    check_if_test_version_exists(data)
+    test = Test.objects.create(**data)
+
+    if test_app:
+        test_app.used_quantity += 1
+        if test_app.quantity == test_app.used_quantity:
+            test_app.status = TestApplicationStatus.USED
+        test_app.save()
+
+    encoded_test_id = urlsafe_base64_encode(force_bytes(test.id))
+    link = f'{settings.CURRENT_SITE}/test/registration/{encoded_test_id}/'
+    whatsapp_text = quote_plus(f'Для прохождения теста перейдите по ссылке:\n{link}')
+    whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
+    return {
+        'link': link,
+        'whatsapp_link': whatsapp_link,
+        'uid': encoded_test_id,
+    }
+
+
+def get_test_application(data: OrderedDict) -> TestApplication | None:
+    if data['test_type'] in Test.PAID_TESTS:
+        test_app = TestApplication.objects.filter(
+            test_type=data['test_type'],
+            company=data['company'],
+            status=TestApplicationStatus.ACCEPTED,
+            used_quantity__lt=F('quantity'),
+        ).order_by('created_at').first()
+
+        if test_app:
+            return test_app
+        else:
+            raise NoPaidTestException()
+    else:
+        return None
+
+
+def check_if_test_version_exists(data: OrderedDict):
     force_version = data.pop('force_version')
     if data['version'] and not force_version:
         has_same_test_version = bool(
@@ -28,18 +72,6 @@ def create_test(data):
         )
         if has_same_test_version:
             raise VersionAlreadyExists()
-
-    test = Test.objects.create(**data)
-
-    encoded_test_id = urlsafe_base64_encode(force_bytes(test.id))
-    link = f'{settings.CURRENT_SITE}/test/registration/{encoded_test_id}/'
-    whatsapp_text = quote_plus(f'Для прохождения теста перейдите по ссылке:\n{link}')
-    whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
-    return {
-        'link': link,
-        'whatsapp_link': whatsapp_link,
-        'uid': encoded_test_id,
-    }
 
 
 def retrieve_test(uid):

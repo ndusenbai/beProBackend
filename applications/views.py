@@ -11,7 +11,8 @@ from rest_framework.viewsets import GenericViewSet
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationStatus, \
-    TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer
+    TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer, \
+    CreateTestApplication
 from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application, \
     change_status_of_test_application
 from auth_user.utils import UserAlreadyExists
@@ -106,15 +107,30 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (IsOwnerOrSuperuser,)
     queryset = TestApplication.objects.all()
-    serializer_class = TestApplicationModelSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
     filterset_fields = ('status',)
     http_method_names = ['get', 'put', 'post']
 
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateTestApplication
+        return TestApplicationModelSerializer
+
     @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(request_body=CreateTestApplication)
+    def create(self, request, *args, **kwargs):
+        """
+        Принятие или отклонение статуса заявки на тест. TestType:
+            ONE_HEART_PRO = 1
+            TWO_BRAIN = 2
+            THREE_BRAIN_PRO = 3
+            FOUR_HEART = 4
+        """
+        return super().create(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=UpdateApplicationStatus)
     def update(self, request, *args, **kwargs):

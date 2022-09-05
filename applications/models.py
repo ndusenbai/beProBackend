@@ -68,8 +68,12 @@ class TestApplicationStatus(models.IntegerChoices):
 class TestApplication(BaseModel):
     test_type = models.IntegerField(choices=TestType.choices)
     company = models.ForeignKey('companies.Company', null=True, on_delete=models.CASCADE, related_name='test_applications')
-    quantity = models.PositiveSmallIntegerField()
+    quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    used_quantity = models.PositiveSmallIntegerField(default=0)
     status = models.IntegerField(choices=TestApplicationStatus.choices, default=TestApplicationStatus.NEW)
 
     class Meta:
         ordering = ('-created_at',)
+
+    def __str__(self):
+        return f'{self.company} test {self.test_type} qty: {self.used_quantity}/{self.quantity}, status: {self.status}'

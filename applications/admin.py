@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from applications.models import ApplicationToCreateCompany, TariffApplication
+from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.actions import set_status_new
 
 
@@ -14,5 +14,12 @@ class ApplicationToCreateCompanyAdmin(admin.ModelAdmin):
 @admin.register(TariffApplication)
 class TariffApplicationAdmin(admin.ModelAdmin):
     list_display = ('id', 'tariff', 'owner', 'start_date', 'end_date', 'status')
-    list_display_filter = ('id', 'tariff', 'owner')
     raw_id_fields = ('tariff', 'owner')
+
+
+@admin.register(TestApplication)
+class TestApplicationAdmin(admin.ModelAdmin):
+    list_display = ('test_type', 'company', 'quantity', 'used_quantity', 'status')
+    search_fields = ('company__name', 'company__legal_name')
+    list_filter = ('test_type', 'company')
+    raw_id_fields = ('company',)

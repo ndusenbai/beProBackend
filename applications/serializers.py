@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
-from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication, \
-    TestApplicationStatus
+from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
 from auth_user.serializers import UserModelSerializer
+from companies.models import Company
 from companies.serializers import CompanyServiceSerializer
 from tariffs.models import Tariff, TariffPeriod
 from tariffs.serializers import TariffModelSerializer
+from tests.models import TestType
 from utils.serializers import BaseSerializer
 
 
@@ -71,6 +72,12 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
     years_of_work = serializers.IntegerField(default=0)
     tariff_id = serializers.PrimaryKeyRelatedField(queryset=Tariff.objects.only('id'))
     period = serializers.ChoiceField(choices=TariffPeriod)
+
+
+class CreateTestApplication(BaseSerializer):
+    test_type = serializers.ChoiceField(choices=TestType.choices)
+    quantity = serializers.IntegerField(min_value=1)
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
 
 
 class UpdateApplicationStatus(BaseSerializer):

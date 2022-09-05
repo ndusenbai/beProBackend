@@ -28,3 +28,11 @@ class TestAlreadyFinishedEmailException(Exception):
 
     def __str__(self):
         return self.txt
+
+
+class NoPaidTestException(Exception):
+    def __init__(self):
+        self.txt = 'Необходимо сначала оплатить тест'
+
+    def __str__(self):
+        return self.txt
