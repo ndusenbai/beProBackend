@@ -40,11 +40,15 @@ class TariffApplicationRetrieveSerializer(TariffApplicationSerializer):
 
 
 class TestApplicationModelSerializer(serializers.ModelSerializer):
+    owner = serializers.SerializerMethodField()
 
     class Meta:
         model = TestApplication
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
+
+    def get_owner(self, instance):
+        return UserModelSerializer(instance.company.owner).data
 
 
 class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
