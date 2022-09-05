@@ -6,7 +6,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.timezone import now
 from django.conf import settings
 from django.db.transaction import atomic
-from django.db.models import F
+from django.db.models import F, Sum
 
 from applications.models import TestApplication, TestApplicationStatus
 from auth_user.tasks import send_email
@@ -132,3 +132,42 @@ def send_email_invitation(uid):
 
 def test_id_encode(_id):
     return urlsafe_base64_encode(force_bytes(_id))
+
+
+def get_counters(company_id: int) -> dict:
+    current_tests_1 = Test.objects.filter(
+        company_id=company_id,
+        test_type=TestType.ONE_HEART_PRO,
+        status=TestStatus.AWAIT
+    ).count()
+
+    available_tests_1 = TestApplication.objects.filter(
+        test_type=TestType.ONE_HEART_PRO,
+        company_id=company_id,
+        status=TestApplicationStatus.ACCEPTED,
+        used_quantity__lt=F('quantity'),
+    ).annotate(available_tests=F('quantity')-F('used_quantity')).aggregate(qty=Sum('available_tests'))['qty']
+    if available_tests_1 is None:
+        available_tests_1 = 0
+
+    current_tests_3 = Test.objects.filter(
+        company_id=company_id,
+        test_type=TestType.THREE_BRAIN_PRO,
+        status=TestStatus.AWAIT
+    ).count()
+
+    available_tests_3 = TestApplication.objects.filter(
+        test_type=TestType.THREE_BRAIN_PRO,
+        company_id=company_id,
+        status=TestApplicationStatus.ACCEPTED,
+        used_quantity__lt=F('quantity'),
+    ).annotate(available_tests=F('quantity')-F('used_quantity')).aggregate(qty=Sum('available_tests'))['qty']
+    if available_tests_3 is None:
+        available_tests_3 = 0
+
+    return {
+        'current_tests_1': current_tests_1,
+        'available_tests_1': available_tests_1,
+        'current_tests_3': current_tests_3,
+        'available_tests_3': available_tests_3,
+    }

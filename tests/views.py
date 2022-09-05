@@ -13,7 +13,8 @@ from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished, TestAlre
 from tests.models import Test
 from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer, \
     SubmitTestResponseSerializer
-from tests.services.test_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation
+from tests.services.tests_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation, \
+    get_counters
 from utils.tools import log_exception
 
 
@@ -86,3 +87,11 @@ class DecodeIDViewSet(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response({'uid': test_id_encode(kwargs['id'])})
+
+
+class TestCountersViewSet(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        counters = get_counters(kwargs['company_id'])
+        return Response(counters)
