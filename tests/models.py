@@ -32,7 +32,7 @@ class Test(BaseModel):
     PAID_TESTS = [TestType.ONE_HEART_PRO, TestType.THREE_BRAIN_PRO]
 
     test_type = models.IntegerField(choices=TestType.choices)
-    company = models.ForeignKey('companies.Company', on_delete=models.CASCADE, related_name='tests', null=True, blank=True)
+    company = models.ForeignKey('companies.Company', on_delete=models.CASCADE, related_name='tests')
     email = models.EmailField(blank=True)
     phone_number = models.CharField(max_length=15, default='')
     first_name = models.CharField(max_length=50)
