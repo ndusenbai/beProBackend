@@ -13,7 +13,8 @@ class PatchedAPIView(OriginalAPIView):
         if AllowAny in self.permission_classes:
             return super().check_permissions(request)
 
-        if request.user.is_superuser or request.user.assistant_type in [AssistantTypes.MARKETING, AssistantTypes.PRODUCTION_WORKERS]:
+        is_assistant = request.user.is_authenticated and request.user.assistant_type in [AssistantTypes.MARKETING, AssistantTypes.PRODUCTION_WORKERS]
+        if request.user.is_superuser or is_assistant:
             return super().check_permissions(request)
 
         company_message = self.check_if_company_is_active_or_deleted(request)
