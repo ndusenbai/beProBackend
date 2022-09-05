@@ -302,3 +302,17 @@ class CheckPermission(BasePermission):
             return True
 
         return False
+
+
+class AdminOrOwnerOrHRPermission(BasePermission):
+    def has_permission(self, request, view):
+
+        if not request.user.is_authenticated:
+            return False
+
+        role = get_user_role(request.user)
+
+        if role in {'owner', 'observer', 'hr', 'employee'}:
+            return True
+
+        return False
