@@ -55,7 +55,7 @@ def get_timesheet_by_month(role_id, year, month):
     for num_day_of_month in range(1, num_days_of_month+1):
         _date = date(year, month, num_day_of_month)
         date_formatted = _date.strftime('%Y-%m-%d')
-        if _date <= today:
+        if _date < today:
             timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
             if timesheet_for_day:
                 result.append(timesheet_for_day)
@@ -64,7 +64,7 @@ def get_timesheet_by_month(role_id, year, month):
                 if is_workday_schedule:
                     result.append(create_absent_timesheet(role_id, date_formatted, is_workday_schedule))
                 else:
-                    result.append(fake_day_off_timesheet(role_id, date_formatted))
+                    result.append(create_day_off_timesheet(role_id, date_formatted))
         else:
             timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
             if timesheet_for_day:
@@ -105,9 +105,19 @@ def create_absent_timesheet(role_id, date_formatted, is_workday_schedule):
     }
 
 
-def fake_day_off_timesheet(role_id, date_formatted):
+def create_day_off_timesheet(role_id, date_formatted):
+    day_off_timesheet = TimeSheet.objects.create(
+        role_id=role_id,
+        day=date_formatted,
+        check_in=None,
+        check_out=None,
+        time_from=None,
+        time_to=None,
+        debug_comment='Created automatically within get_timesheet_by_month()',
+        status=TimeSheetChoices.DAY_OFF,
+    )
     return {
-        'id': None,
+        'id': day_off_timesheet.id,
         'role': role_id,
         'day': date_formatted,
         'check_in': '',
