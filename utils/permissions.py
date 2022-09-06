@@ -304,7 +304,7 @@ class CheckPermission(BasePermission):
         return False
 
 
-class AdminOrOwnerOrHRPermission(BasePermission):
+class SuperuserOrOwnerOrHRPermission(BasePermission):
     def has_permission(self, request, view):
 
         if not request.user.is_authenticated:
@@ -312,7 +312,19 @@ class AdminOrOwnerOrHRPermission(BasePermission):
 
         role = get_user_role(request.user)
 
-        if role in {'owner', 'observer', 'hr', 'employee'}:
+        if role in {'superuser', 'owner', 'hr'}:
+            return True
+
+        return False
+
+
+class IsStaffPermission(BasePermission):
+    def has_permission(self, request, view):
+
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.is_superuser or request.user.is_staff:
             return True
 
         return False

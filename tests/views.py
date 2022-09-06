@@ -15,12 +15,12 @@ from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitT
     SubmitTestResponseSerializer
 from tests.services.tests_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation, \
     get_counters
-from utils.permissions import AdminOrOwnerOrHRPermission
+from utils.permissions import SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
 
 
 class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet):
-    permission_classes = (AdminOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
     queryset = Test.objects.all()
     serializer_class = TestModelSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
@@ -69,7 +69,7 @@ class SubmitTestViewSet(APIView):
 
 
 class SendEmailViewSet(APIView):
-    permission_classes = (AdminOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -90,7 +90,7 @@ class DecodeIDViewSet(APIView):
 
 
 class TestCountersViewSet(APIView):
-    permission_classes = (AdminOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
 
     def get(self, request, *args, **kwargs):
         counters = get_counters(kwargs['company_id'])

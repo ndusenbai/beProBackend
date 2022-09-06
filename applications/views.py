@@ -18,7 +18,7 @@ from applications.services import change_status_of_application_to_create_company
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS
-from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser, AdminOrOwnerOrHRPermission
+from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser, IsStaffPermission
 from utils.tools import log_exception
 
 
@@ -105,7 +105,7 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 
 
 class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
-    permission_classes = (AdminOrOwnerOrHRPermission,)
+    permission_classes = (IsStaffPermission,)
     queryset = TestApplication.objects.all()
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
