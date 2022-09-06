@@ -108,7 +108,7 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 class CreateTestApplicationView(CreateModelMixin, GenericViewSet):
     permission_classes = (SuperuserOrOwnerOrHRPermission,)
     queryset = TestApplication.objects.all()
-    serializer_class = CreateTestApplication
+    serializer_class = TestApplicationModelSerializer
 
     @swagger_auto_schema(request_body=CreateTestApplication)
     def create(self, request, *args, **kwargs):
