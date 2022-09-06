@@ -68,7 +68,7 @@ class TestModelSerializer(serializers.ModelSerializer):
 
 class CreateTestSerializer(BaseSerializer):
     test_type = serializers.ChoiceField(choices=TestType.choices)
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
     email = serializers.EmailField(allow_blank=True)
     phone_number = serializers.CharField()
     first_name = serializers.CharField()
