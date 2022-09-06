@@ -26,7 +26,7 @@ def check_employees_qty_in_company(role):
     employees_count = Role.objects.filter(company=role.company).count()
     if employees_count > max_employees_qty:
         role.delete()
-        raise Exception('Too many employees in company')
+        raise Exception('Слишком много сотрудников в компании')
 
 
 def check_employees_qty_in_tariff(role):
@@ -39,4 +39,4 @@ def check_employees_qty_in_tariff(role):
     employees_count = Role.objects.filter(company__in=owner_companies).count()
     if employees_count > max_employees_qty:
         role.delete()
-        raise Exception('Too many employees for tariff')
+        raise Exception('Сотрудников больше, чем допустимо тарифом')
