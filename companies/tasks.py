@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from applications.models import TariffApplication, ApplicationStatus
 from auth_user.celery import app
 from auth_user.tasks import send_email
+from companies.models import Company
 
 
 @shared_task()
@@ -16,12 +17,7 @@ def deactivate_tariff():
             status=ApplicationStatus.NEW,
             start_date__gt=today).exists()
         if not new_tariff:
-            send_email.delay(
-                subject='Ваш тариф на BePro закончился',
-                to_list=[tariff.owner.email],
-                template_name='end_of_tariff_warning.html',
-                context={}
-            )
+            Company.objects.filter(owner=tariff.owner).update(is_active=False)
 
 
 @app.task
