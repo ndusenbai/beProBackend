@@ -18,7 +18,8 @@ from applications.services import change_status_of_application_to_create_company
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS
-from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser, IsStaffPermission
+from utils.permissions import IsAssistantMarketingOrSuperuser, IsOwnerOrSuperuser, IsStaffPermission, \
+    SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
 
 
@@ -104,33 +105,35 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class TestApplicationView(CreateModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
-    permission_classes = (IsStaffPermission,)
+class CreateTestApplicationView(CreateModelMixin, GenericViewSet):
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
     queryset = TestApplication.objects.all()
-    filter_backends = (SearchFilter, DjangoFilterBackend)
-    search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
-    filterset_fields = ('status',)
-    http_method_names = ['get', 'put', 'post']
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return CreateTestApplication
-        return TestApplicationModelSerializer
-
-    @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+    serializer_class = CreateTestApplication
 
     @swagger_auto_schema(request_body=CreateTestApplication)
     def create(self, request, *args, **kwargs):
         """
-        Принятие или отклонение статуса заявки на тест. TestType:
+        Типы тестов. TestType:
             ONE_HEART_PRO = 1
             TWO_BRAIN = 2
             THREE_BRAIN_PRO = 3
             FOUR_HEART = 4
         """
         return super().create(request, *args, **kwargs)
+
+
+class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
+    permission_classes = (IsStaffPermission,)
+    queryset = TestApplication.objects.all()
+    serializer_class = TestApplicationModelSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
+    filterset_fields = ('status',)
+    http_method_names = ['get', 'put']
+
+    @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=UpdateApplicationStatus)
     def update(self, request, *args, **kwargs):
