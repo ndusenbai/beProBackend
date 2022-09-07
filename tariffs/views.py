@@ -6,11 +6,12 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 
 from applications.models import TariffApplication
-from tariffs.models import Tariff
-from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, MyTariffSerializer, ChangeTariff
+from tariffs.models import Tariff, TestPrice
+from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, MyTariffSerializer, ChangeTariff, \
+    TestPriceModelSerializer
 from tariffs.services import update_tariff_application, delete_tariff, get_my_tariff, prolongate_my_tariff, \
-    change_my_tariff, deactivate_my_tariff, check_if_tariff_over_soon
-from utils.permissions import IsSuperuser, IsOwnerOrSuperuser
+    change_my_tariff, deactivate_my_tariff, check_if_tariff_over_soon, get_test_prices, update_test_price
+from utils.permissions import IsSuperuser, IsOwnerOrSuperuser, IsStaffPermission
 from utils.tools import log_exception
 
 
@@ -37,6 +38,22 @@ class TariffViewSet(ModelViewSet):
 
     def perform_destroy(self, instance):
         delete_tariff(instance)
+
+
+class TestPriceViewSet(GenericViewSet):
+    permission_classes = (IsStaffPermission,)
+    serializer_class = TestPriceModelSerializer
+    queryset = TestPrice.objects.all()
+    pagination_class = None
+
+    def get(self, request):
+        return Response(get_test_prices())
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        update_test_price(**serializer.validated_data)
+        return Response({'message': 'updated'})
 
 
 class MyTariffViewSet(GenericViewSet):

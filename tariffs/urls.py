@@ -12,4 +12,5 @@ urlpatterns = [
     path('my-tariff/', views.MyTariffViewSet.as_view({'get': 'get', 'post': 'prolongate_tariff'}), name='my-tariff'),
     path('change-tariff/', views.MyTariffViewSet.as_view({'post': 'change_tariff'}), name='change-tariff'),
     path('is-tariff-over-soon/', views.IsTariffOverSoon.as_view(), name='is-tariff-over-soon'),
+    path('test-price/', views.TestPriceViewSet.as_view({'get': 'get', 'post': 'post'}), name='test-price'),
 ] + router.urls

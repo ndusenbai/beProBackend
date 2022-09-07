@@ -6,8 +6,8 @@ from rest_framework import status
 
 from applications.models import TariffApplication, ApplicationStatus
 from companies.models import Company
-from tariffs.models import Tariff, TariffPeriod
-from tariffs.serializers import MyTariffSerializer
+from tariffs.models import Tariff, TariffPeriod, TestPrice
+from tariffs.serializers import MyTariffSerializer, TestPriceModelSerializer
 
 User = get_user_model()
 
@@ -101,3 +101,11 @@ def check_if_tariff_over_soon(owner: User) -> bool:
             return True
     else:
         return True
+
+
+def get_test_prices():
+    return TestPriceModelSerializer(TestPrice.objects.first()).data
+
+
+def update_test_price(test_one_price, test_three_price):
+    TestPrice.objects.update(test_one_price=test_one_price, test_three_price=test_three_price)

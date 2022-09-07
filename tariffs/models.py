@@ -18,3 +18,11 @@ class Tariff(BaseModel):
 
     def __str__(self):
         return f'{self.name}, QTY: {self.max_employees_qty}'
+
+
+class TestPrice(BaseModel):
+    test_one_price = models.PositiveIntegerField()
+    test_three_price = models.PositiveIntegerField()
+
+    def __str__(self):
+        return 'Test Price'

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from applications.models import ApplicationStatus
 from companies.models import Company, Role
 from companies.serializers import CompanyServiceSerializer, CompanyModelSerializer
-from tariffs.models import Tariff, TariffPeriod
+from tariffs.models import Tariff, TariffPeriod, TestPrice
 from utils.serializers import BaseSerializer
 
 
@@ -13,6 +13,13 @@ class TariffModelSerializer(serializers.ModelSerializer):
         model = Tariff
         exclude = ('created_at', 'updated_at')
         read_only_fields = ('id',)
+
+
+class TestPriceModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TestPrice
+        exclude = ('id', 'created_at', 'updated_at')
 
 
 class UpdateTariffSerializer(BaseSerializer):
