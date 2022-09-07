@@ -1465,7 +1465,7 @@ def get_percent_for_test_one(points, is_man):
     elif points_a < percent_class.feature_a_min[0]:
         percent_a = percent_class.feature_a_min[1]
     else:
-        percent_a = percent_class.feature_a[points_a]
+        percent_a = percent_class.feature_a[str(points_a)]
 
     if points_b > percent_class.feature_b_max[0]:
         percent_b = percent_class.feature_b_max[1]

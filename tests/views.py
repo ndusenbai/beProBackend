@@ -15,6 +15,7 @@ from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitT
     SubmitTestResponseSerializer
 from tests.services.tests_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation, \
     get_counters
+from tests.manual_parameters import QUERY_TEST_TYPE, QUERY_TEST_STATUS, QUERY_FINISHED_AT
 from utils.permissions import SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
 
@@ -27,6 +28,10 @@ class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyM
     search_fields = ('first_name', 'last_name', 'middle_name', 'created_at')
     filterset_fields = ('company', 'status', 'test_type', 'finished_at')
     http_method_names = ['get', 'post', 'delete']
+
+    @swagger_auto_schema(manual_parameters=[QUERY_TEST_TYPE, QUERY_TEST_STATUS, QUERY_FINISHED_AT])
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(
         request_body=CreateTestSerializer,
