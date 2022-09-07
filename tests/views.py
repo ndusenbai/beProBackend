@@ -39,9 +39,9 @@ class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyM
             links = create_test(serializer.validated_data)
             return Response(links)
         except VersionAlreadyExists as e:
-            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+            return Response({'message': str(e), 'code': 'version-already-exists'}, status.HTTP_423_LOCKED)
         except NoPaidTestException as e:
-            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+            return Response({'message': str(e), 'code': 'no-paid-tests'}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in TestViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
