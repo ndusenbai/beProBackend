@@ -71,6 +71,7 @@ class TestApplication(BaseModel):
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
     used_quantity = models.PositiveSmallIntegerField(default=0)
     status = models.IntegerField(choices=TestApplicationStatus.choices, default=TestApplicationStatus.NEW)
+    price = models.PositiveIntegerField()
 
     class Meta:
         ordering = ('-created_at',)

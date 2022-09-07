@@ -10,9 +10,9 @@ from rest_framework.viewsets import GenericViewSet
 
 from applications.models import ApplicationToCreateCompany, TariffApplication, TestApplication
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
-    CreateApplicationToCreateCompanySerializer, UpdateApplicationStatus, \
+    CreateApplicationToCreateCompanySerializer, UpdateApplicationStatusSerializer, \
     TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer, \
-    CreateTestApplication
+    CreateTestApplicationSerializer
 from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application, \
     change_status_of_test_application
 from auth_user.utils import UserAlreadyExists
@@ -37,7 +37,7 @@ class ApplicationToCreateCompanyViewSet(ListModelMixin, UpdateModelMixin, Retrie
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=UpdateApplicationStatus)
+    @swagger_auto_schema(request_body=UpdateApplicationStatusSerializer)
     def update(self, request, *args, **kwargs):
         """
         Принятие или отклонение статуса заявки на создание компании. ApplicationStatus:
@@ -46,7 +46,7 @@ class ApplicationToCreateCompanyViewSet(ListModelMixin, UpdateModelMixin, Retrie
             DECLINED = 3
         """
         try:
-            serializer = UpdateApplicationStatus(data=request.data)
+            serializer = UpdateApplicationStatusSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             change_status_of_application_to_create_company(request, self.get_object(), serializer.validated_data)
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)
@@ -87,7 +87,7 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=UpdateApplicationStatus)
+    @swagger_auto_schema(request_body=UpdateApplicationStatusSerializer)
     def update(self, request, *args, **kwargs):
         """
         Принятие или отклонение статуса заявки на продление. ApplicationStatus:
@@ -96,7 +96,7 @@ class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin
             DECLINED = 3
         """
         try:
-            serializer = UpdateApplicationStatus(data=request.data)
+            serializer = UpdateApplicationStatusSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             change_status_of_tariff_application(self.get_object(), serializer.validated_data['status'])
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)
@@ -110,7 +110,7 @@ class CreateTestApplicationView(CreateModelMixin, GenericViewSet):
     queryset = TestApplication.objects.all()
     serializer_class = TestApplicationModelSerializer
 
-    @swagger_auto_schema(request_body=CreateTestApplication)
+    @swagger_auto_schema(request_body=CreateTestApplicationSerializer)
     def create(self, request, *args, **kwargs):
         """
         Типы тестов. TestType:
@@ -135,7 +135,7 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(request_body=UpdateApplicationStatus)
+    @swagger_auto_schema(request_body=UpdateApplicationStatusSerializer)
     def update(self, request, *args, **kwargs):
         """
         Принятие или отклонение статуса заявки на тест. TestApplicationStatus:
@@ -145,7 +145,7 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
             USED = 4
         """
         try:
-            serializer = UpdateApplicationStatus(data=request.data)
+            serializer = UpdateApplicationStatusSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             change_status_of_test_application(self.get_object(), serializer.validated_data['status'])
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)

@@ -74,11 +74,12 @@ class CreateApplicationToCreateCompanySerializer(BaseSerializer):
     period = serializers.ChoiceField(choices=TariffPeriod)
 
 
-class CreateTestApplication(BaseSerializer):
+class CreateTestApplicationSerializer(BaseSerializer):
     test_type = serializers.ChoiceField(choices=TestType.choices)
     quantity = serializers.IntegerField(min_value=1)
     company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
+    price = serializers.IntegerField()
 
 
-class UpdateApplicationStatus(BaseSerializer):
+class UpdateApplicationStatusSerializer(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
