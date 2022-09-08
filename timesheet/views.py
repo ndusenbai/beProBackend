@@ -32,16 +32,9 @@ class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
         """
         Получить расписание за определенный месяц на роль
         """
-        # TODO: delete this after testing
-        if request.user.email == 'makenoverkebulan@gmail.com':
-            log_message('makenoverkebulan@gmail.com uses timesheet: start')
         serializer = TimeSheetListSerializer(data=self.request.query_params)
         serializer.is_valid(raise_exception=True)
         data = get_timesheet_by_month(**serializer.validated_data)
-        if request.user.email == 'makenoverkebulan@gmail.com':
-            log_message('makenoverkebulan@gmail.com uses timesheet: end')
-            import json
-            log_message(json.dumps(data, indent=4, sort_keys=True, default=str))
         return Response(data=data)
 
     @swagger_auto_schema(request_body=TimeSheetUpdateSerializer)
