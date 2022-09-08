@@ -31,16 +31,7 @@ def create_test(data: OrderedDict) -> dict:
         if test_app.quantity == test_app.used_quantity:
             test_app.status = TestApplicationStatus.USED
         test_app.save()
-
-    encoded_test_id = urlsafe_base64_encode(force_bytes(test.id))
-    link = f'{settings.CURRENT_SITE}/test/registration/{encoded_test_id}/'
-    whatsapp_text = quote_plus(f'Для прохождения теста перейдите по ссылке:\n{link}')
-    whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
-    return {
-        'link': link,
-        'whatsapp_link': whatsapp_link,
-        'uid': encoded_test_id,
-    }
+    return generate_test_links(test=test)
 
 
 def get_test_application(data: OrderedDict) -> TestApplication | None:
@@ -170,4 +161,19 @@ def get_counters(company_id: int) -> dict:
         'available_tests_1': available_tests_1,
         'current_tests_3': current_tests_3,
         'available_tests_3': available_tests_3,
+    }
+
+
+def generate_test_links(test: Test = None, test_id: int = None) -> dict:
+    if test_id is not None:
+        test = Test.objects.get(id=test_id)
+
+    uid = urlsafe_base64_encode(force_bytes(test.id))
+    link = f'{settings.CURRENT_SITE}/test/registration/{uid}/'
+    whatsapp_text = quote_plus(f'Для прохождения теста перейдите по ссылке:\n{link}')
+    whatsapp_link = f'https://wa.me/{test.phone_number}?text={whatsapp_text}'
+    return {
+        'link': link,
+        'whatsapp_link': whatsapp_link,
+        'uid': uid,
     }

@@ -73,7 +73,7 @@ class ApplicationToCreateCompanyCreateViewSet(CreateModelMixin, GenericViewSet):
 
 
 class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
-    permission_classes = (IsOwnerOrSuperuser,)
+    permission_classes = (IsAssistantMarketingOrSuperuser,)
     queryset = TariffApplication.objects.order_by('-created_at')
     filterset_fields = ('status', 'owner')
     http_method_names = ['get', 'put']

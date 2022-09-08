@@ -14,7 +14,7 @@ from tests.models import Test
 from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer, \
     SubmitTestResponseSerializer
 from tests.services.tests_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation, \
-    get_counters
+    get_counters, generate_test_links
 from tests.manual_parameters import QUERY_TEST_TYPE, QUERY_TEST_STATUS, QUERY_FINISHED_AT
 from utils.permissions import SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
@@ -92,6 +92,13 @@ class DecodeIDViewSet(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response({'uid': test_id_encode(kwargs['id'])})
+
+
+class TestLinksView(APIView):
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+
+    def get(self, request, *args, **kwargs):
+        return Response(generate_test_links(test_id=kwargs['id']))
 
 
 class TestCountersViewSet(APIView):
