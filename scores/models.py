@@ -20,7 +20,7 @@ class Score(models.Model):
     role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, related_name='scores')
     name = models.CharField(max_length=255)
     points = models.SmallIntegerField()
-    created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
 
