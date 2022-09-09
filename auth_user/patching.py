@@ -39,7 +39,7 @@ class PatchedAPIView(OriginalAPIView):
 
         return ''
 
-    def check_if_statistic_disabled(self, request, company_services):
+    def check_if_analytics_disabled(self, request, company_services):
         analytics_urls = [
             '/api/tariffs/list-tariff/',
             '/api/user-statistic/',
@@ -49,7 +49,8 @@ class PatchedAPIView(OriginalAPIView):
             '/api/create-user-stat/',
             '/api/change-user-stat/',
             '/api/pdf/generate-stat/',
-            '/api/pdf/generate-history-stat/'
+            '/api/pdf/generate-history-stat/',
+            '/api/month-scores/',
         ]
 
         for url in analytics_urls:
@@ -84,7 +85,7 @@ class PatchedAPIView(OriginalAPIView):
         except CompanyService.DoesNotExist:
             return f'Нужно создать CompanyService для company_id={request.user.selected_company_id}'
 
-        is_statistic_disabled = self.check_if_statistic_disabled(request, company_services)
+        is_statistic_disabled = self.check_if_analytics_disabled(request, company_services)
         if is_statistic_disabled:
             return is_statistic_disabled
 
