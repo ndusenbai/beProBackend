@@ -103,7 +103,7 @@ class CheckOutViewSet(CreateModelMixin, GenericViewSet):
             serializer.is_valid(raise_exception=True)
             result = create_check_out_timesheet(request.user.role, serializer.validated_data)
             if result is False:
-                return Response({'message': 'Нужно сделать check in заново'}, status=status.HTTP_423_LOCKED)
+                return Response({'message': 'Нужно сделать check in заново', 'code': 're_check_in'}, status=status.HTTP_423_LOCKED)
             return Response({'message': 'created'})
         except FillUserStatistic as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
