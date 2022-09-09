@@ -16,8 +16,7 @@ from timesheet.services import create_check_in_timesheet, get_last_timesheet_act
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
-from utils.tools import log_exception
-
+from utils.tools import log_exception, log_message
 
 User = get_user_model()
 

@@ -1,5 +1,5 @@
 from calendar import monthrange
-from datetime import date, timedelta, timezone
+from datetime import date, timedelta, timezone, datetime
 from typing import OrderedDict
 
 import geopy.distance
@@ -267,7 +267,8 @@ def handle_check_out_absent_days(role: Role, data: dict) -> bool:
     today = data['check_out'].astimezone(timezone.utc).date()
 
     if last_timesheet.day != today:
-        if not last_timesheet.check_out and not last_timesheet.debug_comment:
+        if last_timesheet.check_in and not last_timesheet.check_out and not last_timesheet.debug_comment:
+            check_statistics(role, last_timesheet.day)
             last_timesheet.check_out = '23:59'
             last_timesheet.save()
 
@@ -294,12 +295,15 @@ def handle_check_out_absent_days(role: Role, data: dict) -> bool:
     return True
 
 
-def check_statistics(role: Role, check_out_date) -> None:
+def check_statistics(role: Role, _date: datetime | date) -> None:
+    if isinstance(_date, datetime):
+        _date = _date.date()
+
     department = role.department
     stats = Statistic.objects.filter(Q(department=department) | Q(role=role))
 
     for stat in stats:
-        if not UserStatistic.objects.filter(role=role, statistic=stat, day=check_out_date.date()).exists():
+        if not UserStatistic.objects.filter(role=role, statistic=stat, day=_date).exists():
             raise FillUserStatistic()
 
 
