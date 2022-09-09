@@ -270,6 +270,7 @@ def handle_check_out_absent_days(role: Role, data: dict) -> bool:
         if last_timesheet.check_in and not last_timesheet.check_out and not last_timesheet.debug_comment:
             check_statistics(role, last_timesheet.day)
             last_timesheet.check_out = '23:59'
+            last_timesheet.debug_comment = 'Automatically filled check_in within create_check_out_timesheet()'
             last_timesheet.save()
 
         first_absent_day = last_timesheet.day + timedelta(days=1)
