@@ -15,6 +15,7 @@ class TariffApplicationSerializer(serializers.ModelSerializer):
     owner = UserModelSerializer(required=False)
     period = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
+    status_decoded = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TariffApplication
@@ -32,12 +33,22 @@ class TariffApplicationSerializer(serializers.ModelSerializer):
         elif instance.period == TariffPeriod.YEARLY:
             return instance.tariff.year_price
 
+    def get_status_decoded(self, instance):
+        return ApplicationStatus.get_status(instance.status)
+
 
 class TariffApplicationRetrieveSerializer(TariffApplicationSerializer):
     services = serializers.SerializerMethodField()
 
     def get_services(self, instance):
         return CompanyServiceSerializer(instance.owner.selected_company.service).data
+
+
+class TariffApplicationRetrieveLightSerializer(TariffApplicationRetrieveSerializer):
+    owner = serializers.SerializerMethodField()
+
+    def get_owner(self, instance):
+        return None
 
 
 class TestApplicationModelSerializer(serializers.ModelSerializer):

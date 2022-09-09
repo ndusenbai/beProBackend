@@ -241,7 +241,7 @@ def update_user_profile(user, serializer):
     return serializer.data, 200
 
 
-def update_user(instance: User, data) -> OrderedDict:
+def update_user(instance: User, data) -> None:
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()

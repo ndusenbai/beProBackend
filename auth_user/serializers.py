@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from django.contrib.auth import password_validation, get_user_model
 
+from applications.models import TariffApplication, ApplicationStatus
 from companies.models import Company
 from utils.serializers import BaseSerializer
 
@@ -121,6 +122,17 @@ class OwnerCompanySerializer(BaseSerializer):
 
 class OwnerRetrieveSerializer(OwnerSerializer):
     selected_company = OwnerCompanySerializer()
+    tariff_info = serializers.SerializerMethodField()
+
+    def get_tariff_info(self, instance):
+        try:
+            from applications.serializers import TariffApplicationRetrieveLightSerializer
+
+            tariff_app = TariffApplication.objects.filter(owner=instance, status=ApplicationStatus.ACCEPTED)\
+                .order_by('-created_at').first()
+            return TariffApplicationRetrieveLightSerializer(tariff_app).data
+        except:
+            return {}
 
 
 class UserProfileSerializer(BaseSerializer):
