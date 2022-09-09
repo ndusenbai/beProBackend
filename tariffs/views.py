@@ -1,9 +1,9 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_yasg.utils import swagger_auto_schema
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from applications.models import TariffApplication
 from tariffs.models import Tariff, TestPrice
@@ -11,7 +11,7 @@ from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, M
     TestPriceModelSerializer
 from tariffs.services import update_tariff_application, delete_tariff, get_my_tariff, prolongate_my_tariff, \
     change_my_tariff, deactivate_my_tariff, check_if_tariff_over_soon, get_test_prices, update_test_price
-from utils.permissions import IsSuperuser, IsOwnerOrSuperuser, IsStaffPermission
+from utils.permissions import IsSuperuser, IsOwnerOrSuperuser, TestPricePermission
 from utils.tools import log_exception
 
 
@@ -41,7 +41,7 @@ class TariffViewSet(ModelViewSet):
 
 
 class TestPriceViewSet(GenericViewSet):
-    permission_classes = (IsStaffPermission,)
+    permission_classes = (TestPricePermission,)
     serializer_class = TestPriceModelSerializer
     queryset = TestPrice.objects.all()
     pagination_class = None

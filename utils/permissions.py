@@ -328,3 +328,16 @@ class IsStaffPermission(BasePermission):
             return True
 
         return False
+
+
+class TestPricePermission(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        is_staff = IsStaffPermission().has_permission(request, view)
+        is_owner_or_hr = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
+        if is_staff or is_owner_or_hr:
+            return True
+
+        return False
