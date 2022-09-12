@@ -1,9 +1,9 @@
 from typing import OrderedDict
 
-from django.db.transaction import atomic
-from django.db.models import Count, Prefetch
 from django.contrib.auth import get_user_model
+from django.db.models import Count, Prefetch
 from django.db.models.query import QuerySet
+from django.db.transaction import atomic
 from rest_framework import status
 
 from auth_user.services import User
@@ -32,7 +32,8 @@ def create_company(user: User, data) -> None:
         company=company,
     )
     department_schedule = [
-        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in range(0, 5)
+        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in
+        range(0, 5)
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
 
@@ -83,6 +84,14 @@ def update_department(instance: Department, data) -> None:
     DepartmentSchedule.objects.filter(department=instance).delete()
     bulk_create_department_schedules(instance, data.pop('schedules'))
 
+    head_of_department_changed = data['head_of_department_id'] is not None and \
+                                 data['head_of_department_id'] != instance.head_of_department_id
+
+    if head_of_department_changed:
+        Role.objects.filter(id=data['head_of_department_id']).update(role=RoleChoices.HEAD_OF_DEPARTMENT)
+        if instance.head_of_department_id:
+            Role.objects.filter(id=instance.head_of_department_id).update(role=RoleChoices.EMPLOYEE)
+
     for key, value in data.items():
         setattr(instance, key, value)
     instance.save()
@@ -100,20 +109,20 @@ def bulk_create_department_schedules(department: Department, schedules: list) ->
 
 
 def get_departments_qs() -> QuerySet[Department]:
-    return Department.objects.filter(company__is_deleted=False)\
+    return Department.objects.filter(company__is_deleted=False) \
         .annotate(employees_count=Count('roles')) \
-        .prefetch_related(Prefetch('department_schedules', to_attr='schedules'))\
+        .prefetch_related(Prefetch('department_schedules', to_attr='schedules')) \
         .order_by('id')
 
 
 def get_company_qs() -> QuerySet[Company]:
-    return Company.objects.filter(is_deleted=False)\
+    return Company.objects.filter(is_deleted=False) \
         .annotate(employees_count=Count('roles')).order_by('id')
 
 
 def get_employee_list():
-    return Role.objects.exclude(role=RoleChoices.OBSERVER)\
-        .annotate(score=GetScoreForRole('companies_role.id'))\
+    return Role.objects.exclude(role=RoleChoices.OBSERVER) \
+        .annotate(score=GetScoreForRole('companies_role.id')) \
         .prefetch_related(Prefetch('employee_schedules', to_attr='schedules'))
 
 
