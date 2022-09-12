@@ -139,6 +139,11 @@ def create_employee(data: dict) -> None:
     if department.company.is_active:
         try:
             employee = User.objects.get(email=data['email'])
+            User.objects.filter(email=data['email']).update(
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+                middle_name=data['middle_name'],
+            )
         except User.DoesNotExist:
             employee = User.objects.create_user(**data)
         role = Role.objects.create(
