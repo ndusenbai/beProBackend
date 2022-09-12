@@ -61,20 +61,20 @@ def create_department(user: User, data: dict) -> None:
         title = data['head_of_department'].pop('title')
         grade = data['head_of_department'].pop('grade')
         try:
-            head_of_department = User.objects.get(email=data['head_of_department']['email'])
+            head_of_department_user = User.objects.get(email=data['head_of_department']['email'])
         except User.DoesNotExist:
             data['head_of_department']['selected_company_id'] = department.company_id
-            head_of_department = User.objects.create_user(**data['head_of_department'])
+            head_of_department_user = User.objects.create_user(**data['head_of_department'])
         head_of_department_role = Role.objects.create(
             company=user.selected_company,
             department=department,
             role=RoleChoices.HEAD_OF_DEPARTMENT,
-            user=head_of_department,
+            user=head_of_department_user,
             title=title,
             grade=grade,
         )
         create_employee_schedules(head_of_department_role, schedules)
-        department.head_of_department = head_of_department
+        department.head_of_department = head_of_department_role
         department.save()
 
 

@@ -87,8 +87,24 @@ class UpdateDepartmentSerializer(BaseSerializer):
     head_of_department_id = serializers.IntegerField(allow_null=True)
 
 
+class HeadOfDepartmentSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    last_name = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    middle_name = serializers.SerializerMethodField()
+
+    def get_last_name(self, instance):
+        return instance.user.last_name
+
+    def get_first_name(self, instance):
+        return instance.user.first_name
+
+    def get_middle_name(self, instance):
+        return instance.user.middle_name
+
+
 class DepartmentList2Serializer(DepartmentSerializer):
-    head_of_department = UserModelSerializer()
+    head_of_department = HeadOfDepartmentSerializer()
     today_schedule = serializers.SerializerMethodField()
     employees_count = serializers.IntegerField()
     is_hr = serializers.BooleanField()
