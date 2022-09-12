@@ -341,3 +341,17 @@ class TestPricePermission(BasePermission):
             return True
 
         return False
+
+
+class TestApplicationPermission(BasePermission):
+    def has_permission(self, request, view):
+        is_staff = IsStaffPermission().has_permission(request, view)
+        if is_staff:
+            return True
+
+        if view.action == 'list':
+            is_owner_or_hr = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
+            if is_owner_or_hr:
+                return True
+
+        return False

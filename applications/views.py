@@ -19,7 +19,7 @@ from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS
 from utils.permissions import IsAssistantMarketingOrSuperuser, IsStaffPermission, \
-    SuperuserOrOwnerOrHRPermission
+    SuperuserOrOwnerOrHRPermission, TestApplicationPermission
 from utils.tools import log_exception
 
 
@@ -123,7 +123,7 @@ class CreateTestApplicationView(CreateModelMixin, GenericViewSet):
 
 
 class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
-    permission_classes = (IsStaffPermission,)
+    permission_classes = (TestApplicationPermission,)
     queryset = TestApplication.objects.all()
     serializer_class = TestApplicationModelSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
