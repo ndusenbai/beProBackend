@@ -17,13 +17,13 @@ from utils.tools import log_exception
 
 class ListTariffViewSet(ListModelMixin, GenericViewSet):
     serializer_class = TariffModelSerializer
-    queryset = Tariff.objects.filter(is_active=True)
+    queryset = Tariff.objects.filter(is_active=True).order_by('max_employees_qty')
 
 
 class TariffViewSet(ModelViewSet):
     permission_classes = (IsSuperuser,)
     serializer_class = TariffModelSerializer
-    queryset = Tariff.objects.filter(is_active=True)
+    queryset = Tariff.objects.filter(is_active=True).order_by('max_employees_qty')
 
     @swagger_auto_schema(request_body=UpdateTariffSerializer)
     def update(self, request, *args, **kwargs):
