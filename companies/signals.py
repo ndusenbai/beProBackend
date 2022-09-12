@@ -33,6 +33,8 @@ def check_employees_qty_in_tariff(role):
     owner = role.company.owner
     tariff_application = TariffApplication.objects \
         .filter(status=ApplicationStatus.ACCEPTED, owner=owner).order_by('-end_date').first()
+    if not tariff_application:
+        raise Exception('Создайте заявку на продление для компании')
     max_employees_qty = tariff_application.tariff.max_employees_qty
 
     owner_companies = Company.objects.filter(owner=owner).values_list('id', flat=True)

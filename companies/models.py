@@ -39,7 +39,7 @@ class Department(BaseModel):
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     is_hr = models.BooleanField(default=False)
     radius = models.IntegerField(default=50)
-    head_of_department = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, blank=True)
+    head_of_department = models.ForeignKey(to='companies.Role', on_delete=models.SET_NULL, null=True, blank=True, related_name='head_departments')
 
     class Meta:
         constraints = [

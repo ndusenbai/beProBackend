@@ -76,6 +76,7 @@ class DepartmentViewSet(ModelViewSet):
         except Exception as e:
             if type(e.args[0]) == dict and e.args[0]['status'] == 400:
                 return Response({'message': e.args[0]['message']}, status=e.args[0]['status'])
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({'message': 'created'})
 
     @swagger_auto_schema(manual_parameters=[QUERY_COMPANY])
