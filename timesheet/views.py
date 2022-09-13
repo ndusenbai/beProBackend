@@ -1,22 +1,23 @@
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db import IntegrityError
+from rest_framework.viewsets import GenericViewSet
+
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
     VacationTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month
-from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic
+from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
-from utils.tools import log_exception, log_message
+from utils.tools import log_exception
 
 User = get_user_model()
 
@@ -68,6 +69,8 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
             create_check_in_timesheet(request.user.role, serializer.validated_data)
             return Response({'message': 'created'})
         except EmployeeTooFarFromDepartment as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
+        except CheckInAlreadyExistsException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except EmployeeSchedule.DoesNotExist:
             return Response({'message': "Сегодня нерабочий день"}, status.HTTP_423_LOCKED)

@@ -12,3 +12,11 @@ class FillUserStatistic(Exception):
 
     def __str__(self):
         return self.txt
+
+
+class CheckInAlreadyExistsException(Exception):
+    def __init__(self):
+        self.txt = 'Сначала сделайте check out'
+
+    def __str__(self):
+        return self.txt
