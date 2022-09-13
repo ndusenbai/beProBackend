@@ -4,7 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
@@ -13,10 +13,12 @@ from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
-    ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer
+    ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer, \
+    RetrieveCompanyServiceSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
-    delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, update_company_services
+    delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
+    update_company_services, get_qs_retrieve_company_services
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
     IsOwnerOrSuperuser
@@ -42,6 +44,20 @@ class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
         except Exception as e:
             log_exception(e, 'Error in CompanyServiceViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RetrieveCompanyServiceViewSet(RetrieveModelMixin, GenericViewSet):
+    permission_classes = (IsOwnerOrSuperuser,)
+    serializer_class = RetrieveCompanyServiceSerializer
+
+    def get_queryset(self):
+        return get_qs_retrieve_company_services()
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = queryset.get(pk=self.kwargs['company_id'])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class CompanyViewSet(ModelViewSet):

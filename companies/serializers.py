@@ -241,3 +241,9 @@ class ObserverUpdateSerializer(BaseSerializer):
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
     middle_name = serializers.CharField(max_length=50, allow_blank=True)
+
+
+class RetrieveCompanyServiceSerializer(BaseSerializer):
+    analytics_enabled = serializers.BooleanField()
+    time_tracking_enabled = serializers.BooleanField()
+    tests_enabled = serializers.BooleanField()

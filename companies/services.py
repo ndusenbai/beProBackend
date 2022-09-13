@@ -1,7 +1,7 @@
 from typing import OrderedDict
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, F
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
 from rest_framework import status
@@ -246,3 +246,11 @@ def update_company_services(data: dict) -> None:
         for key, value in company_service.items():
             setattr(instance, key, value)
         instance.save()
+
+
+def get_qs_retrieve_company_services():
+    return Company.objects.all().annotate(
+        analytics_enabled=F('service__analytics_enabled'),
+        time_tracking_enabled=F('service__time_tracking_enabled'),
+        tests_enabled=F('service__tests_enabled'),
+    )
