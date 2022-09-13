@@ -19,7 +19,7 @@ class TestOneSerializer(BaseSerializer):
 
 
 class TestTwoSerializer(BaseSerializer):
-    answers = serializers.ListField(child=serializers.CharField())
+    answers = serializers.ListField(child=serializers.CharField(allow_blank=True))
     version = serializers.ChoiceField(choices=TestTwoVersion.choices)
     is_man = serializers.BooleanField()
 
