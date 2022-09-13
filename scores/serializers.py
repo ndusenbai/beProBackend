@@ -9,6 +9,8 @@ User = get_user_model()
 
 
 class ReasonSerializer(serializers.ModelSerializer):
+    score = serializers.IntegerField(min_value=-100, max_value=100)
+
     class Meta:
         model = Reason
         fields = "__all__"
