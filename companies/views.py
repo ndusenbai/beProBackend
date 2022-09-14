@@ -1,13 +1,13 @@
-from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.filters import SearchFilter
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter
 from rest_framework.serializers import ValidationError
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
@@ -21,7 +21,7 @@ from companies.services import update_department, create_company, create_departm
     update_company_services, get_qs_retrieve_company_services
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
-    IsOwnerOrSuperuser
+    IsOwnerOrSuperuser, SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
 
 User = get_user_model()
@@ -47,7 +47,7 @@ class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
 
 class RetrieveCompanyServiceViewSet(RetrieveModelMixin, GenericViewSet):
-    permission_classes = (IsOwnerOrSuperuser,)
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
     serializer_class = RetrieveCompanyServiceSerializer
 
     def get_queryset(self):
