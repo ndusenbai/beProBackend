@@ -100,7 +100,7 @@ def check_if_tariff_over_soon(owner: User) -> bool:
         else:
             return True
     else:
-        return True
+        return False
 
 
 def get_test_prices():
