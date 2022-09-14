@@ -128,7 +128,7 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TestApplicationModelSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
-    filterset_fields = ('status',)
+    filterset_fields = ('status', 'company')
     http_method_names = ['get', 'put']
 
     @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])

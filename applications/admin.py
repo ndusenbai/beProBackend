@@ -15,6 +15,7 @@ class ApplicationToCreateCompanyAdmin(admin.ModelAdmin):
 class TariffApplicationAdmin(admin.ModelAdmin):
     list_display = ('id', 'tariff', 'owner', 'start_date', 'end_date', 'status')
     raw_id_fields = ('tariff', 'owner')
+    search_fields = ('owner__email',)
 
 
 @admin.register(TestApplication)
