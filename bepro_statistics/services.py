@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
-from companies.models import Role, RoleChoices
+from companies.models import Role
 from timesheet.models import TimeSheet, TimeSheetChoices
 
 User = get_user_model()

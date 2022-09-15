@@ -177,3 +177,30 @@ def generate_test_links(test: Test = None, test_id: int = None) -> dict:
         'whatsapp_link': whatsapp_link,
         'uid': uid,
     }
+
+
+def generate_test_pdf(test_id: int) -> str:
+    # TODO: finish this function
+    from django.template.loader import get_template
+    from weasyprint import HTML
+    from django.utils import timezone
+
+    test = Test.objects.get(id=test_id)
+    context = {'a': 'qweqwe'}
+    template = get_template('test_4_to_pdf.html')
+    html_pdf = template.render(context)
+
+    unique_name = timezone.now().strftime("%y-%m-%d-%H-%M-%S") + f'test_id_{test_id}'
+    pdf_file_name = ''
+    match test.test_type:
+        case 1:
+            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+        case 2:
+            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+        case 3:
+            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+        case 4:
+            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+
+    HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
+    return f'{settings.CURRENT_SITE}/{pdf_file_name}'

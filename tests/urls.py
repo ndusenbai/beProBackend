@@ -13,5 +13,6 @@ urlpatterns = [
     path('tests/<str:uid>/send-email/', views.SendEmailViewSet.as_view(), name='send-email'),
     path('tests/<int:id>/encode/', views.DecodeIDViewSet.as_view(), name='decode-id'),
     path('tests/<int:id>/links/', views.TestLinksView.as_view(), name='test-links'),
+    path('tests/<int:id>/download/', views.TestDownloadView.as_view(), name='test-download'),
     path('tests/<int:company_id>/paid/', views.TestCountersViewSet.as_view(), name='counters'),
 ] + router.urls
