@@ -365,7 +365,7 @@ def create_vacation(data: OrderedDict):
     if TimeSheet.objects.filter(day=data['start_vacation_date'], role_id=data['role']).exists():
         return {'message': 'У этого сотрудника уже есть статус check_in на указанный промежуток.'}, 400
 
-    if data['start_vacation_date'] >= data['end_vacation_date']:
+    if data['start_vacation_date'] > data['end_vacation_date']:
         return {'message': 'Дата начала отпуска не может быть позже или равным, чем дата окончания отпуска'}, 400
 
     return bulk_create_vacation_timesheets(data)

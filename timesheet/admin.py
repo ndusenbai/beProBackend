@@ -20,5 +20,6 @@ class EmployeeScheduleAdmin(admin.ModelAdmin):
 class TimeSheetAdmin(admin.ModelAdmin):
     list_display = ('id', 'role', 'day', 'status', 'time_from', 'time_to', 'check_in', 'check_out', 'comment', 'debug_comment')
     search_fields = ('role__user__email', 'debug_comment')
+    list_filter = ('status',)
     raw_id_fields = ('role',)
     date_hierarchy = 'day'
