@@ -105,14 +105,16 @@
 <body>
 <div class="test">
     <div class="test__card">
-        <div class="test__card-header">Маркенов Еркебулан</div>
+        <div class="test__card-header">{{ test_participant }}</div>
         <div class="test__card-suptitle">Результаты</div>
         <div class="test__card-suptitle blue--text">Тест Сердце PRO</div>
+
         <div class="test-chart__wrap">
             <div class="test-chart__scale">
                 <img src="{{ test_chart }}" alt="" />
             </div>
 
+            <!-- TEST A CHARACTERISTIC -->
             <div class="test-chart">
                 <div class="test-chart__title">Стабильность</div>
                 <div class="test-chart__result">
@@ -120,12 +122,13 @@
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="green" style="height: 20%; background: green;"></div>
+                        <div style="height: {{ height.A }}; background: {{ color.A }};"></div>
                     </div>
                 </div>
                 <div class="test-chart__title">Рассеянность</div>
             </div>
 
+            <!-- TEST B CHARACTERISTIC -->
             <div class="test-chart">
                 <div class="test-chart__title">Счастье</div>
                 <div class="test-chart__result">
@@ -133,178 +136,166 @@
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.B }}; background: {{ color.B }};"></div>
                     </div>
                 </div>
                 <div class="test-chart__title">Депрессия</div>
             </div>
         </div>
+
         <div class="test-chart__wrap">
             <div class="test-chart__scale">
                 <img src="{{ test_chart }}" alt="" />
             </div>
 
+            <!-- TEST C CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__title">Самообладание</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.C }}; background: {{ color.C }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Рассеянность</div>
+                <div class="test-chart__title">Нервозность</div>
             </div>
 
+            <!-- TEST D CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__title">Уверенность</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.D }}; background: {{ color.D }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Депрессия</div>
+                <div class="test-chart__title">Неуверенность</div>
             </div>
         </div>
+
         <div class="test-chart__wrap">
             <div class="test-chart__scale">
                 <img src="{{ test_chart }}" alt="" />
             </div>
 
+            <!-- TEST E CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__title">Активность</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.E }}; background: {{ color.E }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Рассеянность</div>
+                <div class="test-chart__title">Пассивность</div>
             </div>
 
+            <!-- TEST F CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__title">Настойчивость</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.F }}; background: {{ color.F }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Депрессия</div>
+                <div class="test-chart__title">Безволие</div>
             </div>
         </div>
+
         <div class="test-chart__wrap">
             <div class="test-chart__scale">
                 <img src="{{ test_chart }}" alt="" />
             </div>
 
+            <!-- TEST G CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__title">Способность быть причиной</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.G }}; background: {{ color.G }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Рассеянность</div>
+                <div class="test-chart__title">Безответственность</div>
             </div>
 
+            <!-- TEST H CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__title">Правильность оценки</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.H }}; background: {{ color.H }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Депрессия</div>
+                <div class="test-chart__title">Критичность</div>
             </div>
         </div>
+
         <div class="test-chart__wrap">
             <div class="test-chart__scale">
                 <img src="{{ test_chart }}" alt="" />
             </div>
 
+            <!-- TEST I CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__title">Чуткость</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.I }}; background: {{ color.I }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Рассеянность</div>
+                <div class="test-chart__title">Неотзывчивость</div>
             </div>
 
+            <!-- TEST J CHARACTERISTIC -->
             <div class="test-chart">
-                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__title">Общительность</div>
                 <div class="test-chart__result">
                     <div class="test-chart__img">
                         <img src="{{ test_human }}" alt="" />
                     </div>
                     <div class="test-chart__bg">
-                        <div class="red" style="height: 50%"></div>
+                        <div style="height: {{ height.J }}; background: {{ color.J }};"></div>
                     </div>
                 </div>
-                <div class="test-chart__title">Депрессия</div>
+                <div class="test-chart__title">Необщительность</div>
             </div>
         </div>
+
+
         <div class="test-chart__header">Характеристика</div>
-        <div class="test-chart__description">
-          <span>
-            A4: У данного человека в основном нестабильный характер. У него
-            время от времени плохая память и ему бывает трудно сосредоточиться
-            на текущих делах, или же его внимание может быть навязчиво
-            зафиксировано на чём-то. Порой его легко внушить, поэтому его
-            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
-            понять, так как он импульсивен.
-          </span>
-        </div>
-        <div class="test-chart__description">
-          <span>
-            B4: У данного человека в основном нестабильный характер. У него
-            время от времени плохая память и ему бывает трудно сосредоточиться
-            на текущих делах, или же его внимание может быть навязчиво
-            зафиксировано на чём-то. Порой его легко внушить, поэтому его
-            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
-            понять, так как он импульсивен.
-          </span>
-        </div>
+        {% for characteristic in characteristics %}
+            <div class="test-chart__description">
+              <span>
+                {{ characteristic }}
+              </span>
+            </div>
+        {% endfor %}
         <div class="test-chart__header">ЗАКЛЮЧЕНИЕ ПО ГРАФИКУ</div>
-        <div class="test-chart__description">
-          <span>
-            A4: У данного человека в основном нестабильный характер. У него
-            время от времени плохая память и ему бывает трудно сосредоточиться
-            на текущих делах, или же его внимание может быть навязчиво
-            зафиксировано на чём-то. Порой его легко внушить, поэтому его
-            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
-            понять, так как он импульсивен.
-          </span>
-        </div>
-        <div class="test-chart__description">
-          <span>
-            B4: У данного человека в основном нестабильный характер. У него
-            время от времени плохая память и ему бывает трудно сосредоточиться
-            на текущих делах, или же его внимание может быть навязчиво
-            зафиксировано на чём-то. Порой его легко внушить, поэтому его
-            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
-            понять, так как он импульсивен.
-          </span>
-        </div>
+        {% for conclusion in conclusions %}
+            <div class="test-chart__description">
+              <span>
+                {{ conclusion }}
+              </span>
+            </div>
+        {% endfor %}
     </div>
 </div>
 </body>

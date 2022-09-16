@@ -1,12 +1,16 @@
-from urllib.parse import quote_plus
+import os
 from typing import OrderedDict
+from urllib.parse import quote_plus
 
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.utils.timezone import now
 from django.conf import settings
-from django.db.transaction import atomic
 from django.db.models import F, Sum
+from django.db.transaction import atomic
+from django.template.loader import get_template
+from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.timezone import now
+from weasyprint import HTML
 
 from applications.models import TestApplication, TestApplicationStatus
 from auth_user.tasks import send_email
@@ -14,10 +18,10 @@ from tests.exceptions import VersionAlreadyExists, TestAlreadyFinished, NoEmailT
     TestAlreadyFinishedEmailException, NoPaidTestException
 from tests.models import Test, TestType, TestStatus
 from tests.serializers import TestOneSerializer, TestTwoSerializer, TestThreeSerializer, TestFourSerializer
-from tests.services.test_one import process_test_one
-from tests.services.test_two import process_test_two
-from tests.services.test_three import process_test_three
 from tests.services.test_four import process_test_four
+from tests.services.test_one import process_test_one
+from tests.services.test_three import process_test_three
+from tests.services.test_two import process_test_two
 
 
 @atomic
@@ -180,33 +184,92 @@ def generate_test_links(test: Test = None, test_id: int = None) -> dict:
 
 
 def generate_test_pdf(test_id: int) -> str:
-    # TODO: finish this function
-    from django.template.loader import get_template
-    from weasyprint import HTML
-    from django.utils import timezone
-    from django.conf import settings
-    import os
-
     test = Test.objects.get(id=test_id)
-    path = 'file://' + os.path.join(settings.BASE_DIR, 'tests', 'static', 'tests')
-    context = {
-        'test_chart': path + '/test-chart-scale.png',
-        'test_human': path + '/test-human.png',
-    }
+    if test.status != TestStatus.FINISHED:
+        raise Exception('Нельзя скачать незавершенный тест')
+
+    if test.test_type == TestType.ONE_HEART_PRO:
+        return generate_pdf_for_test_one(test)
+    elif test.test_type == TestType.TWO_BRAIN:
+        return generate_pdf_for_test_two(test)
+    elif test.test_type == TestType.THREE_BRAIN_PRO:
+        return generate_pdf_for_test_three(test)
+    elif test.test_type == TestType.FOUR_HEART:
+        return generate_pdf_for_test_four(test)
+    else:
+        raise Exception('Неверный тип теста')
+
+
+def generate_pdf_for_test_one(test: Test):
+    context = get_context_for_pdf_test_one(test)
     template = get_template('tests/test_4_html_to_pdf.html')
     html_pdf = template.render(context)
-    # return html_pdf
-    unique_name = f'test_id_{test_id}_' + timezone.now().strftime("%y-%m-%d-%H-%M-%S")
-    pdf_file_name = ''
-    match test.test_type:
-        case 1:
-            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
-        case 2:
-            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
-        case 3:
-            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
-        case 4:
-            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
+
+    unique_name = f'test_id_{test.id}_' + timezone.now().strftime("%y-%m-%d-%H-%M-%S")
+    pdf_file_name = f'tests_pdf/{unique_name}.pdf'
 
     HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
     return f'{settings.CURRENT_SITE}/{pdf_file_name}'
+
+
+def get_context_for_pdf_test_one(test: Test) -> dict:
+    path = 'file://' + os.path.join(settings.BASE_DIR, 'tests', 'static', 'tests')
+    height = {}
+    color = {}
+    characteristics = []
+    conclusions = []
+
+    for characteristic_letter, percent_value in test.result['points'].items():
+        height[characteristic_letter] = str((percent_value + 100)/2) + '%'
+        color[characteristic_letter] = get_color_for_test_one(percent_value)
+
+    for characteristic_dict in test.result['characteristics']:
+        for characteristic_title, characteristic_text in characteristic_dict.items():
+            characteristics.append(f"{characteristic_title}: {characteristic_text}")
+
+    for conclusion in test.result['conclusions']:
+        conclusions.append(f"{conclusion['name']}: {conclusion['description']}")
+
+    context = {
+        'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
+        'test_chart': path + '/test-chart-scale.png',
+        'test_human': path + '/test-human.png',
+        'height': height,
+        'color': color,
+        'characteristics': characteristics,
+        'conclusions': conclusions,
+    }
+    return context
+
+
+def get_color_for_test_one(percent):
+    if 75 <= percent <= 100:
+        return '#0E5001'
+    elif 50 <= percent < 75:
+        return '#168002'
+    elif 25 <= percent < 50:
+        return '#20A906'
+    elif 0 <= percent < 25:
+        return '#4BD730'
+    elif -25 <= percent < 0:
+        return '#FF7B7B'
+    elif -50 <= percent < -25:
+        return '#F35858'
+    elif -75 <= percent < -50:
+        return '#FA2525'
+    elif -100 <= percent < -75:
+        return '#C70404'
+
+    return 'blue'
+
+
+def generate_pdf_for_test_two(test: Test) -> str:
+    return ''
+
+
+def generate_pdf_for_test_three(test: Test) -> str:
+    return ''
+
+
+def generate_pdf_for_test_four(test: Test) -> str:
+    return ''
