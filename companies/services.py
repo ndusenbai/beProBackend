@@ -52,6 +52,7 @@ def create_department(user: User, data: dict) -> None:
         name=data['name'],
         company=user.selected_company,
         address=data['address'],
+        is_manual_address=data['is_manual_address'],
         latitude=data['latitude'],
         longitude=data['longitude'],
         radius=data['radius'],
