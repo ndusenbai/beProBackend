@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF</title>
+    <style>
+        .blue--text {
+            color: #116acc !important;
+        }
+        .test__card {
+            width: 680px;
+            background: #ffffff;
+            box-shadow: 0px 4px 32px rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px 0px;
+        }
+        .test__card-header {
+            text-align: right;
+            color: #9ca3af;
+            font-size: 16px;
+            border-bottom: 1px solid #9ca3af;
+        }
+        .test__card-suptitle {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .test-chart__wrap {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .test-chart__scale {
+            height: 309px;
+        }
+        .test-chart__scale img {
+            height: 100%;
+            object-fit: contain;
+        }
+        .test-chart__title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .test-chart__result {
+            position: relative;
+            overflow: hidden;
+            width: 169px;
+            height: 309px;
+            z-index: 2;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        .test-chart__img {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            z-index: 5;
+        }
+        .test-chart__img img {
+            width: 100%;
+            height: 100%;
+        }
+        .test-chart__bg {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            z-index: 4;
+            width: 100%;
+            height: 309px;
+            display: flex;
+            align-items: flex-end;
+        }
+        .test-chart__bg div {
+            background: red;
+            height: 50%;
+            width: 100%;
+        }
+        .test-chart__header {
+            color: #116acc;
+            font-size: 20px;
+            font-weight: 500;
+            text-transform: uppercase;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .test-chart__description {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .test-chart__description span {
+            font-size: 16px;
+            line-height: 19.2px;
+        }
+    </style>
+</head>
+<body>
+<div class="test">
+    <div class="test__card">
+        <div class="test__card-header">Маркенов Еркебулан</div>
+        <div class="test__card-suptitle">Результаты</div>
+        <div class="test__card-suptitle blue--text">Тест Сердце PRO</div>
+        <div class="test-chart__wrap">
+            <div class="test-chart__scale">
+                <img src="{{ test_chart }}" alt="" />
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="green" style="height: 20%; background: green;"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Рассеянность</div>
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Депрессия</div>
+            </div>
+        </div>
+        <div class="test-chart__wrap">
+            <div class="test-chart__scale">
+                <img src="{{ test_chart }}" alt="" />
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Рассеянность</div>
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Депрессия</div>
+            </div>
+        </div>
+        <div class="test-chart__wrap">
+            <div class="test-chart__scale">
+                <img src="{{ test_chart }}" alt="" />
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Рассеянность</div>
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Депрессия</div>
+            </div>
+        </div>
+        <div class="test-chart__wrap">
+            <div class="test-chart__scale">
+                <img src="{{ test_chart }}" alt="" />
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Рассеянность</div>
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Депрессия</div>
+            </div>
+        </div>
+        <div class="test-chart__wrap">
+            <div class="test-chart__scale">
+                <img src="{{ test_chart }}" alt="" />
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Стабильность</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Рассеянность</div>
+            </div>
+
+            <div class="test-chart">
+                <div class="test-chart__title">Счастье</div>
+                <div class="test-chart__result">
+                    <div class="test-chart__img">
+                        <img src="{{ test_human }}" alt="" />
+                    </div>
+                    <div class="test-chart__bg">
+                        <div class="red" style="height: 50%"></div>
+                    </div>
+                </div>
+                <div class="test-chart__title">Депрессия</div>
+            </div>
+        </div>
+        <div class="test-chart__header">Характеристика</div>
+        <div class="test-chart__description">
+          <span>
+            A4: У данного человека в основном нестабильный характер. У него
+            время от времени плохая память и ему бывает трудно сосредоточиться
+            на текущих делах, или же его внимание может быть навязчиво
+            зафиксировано на чём-то. Порой его легко внушить, поэтому его
+            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
+            понять, так как он импульсивен.
+          </span>
+        </div>
+        <div class="test-chart__description">
+          <span>
+            B4: У данного человека в основном нестабильный характер. У него
+            время от времени плохая память и ему бывает трудно сосредоточиться
+            на текущих делах, или же его внимание может быть навязчиво
+            зафиксировано на чём-то. Порой его легко внушить, поэтому его
+            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
+            понять, так как он импульсивен.
+          </span>
+        </div>
+        <div class="test-chart__header">ЗАКЛЮЧЕНИЕ ПО ГРАФИКУ</div>
+        <div class="test-chart__description">
+          <span>
+            A4: У данного человека в основном нестабильный характер. У него
+            время от времени плохая память и ему бывает трудно сосредоточиться
+            на текущих делах, или же его внимание может быть навязчиво
+            зафиксировано на чём-то. Порой его легко внушить, поэтому его
+            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
+            понять, так как он импульсивен.
+          </span>
+        </div>
+        <div class="test-chart__description">
+          <span>
+            B4: У данного человека в основном нестабильный характер. У него
+            время от времени плохая память и ему бывает трудно сосредоточиться
+            на текущих делах, или же его внимание может быть навязчиво
+            зафиксировано на чём-то. Порой его легко внушить, поэтому его
+            решения, суждения и мнения могут быть ненадёжными. Людям трудно его
+            понять, так как он импульсивен.
+          </span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

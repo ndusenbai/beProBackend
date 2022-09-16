@@ -184,23 +184,29 @@ def generate_test_pdf(test_id: int) -> str:
     from django.template.loader import get_template
     from weasyprint import HTML
     from django.utils import timezone
+    from django.conf import settings
+    import os
 
     test = Test.objects.get(id=test_id)
-    context = {'a': 'qweqwe'}
-    template = get_template('test_4_to_pdf.html')
+    path = 'file://' + os.path.join(settings.BASE_DIR, 'tests', 'static', 'tests')
+    context = {
+        'test_chart': path + '/test-chart-scale.png',
+        'test_human': path + '/test-human.png',
+    }
+    template = get_template('tests/test_4_html_to_pdf.html')
     html_pdf = template.render(context)
-
-    unique_name = timezone.now().strftime("%y-%m-%d-%H-%M-%S") + f'test_id_{test_id}'
+    # return html_pdf
+    unique_name = f'test_id_{test_id}_' + timezone.now().strftime("%y-%m-%d-%H-%M-%S")
     pdf_file_name = ''
     match test.test_type:
         case 1:
-            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
         case 2:
-            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
         case 3:
-            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
         case 4:
-            pdf_file_name = f'media/tests_pdf/{unique_name}.pdf'
+            pdf_file_name = f'tests_pdf/{unique_name}.pdf'
 
     HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
     return f'{settings.CURRENT_SITE}/{pdf_file_name}'
