@@ -1385,13 +1385,13 @@ class TestOne:
 
 
 def process_test_one(answers: list, is_man: bool) -> dict:
-    points, points_dict, unstables = get_points_for_test_one(answers)
-    percents = get_percent_for_test_one(points, is_man)
-    characteristic_ranges = get_characteristic_ranges_for_test_one(percents)
+    points_dict, unstables = get_points_for_test_one(answers)
+    percent_points_dict = get_percent_for_test_one(points_dict, is_man)
+    characteristic_ranges = get_characteristic_ranges_for_test_one(percent_points_dict)
     characteristics = get_characteristics_for_test_one(characteristic_ranges, unstables)
-    conclusions = get_conclusion_for_test_one(characteristic_ranges, points_dict)
+    conclusions = get_conclusion_for_test_one(characteristic_ranges, percent_points_dict)
     return {
-        'points': points_dict,
+        'points': percent_points_dict,
         'characteristics': characteristics,
         'conclusions': conclusions,
     }
@@ -1452,11 +1452,12 @@ def get_points_for_test_one(answers: list) -> tuple:
         'J': points[9],
     }
     unstables = unstable_b, unstable_e
-    return points, points_dict, unstables
+    return points_dict, unstables
 
 
-def get_percent_for_test_one(points, is_man):
-    points_a, points_b, points_c, points_d, points_e, points_f, points_g, points_h, points_i, points_j = points
+def get_percent_for_test_one(points: dict, is_man: bool):
+    points_a, points_b, points_c, points_d, points_e, points_f, points_g, points_h, points_i, points_j = \
+        points['A'], points['B'], points['C'], points['D'], points['E'], points['F'], points['G'], points['H'], points['I'], points['J']
 
     percent_class = TestOne.PercentForMan if is_man else TestOne.PercentForWoman
 
@@ -1530,11 +1531,25 @@ def get_percent_for_test_one(points, is_man):
     else:
         percent_j = percent_class.feature_j[str(points_j)]
 
-    return percent_a, percent_b, percent_c, percent_d, percent_e, percent_f, percent_g, percent_h, percent_i, percent_j
+    percent_points_dict = {
+        'A': percent_a,
+        'B': percent_b,
+        'C': percent_c,
+        'D': percent_d,
+        'E': percent_e,
+        'F': percent_f,
+        'G': percent_g,
+        'H': percent_h,
+        'I': percent_i,
+        'J': percent_j,
+    }
+
+    return percent_points_dict
 
 
-def get_characteristic_ranges_for_test_one(percents) -> dict:
-    percent_a, percent_b, percent_c, percent_d, percent_e, percent_f, percent_g, percent_h, percent_i, percent_j = percents
+def get_characteristic_ranges_for_test_one(percents: dict) -> dict:
+    percent_a, percent_b, percent_c, percent_d, percent_e, percent_f, percent_g, percent_h, percent_i, percent_j = \
+        percents['A'], percents['B'], percents['C'], percents['D'], percents['E'], percents['F'], percents['G'], percents['H'], percents['I'], percents['J']
     result = {}
 
     if TestOne.RANGE_1['min'] <= percent_a <= TestOne.RANGE_1['max']:
@@ -1875,22 +1890,22 @@ class TestOneConclusions:
     ]
 
 
-def get_conclusion_for_test_one(char_ranges: dict, points: dict) -> list:
+def get_conclusion_for_test_one(char_ranges: dict, percent_points: dict) -> list:
     if check_if_all_points_in_first_range(char_ranges):
         return []
-    if check_if_answers_are_all_random(points):
+    if check_if_answers_are_all_random(percent_points):
         return []
 
-    simple_conclusions = get_simple_conclusion_for_test_one(char_ranges, points)
-    complex_conclusions = get_complex_conclusion_for_test_one(char_ranges, points)
+    simple_conclusions = get_simple_conclusion_for_test_one(char_ranges, percent_points)
+    complex_conclusions = get_complex_conclusion_for_test_one(char_ranges, percent_points)
 
     return simple_conclusions + complex_conclusions
 
 
-def get_simple_conclusion_for_test_one(char_ranges: dict, points: dict) -> list:
+def get_simple_conclusion_for_test_one(char_ranges: dict, percent_points: dict) -> list:
     conclusions = []
 
-    if points['G'] >= 90 and points['I']:
+    if percent_points['G'] >= 90 and percent_points['I'] >= 90:
         conclusions.append(TestOneConclusions.SIMPLE[0])
 
     if char_ranges['A'] == 1 and char_ranges['B'] in [3, 4]:
