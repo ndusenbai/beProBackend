@@ -35,6 +35,7 @@ class Department(BaseModel):
     name = models.CharField(max_length=100)
     company = models.ForeignKey(to=Company, on_delete=models.CASCADE, related_name='departments')
     address = models.CharField(max_length=200, blank=True)
+    is_manual_address = models.BooleanField(default=False)
     latitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     is_hr = models.BooleanField(default=False)
