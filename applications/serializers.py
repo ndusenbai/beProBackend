@@ -94,3 +94,13 @@ class CreateTestApplicationSerializer(BaseSerializer):
 
 class UpdateApplicationStatusSerializer(BaseSerializer):
     status = serializers.ChoiceField(choices=ApplicationStatus.choices)
+
+
+class ListTestApplicationsSerializer(BaseSerializer):
+    status = serializers.ListField(child=serializers.CharField(), required=False,)
+
+    def to_internal_value(self, data):
+        if 'status' in data:
+            data = super().to_internal_value(data)
+            data['status'] = [int(i) for i in data['status'][0].split(',')]
+        return data

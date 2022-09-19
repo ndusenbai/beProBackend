@@ -12,7 +12,7 @@ from applications.models import ApplicationToCreateCompany, TariffApplication, T
 from applications.serializers import ApplicationToCreateCompanyModelSerializer, \
     CreateApplicationToCreateCompanySerializer, UpdateApplicationStatusSerializer, \
     TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer, \
-    CreateTestApplicationSerializer
+    CreateTestApplicationSerializer, ListTestApplicationsSerializer
 from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application, \
     change_status_of_test_application
 from auth_user.utils import UserAlreadyExists
@@ -128,11 +128,23 @@ class TestApplicationView(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TestApplicationModelSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('company__owner__first_name', 'company__owner__last_name', 'created_at')
-    filterset_fields = ('status', 'company')
+    filterset_fields = ('company',)
     http_method_names = ['get', 'put']
+    filter_serializer = None
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+
+        if self.filter_serializer:
+            data = self.filter_serializer.validated_data
+            if 'status' in data:
+                return queryset.filter(status__in=data['status'])
+        return queryset
 
     @swagger_auto_schema(manual_parameters=[QUERY_TEST_APPLICATIONS_STATUS])
     def list(self, request, *args, **kwargs):
+        self.filter_serializer = ListTestApplicationsSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
         return super().list(request, *args, **kwargs)
 
     @swagger_auto_schema(request_body=UpdateApplicationStatusSerializer)
