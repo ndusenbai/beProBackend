@@ -22,5 +22,5 @@ class TariffApplicationAdmin(admin.ModelAdmin):
 class TestApplicationAdmin(admin.ModelAdmin):
     list_display = ('test_type', 'company', 'used_quantity', 'quantity', 'status')
     search_fields = ('company__name', 'company__legal_name')
-    list_filter = ('test_type', 'company')
+    list_filter = ('test_type', 'status', 'company',)
     raw_id_fields = ('company',)

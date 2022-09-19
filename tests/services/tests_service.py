@@ -285,6 +285,7 @@ def delete_test(test: Test) -> None:
             company=test.company,
             status=TestApplicationStatus.ACCEPTED,
             used_quantity__lt=F('quantity'),
+            used_quantity__gt=0,
         ).order_by('-created_at')
 
         if test_app:
