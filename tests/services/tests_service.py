@@ -273,3 +273,35 @@ def generate_pdf_for_test_three(test: Test) -> str:
 
 def generate_pdf_for_test_four(test: Test) -> str:
     return ''
+
+
+def delete_test(test: Test) -> None:
+    if test.test_type in Test.FREE_TESTS:
+        return
+
+    if test.status == TestStatus.AWAIT:
+        test_app = TestApplication.objects.filter(
+            test_type=test.test_type,
+            company=test.company,
+            status=TestApplicationStatus.ACCEPTED,
+            used_quantity__lt=F('quantity'),
+        ).order_by('-created_at')
+
+        if test_app:
+            test_app = test_app.first()
+            test_app.used_quantity -= 1
+            test_app.save()
+        else:
+            test_app = TestApplication.objects.filter(
+                test_type=test.test_type,
+                company=test.company,
+                status=TestApplicationStatus.USED,
+            ).order_by('-created_at')
+
+            if test_app:
+                test_app = test_app.first()
+                test_app.status = TestApplicationStatus.ACCEPTED
+                test_app.used_quantity -= 1
+                test_app.save()
+            else:
+                raise Exception('Отсутствуют заявки на тесты')

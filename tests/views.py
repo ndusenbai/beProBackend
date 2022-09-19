@@ -14,7 +14,7 @@ from tests.models import Test
 from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitTestSerializer, \
     SubmitTestResponseSerializer
 from tests.services.tests_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation, \
-    get_counters, generate_test_links, generate_test_pdf
+    get_counters, generate_test_links, generate_test_pdf, delete_test
 from tests.manual_parameters import QUERY_TEST_TYPE, QUERY_TEST_STATUS, QUERY_FINISHED_AT
 from utils.permissions import SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
@@ -50,6 +50,10 @@ class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyM
         except Exception as e:
             log_exception(e, 'Error in TestViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def perform_destroy(self, instance):
+        delete_test(instance)
+        super().perform_destroy(instance)
 
 
 class RetrieveTestViewSet(APIView):
