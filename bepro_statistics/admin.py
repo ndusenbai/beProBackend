@@ -18,7 +18,7 @@ class StatisticObserverAdmin(admin.ModelAdmin):
 @admin.register(UserStatistic)
 class UserStatisticAdmin(admin.ModelAdmin):
     list_display = ('id', 'statistic', 'statistic_id', 'role_id', 'role', 'day', 'fact', 'statistic_type')
-    raw_id_fields = ('statistic', 'role')
+    raw_id_fields = ('statistic', 'role', 'created_by', 'updated_by')
     search_fields = ('role__user__email',)
     date_hierarchy = 'day'
 

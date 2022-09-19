@@ -270,8 +270,8 @@ def handle_check_out_timesheet(role: Role, data: dict):
 
 def handle_check_out_absent_days(role: Role, data: dict) -> bool:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
-    today = data['check_out'].astimezone(timezone.utc).date()
-    log_message('handle_check_out_absent_days')
+    today = data['check_out'].date()
+    log_message(f'handle_check_out_absent_days. role_id: {role.id}')
     log_message(f"data.check_out: {data['check_out']}")
     log_message(f"today: {today}")
     log_message(f"last_timesheet.day: {last_timesheet.day}")
