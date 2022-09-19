@@ -11,7 +11,7 @@ from tariffs.serializers import TariffModelSerializer, UpdateTariffSerializer, M
     TestPriceModelSerializer
 from tariffs.services import update_tariff_application, delete_tariff, get_my_tariff, prolongate_my_tariff, \
     change_my_tariff, deactivate_my_tariff, check_if_tariff_over_soon, get_test_prices, update_test_price
-from utils.permissions import IsSuperuser, IsOwnerOrSuperuser, TestPricePermission
+from utils.permissions import IsOwnerOrSuperuser, TestPricePermission, IsAssistantMarketingOrSuperuser
 from utils.tools import log_exception
 
 
@@ -21,7 +21,7 @@ class ListTariffViewSet(ListModelMixin, GenericViewSet):
 
 
 class TariffViewSet(ModelViewSet):
-    permission_classes = (IsSuperuser,)
+    permission_classes = (IsAssistantMarketingOrSuperuser,)
     serializer_class = TariffModelSerializer
     queryset = Tariff.objects.filter(is_active=True).order_by('max_employees_qty')
 
