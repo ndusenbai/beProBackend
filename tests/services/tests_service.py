@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db.models import F, Sum
 from django.db.transaction import atomic
 from django.template.loader import get_template
-from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.timezone import now
