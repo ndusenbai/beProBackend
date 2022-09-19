@@ -281,7 +281,18 @@ def generate_pdf_for_test_two(test: Test) -> str:
 
 
 def generate_pdf_for_test_three(test: Test) -> str:
-    return ''
+    context = {
+        'points': test.result['points'],
+        'description': test.result['description'],
+    }
+    template = get_template('tests/test_3_to_pdf.html')
+    html_pdf = template.render(context)
+
+    test_name = f'test_id_{test.id}'
+    pdf_file_name = f'tests_pdf/tests_three_brain_pro/{test_name}.pdf'
+
+    HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
+    return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
 def generate_pdf_for_test_four(test: Test) -> str:
