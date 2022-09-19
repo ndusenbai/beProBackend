@@ -202,11 +202,11 @@ def generate_test_pdf(test_id: int) -> str:
 
 def generate_pdf_for_test_one(test: Test):
     context = get_context_for_pdf_test_one(test)
-    template = get_template('tests/test_4_html_to_pdf.html')
+    template = get_template('tests/test_1_to_pdf.html')
     html_pdf = template.render(context)
 
-    unique_name = f'test_id_{test.id}_' + timezone.now().strftime("%y-%m-%d-%H-%M-%S")
-    pdf_file_name = f'tests_pdf/{unique_name}.pdf'
+    test_name = f'test_id_{test.id}'
+    pdf_file_name = f'tests_pdf/tests_one_heart_pro/{test_name}.pdf'
 
     HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
@@ -264,7 +264,20 @@ def get_color_for_test_one(percent):
 
 
 def generate_pdf_for_test_two(test: Test) -> str:
-    return ''
+    context = {
+        'points': test.result['points'],
+        'classification': test.result['classification'],
+        'percent': test.result['percent'],
+        'summary': test.result['summary'],
+    }
+    template = get_template('tests/test_2_to_pdf.html')
+    html_pdf = template.render(context)
+
+    test_name = f'test_id_{test.id}'
+    pdf_file_name = f'tests_pdf/tests_two_brain/{test_name}.pdf'
+
+    HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
+    return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
 def generate_pdf_for_test_three(test: Test) -> str:
