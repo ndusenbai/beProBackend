@@ -209,7 +209,7 @@ def generate_pdf_for_test_one(test: Test):
     pdf_file_name = f'tests_pdf/{unique_name}.pdf'
 
     HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
-    return f'{settings.CURRENT_SITE}/{pdf_file_name}'
+    return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
 def get_context_for_pdf_test_one(test: Test) -> dict:

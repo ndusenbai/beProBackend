@@ -64,6 +64,7 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
     ALTER ROLE root SET timezone TO 'UTC';
 19. GRANT ALL PRIVILEGES ON DATABASE bepro TO root;
 20. \q
+20.1 sudo apt-get install libpangocairo-1.0-0
 21. ./manage.pt migrate
 22. ./manage.py createsuperuser
 23. ./manage.py collectstatic
@@ -124,6 +125,7 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
     sudo ufw allow 'Nginx Full'
 35. apt install redis-server
 36. cd media
+36.1 mkdir tests_pdf
 37. mkdir statistics
 38. cd statistics
 39. mkdir double_stats
