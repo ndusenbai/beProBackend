@@ -296,7 +296,17 @@ def generate_pdf_for_test_three(test: Test) -> str:
 
 
 def generate_pdf_for_test_four(test: Test) -> str:
-    return ''
+    context = {
+        'characteristics': test.result['characteristics'],
+    }
+    template = get_template('tests/test_4_to_pdf.html')
+    html_pdf = template.render(context)
+
+    test_name = f'test_id_{test.id}'
+    pdf_file_name = f'tests_pdf/tests_four_heart/{test_name}.pdf'
+
+    HTML(string=html_pdf).write_pdf(settings.MEDIA_ROOT + f"/{pdf_file_name}")
+    return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
 def delete_test(test: Test) -> None:

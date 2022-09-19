@@ -118,14 +118,17 @@
     <div class="test">
       <div class="test__card">
         <div class="test__card-suptitle">Результаты</div>
-        <div class="test__card-suptitle blue--text">Тест Мозг PRO</div>
-        <div class="test__card-points">{{ points }}</div>
-        <div class="test-card__header-black">Характеристика</div>
-        <div class="test-chart__description">
-          <span>
-            {{ description }}
-          </span>
-        </div>
+        <div class="test__card-suptitle blue--text">Тест Сердце</div>
+          {% for characteristic in characteristics %}
+              <div class="test__card-points">{{ characteristic.points }}</div>
+              <div class="test-card__header-black">{{ characteristic.characteristic }}</div>
+              <div class="test-chart__description">
+                  <span>
+                    {{ characteristic.description }}
+                  </span>
+              </div>
+          {% endfor %}
+
       </div>
     </div>
   </body>
