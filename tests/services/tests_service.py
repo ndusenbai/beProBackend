@@ -225,10 +225,10 @@ def get_context_for_pdf_test_one(test: Test) -> dict:
 
     for characteristic_dict in test.result['characteristics']:
         for characteristic_title, characteristic_text in characteristic_dict.items():
-            characteristics.append(f"{characteristic_title}: {characteristic_text}")
+            characteristics.append(f"{characteristic_text}")
 
     for conclusion in test.result['conclusions']:
-        conclusions.append(f"{conclusion['name']}: {conclusion['description']}")
+        conclusions.append(f"{conclusion['description']}")
 
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
