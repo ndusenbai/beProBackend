@@ -13,6 +13,7 @@ from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.serializers import TimeSheetModelSerializer
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
+from utils.tools import log_message
 
 User = get_user_model()
 
@@ -269,8 +270,12 @@ def handle_check_out_timesheet(role: Role, data: dict):
 
 def handle_check_out_absent_days(role: Role, data: dict) -> bool:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
-    today = data['check_out'].astimezone(timezone.utc).date()
-
+    today = data['check_out'].date()
+    log_message(f'handle_check_out_absent_days. role_id: {role.id}')
+    log_message(f"data.check_out: {data['check_out']}")
+    log_message(f"today: {today}")
+    log_message(f"last_timesheet.day: {last_timesheet.day}")
+    log_message(f"date.today: {date.today()}")
     if last_timesheet.day != today:
         if last_timesheet.check_in and not last_timesheet.check_out and not last_timesheet.debug_comment:
             check_statistics(role, last_timesheet.day)
