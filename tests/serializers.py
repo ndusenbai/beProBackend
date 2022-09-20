@@ -79,6 +79,11 @@ class CreateTestSerializer(BaseSerializer):
     version = serializers.ChoiceField(choices=TestTwoVersion.choices, allow_blank=True)
     force_version = serializers.BooleanField(required=False, default=False)
 
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['phone_number'] = data['phone_number'].replace(' ', '')
+        return data
+
 
 class SubmitTestSerializer(BaseSerializer):
     gender = serializers.ChoiceField(choices=Genders.choices, required=False)
