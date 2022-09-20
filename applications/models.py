@@ -52,6 +52,7 @@ class TariffApplication(BaseModel):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     period = models.PositiveSmallIntegerField(choices=TariffPeriod.choices)
+    is_instant_apply = models.BooleanField(default=False)
     status = models.IntegerField(choices=ApplicationStatus.choices, default=ApplicationStatus.NEW)
 
     def __str__(self):

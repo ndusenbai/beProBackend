@@ -69,3 +69,4 @@ class MyTariffSerializer(BaseSerializer):
 class ChangeTariff(BaseSerializer):
     tariff = serializers.PrimaryKeyRelatedField(queryset=Tariff.objects.only('id'))
     period = serializers.ChoiceField(choices=TariffPeriod.choices)
+    is_instant_apply = serializers.BooleanField(default=False, required=False)

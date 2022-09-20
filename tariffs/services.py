@@ -53,7 +53,18 @@ def prolongate_my_tariff(owner):
     return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
 
 
-def change_my_tariff(owner, tariff, period):
+def change_my_tariff(owner, tariff, period, is_instant_apply):
+    if is_instant_apply:
+        TariffApplication.objects.create(
+            tariff=tariff,
+            owner=owner,
+            start_date=None,
+            end_date=None,
+            period=period,
+            is_instant_apply=True,
+        )
+        return {'message': 'created'}, status.HTTP_200_OK
+
     last_tariff_app = TariffApplication.objects.filter(owner=owner, status=ApplicationStatus.ACCEPTED).order_by('-end_date').first()
     if last_tariff_app:
         start_date = last_tariff_app.end_date + relativedelta(days=1)

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.db.transaction import atomic
 from django.http import HttpRequest
+from django.utils import timezone
 
 from auth_user.services import get_domain
 from auth_user.tasks import send_created_account_notification
@@ -116,6 +117,17 @@ def create_owner(instance: ApplicationToCreateCompany, company: Company) -> Tupl
 
 @atomic
 def approve_tariff_application(tariff_app: TariffApplication) -> None:
+    if tariff_app.is_instant_apply:
+        start_date = timezone.now().date()
+        end_date = None
+        if tariff_app.period == TariffPeriod.MONTHLY:
+            end_date = start_date + relativedelta(months=1)
+        elif tariff_app.period == TariffPeriod.YEARLY:
+            end_date = start_date + relativedelta(years=1)
+
+        tariff_app.start_date = start_date
+        tariff_app.end_date = end_date
+
     Company.objects.filter(owner=tariff_app.owner).update(is_active=True)
     tariff_app.status = ApplicationStatus.ACCEPTED
     tariff_app.save()
