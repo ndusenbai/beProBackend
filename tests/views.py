@@ -60,7 +60,10 @@ class RetrieveTestViewSet(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        return Response(TestModelSerializer(retrieve_test(kwargs['uid'])).data)
+        try:
+            return Response(TestModelSerializer(retrieve_test(kwargs['uid'])).data)
+        except Test.DoesNotExist:
+            return Response({'message': 'Теста не существует'}, status.HTTP_423_LOCKED)
 
 
 class SubmitTestViewSet(APIView):
