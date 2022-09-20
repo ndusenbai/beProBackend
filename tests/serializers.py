@@ -81,7 +81,7 @@ class CreateTestSerializer(BaseSerializer):
 
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
-        data['phone_number'] = data['phone_number'].replace(' ', '')
+        data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
         return data
 
 
