@@ -28,7 +28,7 @@ User = get_user_model()
 
 
 class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
-    permission_classes = (CompanyServicePermission,)
+    permission_classes = (SuperuserOrOwnerOrHRPermission,)
     serializer_class = CompanyServiceSerializer
 
     def get_queryset(self):
@@ -50,7 +50,7 @@ class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
 
 class RetrieveCompanyServiceViewSet(RetrieveModelMixin, GenericViewSet):
-    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+    permission_classes = (CompanyServicePermission,)
     serializer_class = RetrieveCompanyServiceSerializer
 
     def get_queryset(self):
