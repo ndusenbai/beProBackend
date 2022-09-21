@@ -1,8 +1,8 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.apps import apps
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 from auth_user.services import get_user_role
-from companies.models import Role
+from companies.models import Role, RoleChoices
 
 
 def check_hr_of_company(user):
@@ -367,5 +367,22 @@ class TariffApplicationPermission(BasePermission):
             is_owner_or_hr = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
             if is_owner_or_hr:
                 return True
+
+        return False
+
+
+class CompanyServicePermission(BasePermission):
+    def has_permission(self, request, view):
+        permission = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
+        if permission:
+            return True
+
+        is_observer = Role.objects.filter(
+            company=request.user.selected_company,
+            role=RoleChoices.OBSERVER,
+            user=request.user).exists()
+
+        if is_observer:
+            return True
 
         return False

@@ -21,14 +21,14 @@ from companies.services import update_department, create_company, create_departm
     update_company_services, get_qs_retrieve_company_services
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
-    IsOwnerOrSuperuser, SuperuserOrOwnerOrHRPermission
+    SuperuserOrOwnerOrHRPermission, CompanyServicePermission
 from utils.tools import log_exception
 
 User = get_user_model()
 
 
 class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
-    permission_classes = (IsOwnerOrSuperuser,)
+    permission_classes = (CompanyServicePermission,)
     serializer_class = CompanyServiceSerializer
 
     def get_queryset(self):
