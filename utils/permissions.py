@@ -318,6 +318,20 @@ class SuperuserOrOwnerOrHRPermission(BasePermission):
         return False
 
 
+class SuperuserOrOwnerOrHRorObserverPermission(BasePermission):
+    def has_permission(self, request, view):
+
+        if not request.user.is_authenticated:
+            return False
+
+        role = get_user_role(request.user)
+
+        if role in {'superuser', 'owner', 'hr', 'observer'}:
+            return True
+
+        return False
+
+
 class IsStaffPermission(BasePermission):
     def has_permission(self, request, view):
 
@@ -367,22 +381,5 @@ class TariffApplicationPermission(BasePermission):
             is_owner_or_hr = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
             if is_owner_or_hr:
                 return True
-
-        return False
-
-
-class CompanyServicePermission(BasePermission):
-    def has_permission(self, request, view):
-        permission = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
-        if permission:
-            return True
-
-        is_observer = Role.objects.filter(
-            company=request.user.selected_company,
-            role=RoleChoices.OBSERVER,
-            user=request.user).exists()
-
-        if is_observer:
-            return True
 
         return False
