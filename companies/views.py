@@ -32,7 +32,7 @@ class CompanyServiceViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = CompanyServiceSerializer
 
     def get_queryset(self):
-        return CompanyService.objects.filter(company__owner=self.request.user)
+        return CompanyService.objects.filter(company__owner=self.request.user, company__is_active=True)
 
     @swagger_auto_schema(request_body=CompanyServicesUpdateSerializer)
     def create(self, request, *args, **kwargs):
