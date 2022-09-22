@@ -70,6 +70,11 @@ class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at')
 
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
+        return data
+
 
 class CreateApplicationToCreateCompanySerializer(BaseSerializer):
     first_name = serializers.CharField()
