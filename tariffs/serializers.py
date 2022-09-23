@@ -60,7 +60,7 @@ class MyTariffSerializer(BaseSerializer):
         return f'{total_employees_count}/{instance.tariff.max_employees_qty}'
 
     def get_companies(self, instance):
-        return CompanyModelSerializer(Company.objects.filter(owner=instance.owner), many=True).data
+        return CompanyModelSerializer(Company.objects.filter(owner=instance.owner, is_deleted=False), many=True).data
 
     def get_services(self, instance):
         return CompanyServiceSerializer(instance.owner.selected_company.service).data
