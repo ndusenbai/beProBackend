@@ -184,6 +184,7 @@ class CreateEmployeeSerializer(BaseSerializer):
             data['schedules'] = json.loads(data['schedules'])
         if 'avatar' in data and isinstance(data['avatar'], str) and data['avatar'] == 'null':
             data['avatar'] = None
+        data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
         data = super().to_internal_value(data)
         return data
 
