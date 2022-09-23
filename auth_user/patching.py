@@ -51,6 +51,7 @@ class PatchedAPIView(OriginalAPIView):
             '/api/pdf/generate-stat/',
             '/api/pdf/generate-history-stat/',
             '/api/month-scores/',
+            '/api/reason/',
         ]
 
         for url in analytics_urls:
