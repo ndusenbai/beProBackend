@@ -282,6 +282,7 @@ def generate_pdf_for_test_two(test: Test) -> str:
 
 def generate_pdf_for_test_three(test: Test) -> str:
     context = {
+        'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
         'description': test.result['description'],
     }
