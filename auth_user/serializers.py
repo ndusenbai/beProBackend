@@ -85,6 +85,11 @@ class AssistantSerializer(BaseSerializer):
     email = serializers.EmailField()
     assistant_type = serializers.IntegerField()
 
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
+        return data
+
 
 class AssistantUpdateSerializer(BaseSerializer):
     first_name = serializers.CharField(max_length=50)
@@ -92,6 +97,11 @@ class AssistantUpdateSerializer(BaseSerializer):
     middle_name = serializers.CharField(max_length=50, allow_blank=True)
     phone_number = serializers.CharField()
     assistant_type = serializers.IntegerField()
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
+        return data
 
 
 class ChangeSelectedCompanySerializer(BaseSerializer):
