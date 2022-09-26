@@ -2,7 +2,7 @@ from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import (ListModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin)
+from rest_framework.mixins import (ListModelMixin, CreateModelMixin, UpdateModelMixin, RetrieveModelMixin, DestroyModelMixin)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -19,7 +19,7 @@ from bepro_statistics.serializers import StatisticSerializer, UserStatisticModel
     GetStatisticSerializer, HistoryPdfStatsSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, create_user_statistic, \
     get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf, \
-    bulk_create_observers
+    bulk_create_observers, get_date_for_statistic
 from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
 from utils.permissions import StatisticPermissions, HistoryStatisticPermissions
 from utils.tools import log_exception
@@ -105,9 +105,13 @@ class HistoryStats(ListModelMixin, GenericViewSet):
         return Response(data=data)
 
 
-class CreateUserStat(CreateModelMixin, GenericViewSet):
+class CreateUserStat(RetrieveModelMixin, CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CreateUserStatSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        date = get_date_for_statistic(request.user.role, kwargs['pk'])
+        return Response({'date': date})
 
     @swagger_auto_schema(requet_body=CreateUserStatSerializer)
     def create(self, request, *args, **kwargs):
