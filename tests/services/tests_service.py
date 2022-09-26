@@ -264,6 +264,7 @@ def get_color_for_test_one(percent):
 
 def generate_pdf_for_test_two(test: Test) -> str:
     context = {
+        'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
         'classification': test.result['classification'],
         'percent': test.result['percent'],
