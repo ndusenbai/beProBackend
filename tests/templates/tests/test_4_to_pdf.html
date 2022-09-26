@@ -112,11 +112,18 @@
         margin-top: 40px;
         padding-bottom: 20px;
       }
+      .test-static {
+          margin-top: 50px;
+          text-align: center;
+          color: #9e9e9e !important;
+          font-size: 16px !important;
+      }
     </style>
   </head>
   <body>
     <div class="test">
       <div class="test__card">
+        <div class="test__card-header">{{ test_participant }}</div>
         <div class="test__card-suptitle">Результаты</div>
         <div class="test__card-suptitle blue--text">Тест Сердце</div>
           {% for characteristic in characteristics %}
@@ -129,6 +136,11 @@
               </div>
           {% endfor %}
 
+            <div class="test-static">
+                <span>
+                    Тон человека может постоянно меняться. Это зависит от окружения и настроения человека. Возможно, человек сдал тест в плохом настроении. Для подтверждения полученного результата, советуется провести с ним интервью. Люди в высоких тонах обычно отвечают быстро и внятно на поставленные вопросы, в низких - зачастую медлят с ответом, ищут подвох, им сложно внятно выразить мысли и пр. Высокими тонами считаются по шкале 2.1 и выше. Низкими тонами являются по шкале 2.0 и ниже.
+                </span>
+            </div>
       </div>
     </div>
   </body>

@@ -297,6 +297,7 @@ def generate_pdf_for_test_three(test: Test) -> str:
 
 def generate_pdf_for_test_four(test: Test) -> str:
     context = {
+        'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'characteristics': test.result['characteristics'],
     }
     template = get_template('tests/test_4_to_pdf.html')
