@@ -47,6 +47,12 @@ class CreateHeadDepartmentSerializer(BaseSerializer):
     title = serializers.CharField()
     grade = serializers.IntegerField(min_value=1, max_value=4)
 
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if 'phone_number' in data:
+            data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
+        return data
+
 
 class DepartmentSerializer(BaseSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -172,6 +178,10 @@ class CreateEmployeeSerializer(BaseSerializer):
             data['schedules'] = json.loads(data['schedules'])
         if 'avatar' in data and isinstance(data['avatar'], str) and data['avatar'] == 'null':
             data['avatar'] = None
+
+        if 'phone_number' in data:
+            data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
+
         data = super().to_internal_value(data)
         return data
 
