@@ -39,17 +39,22 @@ def create_statistic(serializer):
 
 
 def get_date_for_statistic(role: User, statistic_id: int):
-    statistic = Statistic.objects.get(id=statistic_id)
-    if statistic.role == role or statistic.department == role.department:
-        last_check_in = TimeSheet.objects.filter(
-            role=role,
-            check_in__isnull=False,
-            check_out__isnull=True,
-            day__lte=date.today()) \
-            .order_by('-day').first()
-        return last_check_in.day
+    time_tracking_enabled = CompanyService.objects.get(company=role.user.selected_company).time_tracking_enabled
+
+    if time_tracking_enabled:
+        statistic = Statistic.objects.get(id=statistic_id)
+        if statistic.role == role or statistic.department == role.department:
+            last_check_in = TimeSheet.objects.filter(
+                role=role,
+                check_in__isnull=False,
+                check_out__isnull=True,
+                day__lte=date.today()) \
+                .order_by('-day').first()
+            return last_check_in.day
+        else:
+            raise Exception('У Вас нет доступа к статистике')
     else:
-        raise Exception('У Вас нет доступа к статистике')
+        return timezone.now().day()
 
 
 @atomic
