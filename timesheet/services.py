@@ -170,7 +170,7 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
 
 
 def get_last_timesheet_action(role: Role) -> str:
-    today = datetime.now().date()
+    today = timezone.now().date()
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=today).order_by('-day').first()
 
     if last_timesheet and last_timesheet.check_out is None:

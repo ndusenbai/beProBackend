@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
 from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
-from companies.models import Role
+from companies.models import Role, CompanyService
 from timesheet.models import TimeSheet, TimeSheetChoices
 
 User = get_user_model()
@@ -54,6 +54,15 @@ def get_date_for_statistic(role: User, statistic_id: int):
 
 @atomic
 def create_user_statistic(role: Role, data: OrderedDict):
+    time_tracking_enabled = CompanyService.objects.get(company=role.user.selected_company).time_tracking_enabled
+
+    if time_tracking_enabled:
+        return create_user_statistic_when_time_tracking_enabled(role, data)
+    else:
+        return create_user_statistic_when_time_tracking_disabled(role, data)
+
+
+def create_user_statistic_when_time_tracking_enabled(role: Role, data: OrderedDict):
     try:
         today_timesheet = TimeSheet.objects.get(role=role, day=date.today())
         if today_timesheet.status == TimeSheetChoices.ABSENT:
@@ -66,10 +75,10 @@ def create_user_statistic(role: Role, data: OrderedDict):
         pass
 
     last_check_in = TimeSheet.objects.filter(
-            role=role,
-            check_in__isnull=False,
-            check_out__isnull=True,
-            day__lte=date.today())\
+        role=role,
+        check_in__isnull=False,
+        check_out__isnull=True,
+        day__lte=date.today()) \
         .order_by('-day').first()
 
     if not last_check_in:
@@ -79,6 +88,19 @@ def create_user_statistic(role: Role, data: OrderedDict):
         role=role,
         statistic_id=data['statistic_id'],
         day=last_check_in.day,
+        fact=data['fact'],
+        created_by=role.user,
+        updated_by=role.user,
+    )
+
+    return {'message': 'created', }, 200
+
+
+def create_user_statistic_when_time_tracking_disabled(role: Role, data: OrderedDict):
+    UserStatistic.objects.create(
+        role=role,
+        statistic_id=data['statistic_id'],
+        day=timezone.now().date(),
         fact=data['fact'],
         created_by=role.user,
         updated_by=role.user,
