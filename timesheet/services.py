@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.db.transaction import atomic
 
 from bepro_statistics.models import Statistic, UserStatistic
-from companies.models import Role, Department
+from companies.models import Role, Department, CompanyService
 from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.serializers import TimeSheetModelSerializer
@@ -319,9 +319,12 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
+    analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
+
     if not handle_check_out_absent_days(role, data):
         return False
-    check_statistics(role, data['check_out'])
+    if analytics_enabled:
+        check_statistics(role, data['check_out'])
     handle_check_out_timesheet(role, data)
 
 
