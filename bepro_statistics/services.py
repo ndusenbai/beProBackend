@@ -38,6 +38,20 @@ def create_statistic(serializer):
     return statistic
 
 
+def get_date_for_statistic(role: User, statistic_id: int):
+    statistic = Statistic.objects.get(id=statistic_id)
+    if statistic.role == role or statistic.department == role.department:
+        last_check_in = TimeSheet.objects.filter(
+            role=role,
+            check_in__isnull=False,
+            check_out__isnull=True,
+            day__lte=date.today()) \
+            .order_by('-day').first()
+        return last_check_in.day
+    else:
+        raise Exception('У Вас нет доступа к статистике')
+
+
 @atomic
 def create_user_statistic(role: Role, data: OrderedDict):
     try:
