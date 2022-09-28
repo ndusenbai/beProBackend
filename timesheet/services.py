@@ -1,11 +1,12 @@
 from calendar import monthrange
-from datetime import date, timedelta, timezone, datetime
+from datetime import date, timedelta, datetime
 from typing import OrderedDict
 
 import geopy.distance
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.db.transaction import atomic
+from django.utils import timezone
 
 from bepro_statistics.models import Statistic, UserStatistic
 from companies.models import Role, Department, CompanyService
