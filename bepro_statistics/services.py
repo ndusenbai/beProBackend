@@ -54,7 +54,7 @@ def get_date_for_statistic(role: User, statistic_id: int):
         else:
             raise Exception('У Вас нет доступа к статистике')
     else:
-        return timezone.now().day()
+        return timezone.now().date()
 
 
 @atomic
