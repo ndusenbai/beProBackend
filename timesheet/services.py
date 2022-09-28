@@ -271,7 +271,11 @@ def handle_check_out_timesheet(role: Role, data: dict):
 
 
 def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool) -> bool:
-    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(
+        Q(role=role) &
+        Q(day__lte=date.today()) &
+        ~Q(status=TimeSheetChoices.ABSENT)).order_by('-day').first()
+
     today = data['check_out'].date()
     # TODO: delete log messages after testing
     log_message(f'handle_check_out_absent_days. role_id: {role.id}')
@@ -292,19 +296,20 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
         absent_days_qty = (yesterday - first_absent_day).days
         time_sheets = []
         for i in range(absent_days_qty + 1):
-            time_sheets.append(
-                TimeSheet(
-                    role=role,
-                    day=first_absent_day + timedelta(days=i),
-                    check_in=None,
-                    check_out=None,
-                    time_from='00:00',
-                    time_to='23:59',
-                    debug_comment='Created automatically within handle_check_out_absent_days()',
-                    file=None,
-                    status=TimeSheetChoices.ABSENT,
+            if not TimeSheet.objects.filter(role=role, day=first_absent_day + timedelta(days=i)).exists():
+                time_sheets.append(
+                    TimeSheet(
+                        role=role,
+                        day=first_absent_day + timedelta(days=i),
+                        check_in=None,
+                        check_out=None,
+                        time_from='00:00',
+                        time_to='23:59',
+                        debug_comment='Created automatically within handle_check_out_absent_days()',
+                        file=None,
+                        status=TimeSheetChoices.ABSENT,
+                    )
                 )
-            )
         TimeSheet.objects.bulk_create(time_sheets)
         return False
     return True
