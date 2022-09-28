@@ -267,9 +267,10 @@ def handle_check_out_timesheet(role: Role, data: dict):
     last_timesheet.save()
 
 
-def handle_check_out_absent_days(role: Role, data: dict) -> bool:
+def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool) -> bool:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
     today = data['check_out'].date()
+    # TODO: delete log messages after testing
     log_message(f'handle_check_out_absent_days. role_id: {role.id}')
     log_message(f"data.check_out: {data['check_out']}")
     log_message(f"today: {today}")
@@ -277,7 +278,8 @@ def handle_check_out_absent_days(role: Role, data: dict) -> bool:
     log_message(f"date.today: {date.today()}")
     if last_timesheet.day != today:
         if last_timesheet.check_in and not last_timesheet.check_out and not last_timesheet.debug_comment:
-            check_statistics(role, last_timesheet.day)
+            if analytics_enabled:
+                check_statistics(role, last_timesheet.day)
             last_timesheet.check_out = '23:59'
             last_timesheet.debug_comment = 'Automatically filled check_in within create_check_out_timesheet()'
             last_timesheet.save()
@@ -321,7 +323,7 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
     analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
 
-    if not handle_check_out_absent_days(role, data):
+    if not handle_check_out_absent_days(role, data, analytics_enabled):
         return False
     if analytics_enabled:
         check_statistics(role, data['check_out'])
