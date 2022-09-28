@@ -175,7 +175,15 @@ def get_last_timesheet_action(role: Role) -> str:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=today).order_by('-day').first()
 
     if last_timesheet.status == TimeSheetChoices.ABSENT:
+        last_timesheet_before_absent = TimeSheet.objects.filter(
+                role=role,
+                day__lte=date.today(),
+                status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE])\
+            .order_by('-day').first()
+        if last_timesheet_before_absent and last_timesheet_before_absent.check_out is None:
+            return 'check_in'
         return 'check_out'
+
     if last_timesheet and last_timesheet.check_out is None:
         return 'check_in'
     return 'check_out'
