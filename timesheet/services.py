@@ -277,7 +277,7 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
     log_message(f"last_timesheet.day: {last_timesheet.day}")
     log_message(f"date.today: {date.today()}")
     if last_timesheet.day != today:
-        if last_timesheet.check_in and not last_timesheet.check_out and not last_timesheet.debug_comment:
+        if last_timesheet.check_in and not last_timesheet.check_out:
             if analytics_enabled:
                 check_statistics(role, last_timesheet.day)
             last_timesheet.check_out = '23:59'
