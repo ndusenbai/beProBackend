@@ -381,7 +381,8 @@ def save_stat_to_pdf(statistic_type: str) -> str:
 def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
     statistics = Statistic.objects.filter(Q(department=role.department) | Q(role=role))
 
-    fig, axs = plt.subplots(statistics.count())
+    statistics_count = statistics.count()
+    fig, axs = plt.subplots(statistics_count)
     j = 0
     for statistic in statistics:
         user_stat = UserStatistic.objects.filter(
@@ -392,17 +393,17 @@ def generate_history_stat_pdf(role: Role, monday: date, sunday: date) -> str:
         user_stat_data = UserStatsSerializer(user_stat, many=True).data
         user_stat_data_dict = {i['day_num']: i for i in user_stat_data}
 
+        ax = axs if statistics_count == 1 else axs[j]
         if statistic.statistic_type == StatisticType.GENERAL:
-            generate_general_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+            generate_general_history_graph_pdf(user_stat_data_dict, ax, statistic)
         elif statistic.statistic_type == StatisticType.INVERTED:
-            generate_inverted_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+            generate_inverted_history_graph_pdf(user_stat_data_dict, ax, statistic)
         elif statistic.statistic_type == StatisticType.DOUBLE:
-            generate_double_history_graph_pdf(user_stat_data_dict, axs[j], statistic)
+            generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic)
 
         j += 1
 
-    # fig.tight_layout()
-    fig.set_size_inches(10, 30)
+    fig.set_size_inches(10, j*5)
     file_name = save_stat_to_pdf('history_stat')
     plt.show()
     return file_name
