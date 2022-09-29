@@ -135,6 +135,7 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
 40. mkdir general_stats
 41. mkdir history_stats
 42. mkdir inverted_stats
+43. применить все функции на базу данных из папки sql_queries
 
 
 
