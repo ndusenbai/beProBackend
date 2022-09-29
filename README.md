@@ -125,9 +125,10 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
     sudo ufw allow 'Nginx Full'
 35. apt install redis-server
 36. cd media
-36.1 mkdir tests_pdf
+37. mkdir tests_pdf
 37. cd tests_pdf
-38. mkdir tests_one_heart_pro, tests_two_brain, tests_three_brain_pro, tests_four_heart 
+38. mkdir tests_one_heart_pro, tests_two_brain, tests_three_brain_pro, tests_four_heart
+39. cd ../
 37. mkdir statistics
 38. cd statistics
 39. mkdir double_stats
