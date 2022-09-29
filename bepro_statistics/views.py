@@ -110,8 +110,11 @@ class CreateUserStat(RetrieveModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = CreateUserStatSerializer
 
     def retrieve(self, request, *args, **kwargs):
-        date = get_date_for_statistic(request.user.role, kwargs['pk'])
-        return Response({'date': date})
+        try:
+            date = get_date_for_statistic(request.user.role, kwargs['pk'])
+            return Response({'date': date})
+        except Exception as e:
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @swagger_auto_schema(requet_body=CreateUserStatSerializer)
     def create(self, request, *args, **kwargs):

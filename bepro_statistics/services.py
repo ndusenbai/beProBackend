@@ -50,11 +50,14 @@ def get_date_for_statistic(role: User, statistic_id: int):
                 check_out__isnull=True,
                 day__lte=date.today()) \
                 .order_by('-day').first()
+
+            if not last_check_in:
+                raise Exception('Вы не осуществляли check in сегодня')
+
             return last_check_in.day
-        else:
-            raise Exception('У Вас нет доступа к статистике')
-    else:
-        return timezone.now().date()
+        raise Exception('У Вас нет доступа к статистике')
+
+    return timezone.now().date()
 
 
 @atomic
