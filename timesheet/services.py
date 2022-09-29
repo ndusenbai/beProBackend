@@ -280,9 +280,9 @@ def handle_check_out_timesheet(role: Role, data: dict):
 
 def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool) -> bool:
     last_timesheet = TimeSheet.objects.filter(
-        Q(role=role) &
-        Q(day__lte=date.today()) &
-        ~Q(status=TimeSheetChoices.ABSENT)).order_by('-day').first()
+        role=role,
+        day__lte=date.today(),
+        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]).order_by('-day').first()
 
     today = data['check_out'].date()
     # TODO: delete log messages after testing
