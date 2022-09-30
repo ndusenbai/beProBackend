@@ -172,19 +172,24 @@ def update_timesheet(instance: TimeSheet, data: dict) -> None:
 
 def get_last_timesheet_action(role: Role) -> str:
     today = timezone.now().date()
-    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=today).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(
+            role=role,
+            day__lte=today,
+            status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE])\
+        .order_by('-day').first()
 
-    if last_timesheet.status == TimeSheetChoices.ABSENT:
-        last_timesheet_before_absent = TimeSheet.objects.filter(
-                role=role,
-                day__lte=date.today(),
-                status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE])\
-            .order_by('-day').first()
-        if last_timesheet_before_absent and last_timesheet_before_absent.check_out is None:
-            return 'check_in'
-        return 'check_out'
+    # TODO: delete if not needed
+    # if last_timesheet.status not in [TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]:
+    #     last_timesheet_before = TimeSheet.objects.filter(
+    #             role=role,
+    #             day__lte=date.today(),
+    #             status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE])\
+    #         .order_by('-day').first()
+    #     if last_timesheet_before and last_timesheet_before.check_out is None:
+    #         return 'check_in'
+    #     return 'check_out'
 
-    if last_timesheet and last_timesheet.check_out is None:
+    if last_timesheet and last_timesheet.check_in and last_timesheet.check_out is None:
         return 'check_in'
     return 'check_out'
 
