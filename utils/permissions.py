@@ -199,7 +199,7 @@ class ReasonPermissions(BasePermission):
             if not request.GET.get('company'):
                 return False
 
-        if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
+        if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'head_of_hr_department'}):
             return True
 
         return False
@@ -255,7 +255,7 @@ class StatisticsPermission(BasePermission):
 
         role = get_user_role(request.user)
 
-        if request.user.is_authenticated and role in {'superuser', 'owner', 'hr'}:
+        if request.user.is_authenticated and role in {'superuser', 'owner', 'hr', 'head_of_hr_department'}:
             return True
         return False
 
