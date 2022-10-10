@@ -109,6 +109,9 @@ class CompanyPermissions(BasePermission):
 
 class DepartamentPermissions(BasePermission):
     def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
         role = get_user_role(request.user)
 
         if role == 'superuser':
@@ -126,11 +129,11 @@ class DepartamentPermissions(BasePermission):
                 if role not in {"owner", "superuser"} and int(view.kwargs['pk']) == request.user.role.department_id:
                     return True
 
-            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
+            if role in {'owner', 'superuser', 'hr', 'observer', 'head_of_hr_department'}:
                 return True
 
         else:
-            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr'}):
+            if role in {'owner', 'superuser', 'hr', 'head_of_hr_department'}:
                 return True
 
         return False
