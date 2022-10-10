@@ -91,7 +91,10 @@ def update_department(instance: Department, data) -> None:
     if head_of_department_changed:
         Role.objects.filter(id=data['head_of_department_id']).update(role=RoleChoices.HEAD_OF_DEPARTMENT)
         if instance.head_of_department_id:
-            Role.objects.filter(id=instance.head_of_department_id).update(role=RoleChoices.EMPLOYEE)
+            if instance.is_hr:
+                Role.objects.filter(id=instance.head_of_department_id).update(role=RoleChoices.HR)
+            else:
+                Role.objects.filter(id=instance.head_of_department_id).update(role=RoleChoices.EMPLOYEE)
 
     for key, value in data.items():
         setattr(instance, key, value)
