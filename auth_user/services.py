@@ -183,6 +183,8 @@ def get_user_role(user: User) -> str:
                 role = 'observer'
             elif role_type == RoleChoices.EMPLOYEE:
                 role = 'employee'
+            elif role_type == RoleChoices.HEAD_OF_DEPARTMENT and user.role.department.is_hr:
+                role = 'head_of_hr_department'
             elif role_type == RoleChoices.HEAD_OF_DEPARTMENT:
                 role = 'head_of_department'
 

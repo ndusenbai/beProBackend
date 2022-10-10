@@ -99,7 +99,7 @@ class CompanyPermissions(BasePermission):
     def has_permission(self, request, view):
         role = get_user_role(request.user)
         if view.action in {'retrieve', 'get', 'list'}:
-            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr',  'observer'}):
+            if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr',  'observer', 'head_of_hr_department'}):
                 return True
         else:
             if request.user.is_authenticated and (role in {'owner', 'superuser'}):
