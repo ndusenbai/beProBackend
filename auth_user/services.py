@@ -206,10 +206,8 @@ def get_additional_user_info(email: str) -> dict:
 
     try:
         user_data['departament'] = user.role.department.id
-        user_data['is_hr_department'] = user.role.department.is_hr
     except:
         user_data['departament'] = None
-        user_data['is_hr_department'] = user.role.department.is_hr
 
     return user_data
 
