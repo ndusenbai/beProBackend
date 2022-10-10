@@ -16,12 +16,12 @@ from tests.serializers import CreateTestSerializer, TestModelSerializer, SubmitT
 from tests.services.tests_service import create_test, retrieve_test, submit_test, test_id_encode, send_email_invitation, \
     get_counters, generate_test_links, generate_test_pdf, delete_test
 from tests.manual_parameters import QUERY_TEST_TYPE, QUERY_TEST_STATUS, QUERY_FINISHED_AT
-from utils.permissions import SuperuserOrOwnerOrHRPermission
+from utils.permissions import SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission
 from utils.tools import log_exception
 
 
 class TestViewSet(ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet):
-    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
     queryset = Test.objects.all()
     serializer_class = TestModelSerializer
     filter_backends = (SearchFilter, DjangoFilterBackend)
@@ -81,7 +81,7 @@ class SubmitTestViewSet(APIView):
 
 
 class SendEmailViewSet(APIView):
-    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -102,14 +102,14 @@ class DecodeIDViewSet(APIView):
 
 
 class TestLinksView(APIView):
-    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
 
     def get(self, request, *args, **kwargs):
         return Response(generate_test_links(test_id=kwargs['id']))
 
 
 class TestDownloadView(APIView):
-    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
 
     def get(self, request, *args, **kwargs):
         link = generate_test_pdf(test_id=kwargs['id'])
@@ -117,7 +117,7 @@ class TestDownloadView(APIView):
 
 
 class TestCountersViewSet(APIView):
-    permission_classes = (SuperuserOrOwnerOrHRPermission,)
+    permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
 
     def get(self, request, *args, **kwargs):
         counters = get_counters(kwargs['company_id'])

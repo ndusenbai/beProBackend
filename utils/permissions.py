@@ -321,6 +321,20 @@ class SuperuserOrOwnerOrHRPermission(BasePermission):
         return False
 
 
+class SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission(BasePermission):
+    def has_permission(self, request, view):
+
+        if not request.user.is_authenticated:
+            return False
+
+        role = get_user_role(request.user)
+
+        if role in {'superuser', 'owner', 'hr', 'head_of_hr_department'}:
+            return True
+
+        return False
+
+
 class SuperuserOrOwnerOrHRorObserverPermission(BasePermission):
     def has_permission(self, request, view):
 
@@ -353,7 +367,7 @@ class TestPricePermission(BasePermission):
             return False
 
         is_staff = IsStaffPermission().has_permission(request, view)
-        is_owner_or_hr = SuperuserOrOwnerOrHRPermission().has_permission(request, view)
+        is_owner_or_hr = SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission().has_permission(request, view)
         if is_staff or is_owner_or_hr:
             return True
 
