@@ -304,7 +304,7 @@ class CheckPermission(BasePermission):
 
         role = get_user_role(request.user)
 
-        if role in {'owner', 'observer', 'hr', 'employee', 'head_of_department'}:
+        if role in {'owner', 'observer', 'hr', 'employee', 'head_of_department', 'head_of_hr_department'}:
             return True
 
         return False
