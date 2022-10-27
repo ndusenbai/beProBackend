@@ -28,7 +28,7 @@ class StatisticSerializer(serializers.ModelSerializer):
 class GetStatisticSerializer(serializers.ModelSerializer):
     employees = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    plan = serializers.IntegerField(required=False)
+    plan = serializers.FloatField(required=False)
     role = serializers.PrimaryKeyRelatedField(read_only=True)
     role_name = serializers.SerializerMethodField(method_name="get_role")
     department = serializers.PrimaryKeyRelatedField(read_only=True)
