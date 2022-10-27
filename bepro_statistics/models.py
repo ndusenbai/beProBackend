@@ -27,7 +27,7 @@ class Statistic(BaseModel):
     statistic_type = models.IntegerField(choices=StatisticType.choices, default=StatisticType.GENERAL)
     department = models.ForeignKey('companies.Department', on_delete=models.CASCADE, related_name='statistics', null=True, blank=True)
     role = models.ForeignKey('companies.Role', on_delete=models.CASCADE, related_name='statistics', null=True, blank=True)
-    plan = models.FloatField(null=True, blank=True)
+    plan = models.IntegerField(null=True, blank=True)
     visibility = models.IntegerField(choices=VisibilityType.choices)
 
     def __str__(self):
@@ -49,7 +49,7 @@ class UserStatistic(BaseModel):
     statistic = models.ForeignKey(Statistic, on_delete=models.CASCADE)
     role = models.ForeignKey('companies.Role', on_delete=models.CASCADE)
     day = models.DateField()
-    fact = models.FloatField()
+    fact = models.IntegerField()
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='user_stats_created_by')
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='user_stats_updated_by')
 

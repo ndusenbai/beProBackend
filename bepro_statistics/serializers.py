@@ -16,7 +16,7 @@ class StatisticSerializer(serializers.ModelSerializer):
             queryset=Role.objects.only('id')
         )
     )
-    plan = serializers.FloatField(required=False)
+    plan = serializers.IntegerField(required=False)
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'), required=False)
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.only('id'), required=False)
 
@@ -28,7 +28,7 @@ class StatisticSerializer(serializers.ModelSerializer):
 class GetStatisticSerializer(serializers.ModelSerializer):
     employees = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    plan = serializers.FloatField(required=False)
+    plan = serializers.IntegerField(required=False)
     role = serializers.PrimaryKeyRelatedField(read_only=True)
     role_name = serializers.SerializerMethodField(method_name="get_role")
     department = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -67,7 +67,7 @@ class UserStatisticModelSerializer(serializers.ModelSerializer):
 
 class UserStatsSerializer(BaseSerializer):
     day = serializers.DateField()
-    fact = serializers.FloatField()
+    fact = serializers.IntegerField()
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
