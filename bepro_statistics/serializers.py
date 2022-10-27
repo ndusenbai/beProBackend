@@ -16,7 +16,7 @@ class StatisticSerializer(serializers.ModelSerializer):
             queryset=Role.objects.only('id')
         )
     )
-    plan = serializers.IntegerField(required=False)
+    plan = serializers.FloatField(required=False)
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'), required=False)
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.only('id'), required=False)
 
