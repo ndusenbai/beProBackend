@@ -1,6 +1,8 @@
 from typing import OrderedDict
 from datetime import timedelta
 
+from utils.tools import log_message
+
 
 class TestThree:
     HIGH = {
@@ -54,8 +56,15 @@ def process_test_three(data: OrderedDict) -> dict:
         elif i == 11:
             points = process_question_11(answer, points)
 
-    time_penalty = time.hour*60 + time.minute + time.second*100/60/100
+    time_penalty = (time.hour*60 + time.minute + time.second*100/60/100)*3
     final_points = 100 - points - time_penalty
+
+    log_message('process_test_three')
+    log_message(f'time: {time}')
+    log_message(f'points: {points}')
+    log_message(f'time_penalty: {time_penalty}')
+    log_message(f'final_points: {final_points}')
+
     result = get_result_test_three(final_points)
     return result
 
