@@ -36,6 +36,8 @@ def process_test_three(data: OrderedDict) -> dict:
     version = data['version']
     points = 0
 
+    log_message(data)
+
     for i, answer in enumerate(answers):
         if i == 0:
             points = process_question_0(answer, points)
@@ -55,11 +57,12 @@ def process_test_three(data: OrderedDict) -> dict:
             points = process_question_10(answer, points, version)
         elif i == 11:
             points = process_question_11(answer, points)
+        log_message(f'points: {points}, question: {i}')
 
     time_penalty = (time.hour*60 + time.minute + time.second*100/60/100)*3
     final_points = 100 - points - time_penalty
 
-    log_message('process_test_three')
+    log_message(f'calculating points process_test_three')
     log_message(f'time: {time}')
     log_message(f'points: {points}')
     log_message(f'time_penalty: {time_penalty}')

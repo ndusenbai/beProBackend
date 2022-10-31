@@ -21,6 +21,7 @@ from tests.services.test_four import process_test_four
 from tests.services.test_one import process_test_one
 from tests.services.test_three import process_test_three
 from tests.services.test_two import process_test_two
+from utils.tools import log_message
 
 
 @atomic
@@ -94,6 +95,7 @@ def submit_test(uid, data):
         serializer.is_valid(raise_exception=True)
         result = process_test_two(serializer.validated_data)
     elif test.test_type == TestType.THREE_BRAIN_PRO:
+        log_message(f'Begin process THREE_BRAIN_PRO, id: {test.id}')
         serializer = TestThreeSerializer(data=data['test_data'])
         serializer.is_valid(raise_exception=True)
         result = process_test_three(serializer.validated_data)
