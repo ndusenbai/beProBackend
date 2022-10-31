@@ -148,7 +148,7 @@ def process_question_5_8(answer: list, points: int, version: str, i: int) -> int
 
     for count, picked in enumerate(answer):
         picked_answers += 1
-        if picked != 'top':  # отмечена неправильная сторона
+        if picked and picked != 'top':  # отмечена неправильная сторона
             points += 2
         if count+1 in correct_answers:
             right_answers += 1
