@@ -1,3 +1,4 @@
+import json
 from typing import OrderedDict
 from datetime import timedelta
 
@@ -36,7 +37,7 @@ def process_test_three(data: OrderedDict) -> dict:
     version = data['version']
     points = 0
 
-    log_message(data)
+    log_message(json.dumps(dict(data), indent=4, sort_keys=True, default=str))
 
     for i, answer in enumerate(answers):
         if i == 0:
