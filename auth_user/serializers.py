@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -176,7 +176,11 @@ class UserProfileSerializer(BaseSerializer):
         if hasattr(instance, 'role'):
             now = timezone.now()
             first_date_of_month = date(now.year, now.month, 1)
-            last_date_of_month = date(now.year, now.month + 1, 1)
+            if now.month != 12:
+                last_date_of_month = date(now.year, now.month + 1, 1) - timedelta(days=1)
+            else:
+                last_date_of_month = date(now.year, 12, 31)
+
             points = instance.role.scores.filter(created_at__range=[first_date_of_month, last_date_of_month]).values_list('points', flat=True)
             score = sum(point for point in points) + 100
             return score
