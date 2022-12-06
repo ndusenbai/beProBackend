@@ -13,6 +13,7 @@ class ApplicationStatus(models.IntegerChoices):
     NEW = 1, 'New'
     ACCEPTED = 2, 'Accepted'
     DECLINED = 3, 'Declined'
+    CANCELED = 4, 'Canceled'
 
     @staticmethod
     def get_status(status):
@@ -22,6 +23,8 @@ class ApplicationStatus(models.IntegerChoices):
             return 'accepted'
         elif status == ApplicationStatus.DECLINED:
             return 'declined'
+        elif status == ApplicationStatus.CANCELED:
+            return 'canceled'
         return ''
 
 

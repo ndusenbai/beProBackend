@@ -16,9 +16,14 @@ QUERY_CODE = openapi.Parameter('code', openapi.IN_QUERY, description='accept cod
 # applications
 QUERY_APPLICATIONS_STATUS = openapi.Parameter(
     'status', openapi.IN_QUERY,
-    description='NEW=1, ACCEPTED=2, DECLINED=3',
+    description='NEW=1, ACCEPTED=2, DECLINED=3, CANCELED=4',
     type=openapi.TYPE_INTEGER,
-    enum=[1, 2, 3]
+    enum=[1, 2, 3, 4]
+)
+QUERY_APPLICATIONS_STATUSES = openapi.Parameter(
+    'status', openapi.IN_QUERY,
+    description='NEW=1, ACCEPTED=2, DECLINED=3, CANCELED=4',
+    type=openapi.TYPE_STRING,
 )
 QUERY_TEST_APPLICATIONS_STATUS = openapi.Parameter(
     'status', openapi.IN_QUERY,

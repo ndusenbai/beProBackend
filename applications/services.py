@@ -127,6 +127,11 @@ def approve_tariff_application(tariff_app: TariffApplication) -> None:
 
         tariff_app.start_date = start_date
         tariff_app.end_date = end_date
+        TariffApplication.objects.filter(
+            owner=tariff_app.owner,
+            status=ApplicationStatus.ACCEPTED,
+            end_date__gte=start_date,
+        ).exclude(id=tariff_app.id).update(status=ApplicationStatus.CANCELED)
 
     Company.objects.filter(owner=tariff_app.owner).update(is_active=True)
     tariff_app.status = ApplicationStatus.ACCEPTED
