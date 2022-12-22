@@ -3,6 +3,8 @@ from datetime import date, timedelta, datetime
 from typing import OrderedDict
 
 import geopy.distance
+import pytz
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.db.transaction import atomic
@@ -213,14 +215,15 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         if last_timesheet.check_in and not last_timesheet.check_out:
             raise CheckInAlreadyExistsException()
 
-    check_in = data['check_in']
+    check_in: datetime = data['check_in']
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
     status = TimeSheetChoices.ON_TIME
 
     if check_in.time() > today_schedule.time_from:
         status = TimeSheetChoices.LATE
         subtract_scores(role, check_in)
-
+    now_time = datetime.now(pytz.timezone(settings.TIME_ZONE)).strftime('%z')
+    timezone_save = f"{now_time[:-2]}:{now_time[-2:]}"
     TimeSheet.objects.create(
         role=role,
         day=check_in.date(),
@@ -228,6 +231,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         check_out=None,
         time_from=today_schedule.time_from,
         time_to=today_schedule.time_to,
+        timezone=timezone_save,
         status=status,
         comment=data.get('comment', ''),
         file=data.get('file', None),
@@ -243,7 +247,7 @@ def create_check_in_timesheet(role: Role, data: dict) -> None:
 def get_schedule(role, now_date):
     today_in_employee_schedule = role.employee_schedules.filter(week_day=now_date.weekday())
 
-    if today_in_employee_schedule:
+    if today_in_employee_schedule.exists():
         return today_in_employee_schedule.last()
     else:
         today_in_departament_schedule = role.department.department_schedules.filter(week_day=now_date.weekday())
@@ -270,6 +274,7 @@ def set_took_off(role: Role, data: dict):
         time_sheet.save()
     else:
         if schedule:
+
             TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date, check_in=schedule.time_from,
                                      check_out=schedule.time_to, time_to=schedule.time_to, time_from=schedule.time_from, **data)
 

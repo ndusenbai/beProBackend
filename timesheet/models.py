@@ -44,6 +44,7 @@ class TimeSheet(BaseModel):
     debug_comment = models.TextField(blank=True)
     file = models.FileField(upload_to='timesheet/', null=True, blank=True,)
     status = models.PositiveSmallIntegerField(choices=TimeSheetChoices.choices, default=TimeSheetChoices.ON_TIME)
+    timezone = models.CharField(max_length=10, default='+06:00')
 
     class Meta:
         constraints = [
