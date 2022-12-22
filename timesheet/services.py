@@ -209,9 +209,9 @@ def check_distance(department: Department, latitude: float, longitude: float) ->
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
-
-    if last_timesheet.check_in and not last_timesheet.check_out:
-        raise CheckInAlreadyExistsException()
+    if last_timesheet:
+        if last_timesheet.check_in and not last_timesheet.check_out:
+            raise CheckInAlreadyExistsException()
 
     check_in = data['check_in']
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())

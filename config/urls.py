@@ -25,10 +25,13 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger'),
     path('api/', include('config.api_urls')),
     path('django-admin/', admin.site.urls),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
 
 
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL,
+                                                                      document_root=settings.STATIC_ROOT)
     try:
         urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
     except ImportError:
