@@ -32,8 +32,8 @@ def create_company(user: User, data) -> None:
         company=company,
     )
     department_schedule = [
-        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00') for i in
-        range(0, 5)
+        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00', timezone='+06:00',)
+        for i in range(0, 5)
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
 
@@ -108,6 +108,7 @@ def bulk_create_department_schedules(department: Department, schedules: list) ->
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
+            timezone=schedule.get('timezone', '+06:00'),
         ) for schedule in schedules]
     DepartmentSchedule.objects.bulk_create(new_schedules)
 
@@ -195,6 +196,7 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
+            timezone=schedule.get('timezone', '+06:00'),
         ) for schedule in schedules]
     EmployeeSchedule.objects.bulk_create(new_schedules)
 

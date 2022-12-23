@@ -48,6 +48,7 @@ class ScheduleSerializer(BaseSerializer):
     week_day = serializers.IntegerField(min_value=0, max_value=6)
     time_from = serializers.TimeField(format='%H:%M')
     time_to = serializers.TimeField(format='%H:%M')
+    timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b')
 
 
 class DepartmentScheduleModelSerializer(serializers.ModelSerializer):

@@ -71,6 +71,7 @@ class DepartmentSchedule(BaseModel):
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(0), MaxValueValidator(6)])
     time_from = models.TimeField()
     time_to = models.TimeField()
+    timezone = models.CharField(max_length=10, default='+06:00')
 
     class Meta:
         unique_together = ('department', 'week_day')
@@ -84,6 +85,7 @@ class EmployeeSchedule(BaseModel):
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(0), MaxValueValidator(6)])
     time_from = models.TimeField()
     time_to = models.TimeField()
+    timezone = models.CharField(max_length=10, default='+06:00')
 
     class Meta:
         constraints = [
