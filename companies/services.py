@@ -30,9 +30,10 @@ def create_company(user: User, data) -> None:
         name='HR',
         is_hr=True,
         company=company,
+        timezone=data.get('timezone', '+06:00')
     )
     department_schedule = [
-        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00', timezone='+06:00',)
+        DepartmentSchedule(department=hr_department, week_day=i, time_from='09:00', time_to='18:00')
         for i in range(0, 5)
     ]
     DepartmentSchedule.objects.bulk_create(department_schedule)
@@ -57,6 +58,7 @@ def create_department(user: User, data: dict) -> None:
         longitude=data['longitude'],
         radius=data['radius'],
         head_of_department=head_of_department,
+        timezone=data.get('timezone', '+06:00')
     )
     bulk_create_department_schedules(department, schedules)
     if data['head_of_department']:
@@ -108,16 +110,26 @@ def bulk_create_department_schedules(department: Department, schedules: list) ->
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
-            timezone=schedule.get('timezone', '+06:00'),
         ) for schedule in schedules]
     DepartmentSchedule.objects.bulk_create(new_schedules)
 
 
 def get_departments_qs() -> QuerySet[Department]:
-    return Department.objects.filter(company__is_deleted=False) \
-        .annotate(employees_count=Count('roles')) \
-        .prefetch_related(Prefetch('department_schedules', to_attr='schedules')) \
-        .order_by('id')
+    return Department.objects.filter(
+        company__is_deleted=False
+    ).annotate(
+        employees_count=Count('roles')
+    ).prefetch_related(
+        Prefetch(
+            'department_schedules',
+            queryset=DepartmentSchedule.objects.order_by().select_related(
+                'department',
+            ).annotate(
+                timezone=F('department__timezone')
+            ),
+            to_attr='schedules'
+        )
+    ).order_by('id')
 
 
 def get_company_qs() -> QuerySet[Company]:
@@ -126,9 +138,21 @@ def get_company_qs() -> QuerySet[Company]:
 
 
 def get_employee_list():
-    return Role.objects.exclude(role=RoleChoices.OBSERVER) \
-        .annotate(score=GetScoreForRole('companies_role.id')) \
-        .prefetch_related(Prefetch('employee_schedules', to_attr='schedules'))
+    return Role.objects.exclude(
+        role=RoleChoices.OBSERVER
+    ).annotate(
+        score=GetScoreForRole('companies_role.id')
+    ).prefetch_related(
+        Prefetch(
+            'employee_schedules',
+            queryset=EmployeeSchedule.objects.order_by().select_related(
+                'role', 'role__department'
+            ).annotate(
+                timezone=F('role__department__timezone')
+            ),
+            to_attr='schedules'
+        )
+    )
 
 
 @atomic
@@ -196,7 +220,6 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
-            timezone=schedule.get('timezone', '+06:00'),
         ) for schedule in schedules]
     EmployeeSchedule.objects.bulk_create(new_schedules)
 

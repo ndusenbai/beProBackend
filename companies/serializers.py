@@ -9,6 +9,18 @@ from utils.serializers import BaseSerializer
 
 
 class CompanyModelSerializer(serializers.ModelSerializer):
+    timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', write_only=True)
+
+    class Meta:
+        model = Company
+        fields = '__all__'
+        read_only_fields = ('id', 'owner_id', 'is_active', 'is_deleted', 'created_at', 'updated_at')
+        extra_kwargs = {
+            'timezone': {'write_only': True}
+        }
+
+
+class CompanyUpdateModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
@@ -76,6 +88,7 @@ class DepartmentSerializer(BaseSerializer):
     radius = serializers.IntegerField(default=50)
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
+    timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', required=False, default='+06:00')
 
     def validate(self, attrs):
         if not attrs.get('address'):
@@ -93,6 +106,7 @@ class UpdateDepartmentSerializer(BaseSerializer):
     radius = serializers.IntegerField(default=50)
     schedules = ScheduleSerializer(many=True)
     head_of_department_id = serializers.IntegerField(allow_null=True)
+    timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', required=False, default='+06:00')
 
 
 class HeadOfDepartmentSerializer(BaseSerializer):

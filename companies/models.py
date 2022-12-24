@@ -41,6 +41,7 @@ class Department(BaseModel):
     is_hr = models.BooleanField(default=False)
     radius = models.IntegerField(default=50)
     head_of_department = models.ForeignKey(to='companies.Role', on_delete=models.SET_NULL, null=True, blank=True, related_name='head_departments')
+    timezone = models.CharField(max_length=10, default='+06:00')
 
     class Meta:
         constraints = [

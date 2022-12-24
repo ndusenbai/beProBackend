@@ -197,7 +197,7 @@ def get_last_timesheet_action(role: Role) -> str:
 
 
 def subtract_scores(role, check_in):
-    time_sheet = TimeSheet.objects.filter(role=role, day=check_in)
+    time_sheet = TimeSheet.objects.filter(role=role, day=check_in.date())
     if not time_sheet.exists() or not time_sheet.last().status == TimeSheetChoices.ABSENT:
         reason = role.company.reasons.get(is_auto=True)
         Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
@@ -216,14 +216,27 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
             raise CheckInAlreadyExistsException()
 
     check_in: datetime = data['check_in']
-    today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
-    status = TimeSheetChoices.ON_TIME
 
-    if check_in.time() > today_schedule.time_from:
-        status = TimeSheetChoices.LATE
-        subtract_scores(role, check_in)
     now_time = datetime.now(pytz.timezone(settings.TIME_ZONE)).strftime('%z')
     timezone_save = f"{now_time[:-2]}:{now_time[-2:]}"
+
+    today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
+    timezone = today_schedule.role.department.timezone
+    status = TimeSheetChoices.ON_TIME
+    alg_sign = timezone[0]
+    offset = timezone[1:].split(':')
+    multiplier = -1 if alg_sign == '-' else 1
+    minute = (int(offset[0])*60 + int(offset[1])) * multiplier
+    default_sign = now_time[0]
+    default_multiplier = -1 if default_sign == '-' else 1
+    default_minute = (int(now_time[1:-2])*60 + int(now_time[-2:])) * default_multiplier
+
+    timedelta_minutes = default_minute - minute
+    check_in_time = (check_in - timedelta(minutes=timedelta_minutes)).time()
+    if check_in_time > today_schedule.time_from:
+        status = TimeSheetChoices.LATE
+        subtract_scores(role, check_in)
+
     TimeSheet.objects.create(
         role=role,
         day=check_in.date(),

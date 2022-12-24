@@ -15,7 +15,7 @@ from companies.serializers import CompanyModelSerializer, DepartmentSerializer, 
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
     ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer, \
-    RetrieveCompanyServiceSerializer
+    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
@@ -78,6 +78,8 @@ class CompanyViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return CompanySerializer
+        elif self.action in ['update', 'partial_update']:
+            return CompanyUpdateModelSerializer
         return CompanyModelSerializer
 
     def create(self, request, *args, **kwargs):
