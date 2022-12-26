@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
@@ -89,6 +89,8 @@ class CompanyViewSet(ModelViewSet):
         return Response({'message': 'created'})
 
     def perform_destroy(self, instance):
+        if instance.is_main:
+            raise PermissionDenied
         update_company(instance, {'is_deleted': True})
 
 

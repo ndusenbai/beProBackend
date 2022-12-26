@@ -13,7 +13,7 @@ class CompanyModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = '__all__'
+        exclude = ('is_main', )
         read_only_fields = ('id', 'owner_id', 'is_active', 'is_deleted', 'created_at', 'updated_at')
         extra_kwargs = {
             'timezone': {'write_only': True}
@@ -24,8 +24,8 @@ class CompanyUpdateModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = '__all__'
-        read_only_fields = ('id', 'owner_id', 'is_active', 'is_deleted', 'created_at', 'updated_at')
+        exclude = ('is_main', )
+        read_only_fields = ('id', 'owner_id', 'is_active', 'is_deleted', 'created_at', 'updated_at',)
 
 
 class CompanySerializer(BaseSerializer):
