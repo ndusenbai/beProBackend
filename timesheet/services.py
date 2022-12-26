@@ -221,10 +221,10 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timezone_save = f"{now_time[:-2]}:{now_time[-2:]}"
 
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
-    timezone = today_schedule.role.department.timezone
+    time_zone = today_schedule.role.department.timezone
     status = TimeSheetChoices.ON_TIME
-    alg_sign = timezone[0]
-    offset = timezone[1:].split(':')
+    alg_sign = time_zone[0]
+    offset = time_zone[1:].split(':')
     multiplier = -1 if alg_sign == '-' else 1
     minute = (int(offset[0])*60 + int(offset[1])) * multiplier
     default_sign = now_time[0]
