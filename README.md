@@ -63,15 +63,15 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
     ALTER ROLE root SET default_transaction_isolation TO 'read committed';
     ALTER ROLE root SET timezone TO 'UTC';
 19. GRANT ALL PRIVILEGES ON DATABASE bepro TO root;
-20. \q
-20.1 sudo apt-get install libpangocairo-1.0-0
-21. ./manage.pt migrate
-22. ./manage.py createsuperuser
-23. ./manage.py collectstatic
-24. ufw allow 8000
-25. ./manage.py runserver 0.0.0.0:8000
-26. ctrl+c
-26. sudo nano /etc/systemd/system/gunicorn.socket
+20. \q 
+21. sudo apt-get install libpangocairo-1.0-0
+22. ./manage.py migrate
+23. ./manage.py createsuperuser
+24. ./manage.py collectstatic
+25. ufw allow 8000
+26. ./manage.py runserver 0.0.0.0:8000
+27. ctrl+c
+28. sudo nano /etc/systemd/system/gunicorn.socket
     [Unit]
     Description=gunicorn socket
 
@@ -80,7 +80,7 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
     
     [Install]
     WantedBy=sockets.target
-27. sudo nano /etc/systemd/system/gunicorn.service
+29. sudo nano /etc/systemd/system/gunicorn.service
     [Unit]
     Description=gunicorn daemon
     Requires=gunicorn.socket
@@ -98,10 +98,10 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
 
     [Install]
     WantedBy=multi-user.target
-28. sudo systemctl start gunicorn.socket
+30. sudo systemctl start gunicorn.socket
     sudo systemctl enable gunicorn.socket
-29. file /run/gunicorn.sock
-30. nano /etc/nginx/sites-available/default
+31. file /run/gunicorn.sock
+32. nano /etc/nginx/sites-available/default
     server {
         location /django-admin {
                 include proxy_params;
@@ -118,24 +118,24 @@ https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postg
                 alias /var/www/back/media;
         }
     }
-31. sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled
-32. sudo nginx -t
-33. sudo systemctl restart nginx
-34. sudo ufw delete allow 8000
+33. sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled
+34. sudo nginx -t
+35. sudo systemctl restart nginx
+36. sudo ufw delete allow 8000
     sudo ufw allow 'Nginx Full'
-35. apt install redis-server
-36. cd media
-37. mkdir tests_pdf
-37. cd tests_pdf
-38. mkdir tests_one_heart_pro, tests_two_brain, tests_three_brain_pro, tests_four_heart
-39. cd ../
-37. mkdir statistics
-38. cd statistics
-39. mkdir double_stats
-40. mkdir general_stats
-41. mkdir history_stats
-42. mkdir inverted_stats
-43. применить все функции на базу данных из папки sql_queries
+37. apt install redis-server
+38. cd media
+39. mkdir tests_pdf
+40. cd tests_pdf
+41. mkdir tests_one_heart_pro, tests_two_brain, tests_three_brain_pro, tests_four_heart
+42. cd ../
+43. mkdir statistics
+44. cd statistics
+45. mkdir double_stats
+46. mkdir general_stats
+47. mkdir history_stats
+48. mkdir inverted_stats
+49. применить все функции на базу данных из папки sql_queries
 
 
 
