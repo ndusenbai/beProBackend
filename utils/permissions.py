@@ -289,7 +289,7 @@ class ScorePermission(BasePermission):
             if request.user.selected_company_id == score_user_company_id:
                 return True
         elif view.action in ['create', 'destroy']:
-            if role in ['hr', 'owner']:
+            if role in ['hr', 'owner', 'head_of_hr_department']:
                 return True
 
         return False
