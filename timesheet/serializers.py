@@ -7,10 +7,18 @@ from utils.serializers import BaseSerializer
 
 class TimeSheetModelSerializer(serializers.ModelSerializer):
     status_decoded = serializers.SerializerMethodField(read_only=True)
+    timezone_schedule = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TimeSheet
         exclude = ('created_at', 'updated_at')
+
+    def get_timezone_schedule(self, instance):
+        if instance.role:
+            if instance.role.department:
+                if instance.role.department.timezone:
+                    return instance.role.department.timezone
+        return '+00:00'
 
     def get_status_decoded(self, instance):
         return TimeSheetChoices.get_status(instance.status)

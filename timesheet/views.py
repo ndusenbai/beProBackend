@@ -25,7 +25,7 @@ User = get_user_model()
 class TimeSheetViewSet(ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = TimeSheetModelSerializer
     permission_classes = (TimeSheetPermissions,)
-    queryset = TimeSheet.objects.all()
+    queryset = TimeSheet.objects.all().select_related('role', 'role__department')
     pagination_class = None
 
     @swagger_auto_schema(manual_parameters=[QUERY_ROLE, QUERY_MONTH, QUERY_YEAR])
