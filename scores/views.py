@@ -76,8 +76,11 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
     def filter_queryset(self, queryset):
         data = self.filter_serializer.validated_data
 
-        if 'year' in data and 'months' in data:
-            return queryset.filter(created_at__year=data['year'], role_id=data['role'], created_at__month__in=data['months'])
+        if 'year' in data:
+            if 'months' in data:
+                return queryset.filter(created_at__year=data['year'], role_id=data['role'],
+                                       created_at__month__in=data['months'])
+            return queryset.filter(created_at__year=data['year'], role_id=data['role'])
         else:
             return queryset.filter(role_id=data['role'])
 
