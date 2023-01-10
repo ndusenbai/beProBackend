@@ -71,7 +71,7 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return Score.objects\
             .annotate(month=TruncMonth('created_at')).values('month')\
-            .annotate(score=100+Sum('points')).values('month', 'score')
+            .annotate(score=100+Sum('points')).values('month', 'score').order_by('created_at')
 
     def filter_queryset(self, queryset):
         data = self.filter_serializer.validated_data
