@@ -71,7 +71,7 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return Score.objects\
             .annotate(month=TruncMonth('created_at')).values('month')\
-            .annotate(score=100+Sum('points')).values('month', 'score').order_by('created_at')
+            .annotate(score=100+Sum('points')).values('month', 'score')
 
     def filter_queryset(self, queryset):
         data = self.filter_serializer.validated_data
@@ -79,10 +79,10 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
         if 'year' in data:
             if 'months' in data:
                 return queryset.filter(created_at__year=data['year'], role_id=data['role'],
-                                       created_at__month__in=data['months']).distinct()
-            return queryset.filter(created_at__year=data['year'], role_id=data['role']).distinct()
+                                       created_at__month__in=data['months']).distinct().order_by('month')
+            return queryset.filter(created_at__year=data['year'], role_id=data['role']).distinct().order_by('month')
         else:
-            return queryset.filter(role_id=data['role']).distinct()
+            return queryset.filter(role_id=data['role']).distinct().order_by('month')
 
     @swagger_auto_schema(manual_parameters=[QUERY_YEAR, QUERY_MONTHS])
     def list(self, request, *args, **kwargs):
