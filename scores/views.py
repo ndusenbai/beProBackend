@@ -79,10 +79,10 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
         if 'year' in data:
             if 'months' in data:
                 return queryset.filter(created_at__year=data['year'], role_id=data['role'],
-                                       created_at__month__in=data['months'])
-            return queryset.filter(created_at__year=data['year'], role_id=data['role'])
+                                       created_at__month__in=data['months']).distinct()
+            return queryset.filter(created_at__year=data['year'], role_id=data['role']).distinct()
         else:
-            return queryset.filter(role_id=data['role'])
+            return queryset.filter(role_id=data['role']).distinct()
 
     @swagger_auto_schema(manual_parameters=[QUERY_YEAR, QUERY_MONTHS])
     def list(self, request, *args, **kwargs):
