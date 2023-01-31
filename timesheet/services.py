@@ -234,9 +234,8 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timedelta_minutes = default_minute - minute
     check_in_time = (check_in - timedelta(minutes=timedelta_minutes)).time()
     time_schedule_datetime = datetime.combine(check_in.date(), today_schedule.time_from)
-    time_schedule_start = (time_schedule_datetime - timedelta(minutes=1)).time()
     time_schedule_end = (time_schedule_datetime + timedelta(minutes=1)).time()
-    if time_schedule_start < check_in_time < time_schedule_end:
+    if check_in_time > time_schedule_end:
         status = TimeSheetChoices.LATE
         subtract_scores(role, check_in)
 
