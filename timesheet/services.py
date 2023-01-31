@@ -233,7 +233,9 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
 
     timedelta_minutes = default_minute - minute
     check_in_time = (check_in - timedelta(minutes=timedelta_minutes)).time()
-    if check_in_time > today_schedule.time_from:
+    time_schedule_start = today_schedule.time_from - timedelta(minutes=1)
+    time_schedule_end = today_schedule.time_from + timedelta(minutes=1)
+    if time_schedule_start < check_in_time < time_schedule_end:
         status = TimeSheetChoices.LATE
         subtract_scores(role, check_in)
 
