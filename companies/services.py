@@ -152,7 +152,7 @@ def get_employee_list():
             ),
             to_attr='schedules'
         )
-    )
+    ).distinct()
 
 
 @atomic
