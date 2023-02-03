@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from applications.models import ApplicationToCreateCompany, ApplicationStatus, TariffApplication, TestApplication
@@ -60,7 +61,9 @@ class TestApplicationModelSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
     def get_owner(self, instance):
-        return UserModelSerializer(instance.company.owner).data
+        if instance.company:
+            return UserModelSerializer(instance.company.owner).data
+        return UserModelSerializer(get_user_model().objects.none()).data
 
 
 class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
