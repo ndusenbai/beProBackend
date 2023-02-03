@@ -63,7 +63,7 @@ class TestApplicationModelSerializer(serializers.ModelSerializer):
     def get_owner(self, instance):
         if instance.company:
             return UserModelSerializer(instance.company.owner).data
-        return UserModelSerializer(get_user_model().objects.none()).data
+        return UserModelSerializer(get_user_model().objects.none().first()).data
 
 
 class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
