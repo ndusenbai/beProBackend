@@ -215,27 +215,24 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         if last_timesheet.check_in and not last_timesheet.check_out:
             raise CheckInAlreadyExistsException()
 
-    check_in: datetime = data['check_in']
+    check_in = datetime.now(pytz.timezone(settings.TIME_ZONE))
 
-    now_time = datetime.now(pytz.timezone(settings.TIME_ZONE)).strftime('%z')
-    timezone_save = f"{now_time[:-2]}:{now_time[-2:]}"
-
+    # getting employee schedule and department timezone
     today_schedule = EmployeeSchedule.objects.get(role=role, week_day=check_in.weekday())
     time_zone = today_schedule.role.department.timezone
-    status = TimeSheetChoices.ON_TIME
-    alg_sign = time_zone[0]
-    offset = time_zone[1:].split(':')
-    multiplier = -1 if alg_sign == '-' else 1
-    minute = (int(offset[0])*60 + int(offset[1])) * multiplier
-    default_sign = now_time[0]
-    default_multiplier = -1 if default_sign == '-' else 1
-    default_minute = (int(now_time[1:-2])*60 + int(now_time[-2:])) * default_multiplier
 
-    timedelta_minutes = default_minute - minute
-    check_in_time = (check_in - timedelta(minutes=timedelta_minutes)).time()
+    status = TimeSheetChoices.ON_TIME
+
+    # creating datetime schedule with timezone
     time_schedule_datetime = datetime.combine(check_in.date(), today_schedule.time_from)
-    time_schedule_end = (time_schedule_datetime + timedelta(minutes=1)).time()
-    if check_in_time > time_schedule_end:
+    time_schedule_datetime = datetime.strptime(f'{time_schedule_datetime.strftime("%Y-%m-%d %H:%M")} {time_zone}',
+                                               '%Y-%m-%d %H:%M %z')
+    time_schedule_datetime = time_schedule_datetime.astimezone(pytz.timezone(settings.TIME_ZONE))
+
+    # add timedelta for 1 minute late
+    time_schedule_end = time_schedule_datetime + timedelta(minutes=1)
+
+    if check_in > time_schedule_end:
         status = TimeSheetChoices.LATE
         subtract_scores(role, check_in)
 
@@ -246,7 +243,6 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         check_out=None,
         time_from=today_schedule.time_from,
         time_to=today_schedule.time_to,
-        timezone=timezone_save,
         status=status,
         comment=data.get('comment', ''),
         file=data.get('file', None),
