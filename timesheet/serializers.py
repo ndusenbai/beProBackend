@@ -100,3 +100,4 @@ class UpdateFutureTimeSheetSerializer(BaseSerializer):
     day = serializers.IntegerField(min_value=1, max_value=31)
     month = serializers.IntegerField(min_value=1, max_value=12)
     year = serializers.IntegerField(min_value=2022, max_value=9999)
+    status = serializers.ChoiceField(choices=[timesheet_choice for timesheet_choice in TimeSheetChoices.choices])
