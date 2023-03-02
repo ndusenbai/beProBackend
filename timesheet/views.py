@@ -162,7 +162,8 @@ class VacationTimeSheetViewSet(CreateModelMixin, GenericViewSet):
 
 
 class CreateFutureTimeSheetAPI(APIView):
-    permission_classes = (ChangeTimeSheetPermissions,)
+    permission_classes = (IsAuthenticated,)
+    # permission_classes = (ChangeTimeSheetPermissions,)
 
     def put(self, request):
         serializer = UpdateFutureTimeSheetSerializer(data=self.request.query_params)
