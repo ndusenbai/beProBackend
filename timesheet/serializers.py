@@ -95,9 +95,11 @@ class VacationTimeSheetSerializer(BaseSerializer):
     end_vacation_date = serializers.DateField()
 
 
-class UpdateFutureTimeSheetSerializer(BaseSerializer):
+class CreateFutureTimeSheetSerializer(BaseSerializer):
     role_id = serializers.IntegerField(required=False)
     day = serializers.IntegerField(min_value=1, max_value=31)
     month = serializers.IntegerField(min_value=1, max_value=12)
     year = serializers.IntegerField(min_value=2022, max_value=9999)
     status = serializers.ChoiceField(choices=[timesheet_choice for timesheet_choice in TimeSheetChoices.choices])
+    time_from = serializers.TimeField(required=False, allow_null=True)
+    time_to = serializers.TimeField(required=False, allow_null=True)

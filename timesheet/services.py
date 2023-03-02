@@ -135,14 +135,14 @@ def create_day_off_timesheet(role_id, date_formatted, text):
     }
 
 
-def create_future_day_timesheet(role_id, date_formatted, is_workday_schedule, text):
+def create_future_day_timesheet(role_id, date_formatted, time_from, time_to, text):
     future_day_timesheet = TimeSheet.objects.create(
         role_id=role_id,
         day=date_formatted,
         check_in=None,
         check_out=None,
-        time_from=is_workday_schedule.time_from,
-        time_to=is_workday_schedule.time_to,
+        time_from=time_from,
+        time_to=time_to,
         debug_comment=text,
         status=TimeSheetChoices.FUTURE_DAY,
     )
@@ -152,8 +152,8 @@ def create_future_day_timesheet(role_id, date_formatted, is_workday_schedule, te
         'day': date_formatted,
         'check_in': '',
         'check_out': '',
-        'time_from': is_workday_schedule.time_from,
-        'time_to': is_workday_schedule.time_to,
+        'time_from': time_from,
+        'time_to': time_to,
         'comment': '',
         'file': None,
         'status': TimeSheetChoices.FUTURE_DAY,
@@ -445,18 +445,26 @@ def create_vacation(data: OrderedDict):
     return bulk_create_vacation_timesheets(data)
 
 
-def create_future_time_sheet(role_id, day, month, year, status):
+def create_future_time_sheet(role_id, day, month, year, status, time_from=None, time_to=None):
     _date = date(year, month, day)
     date_formatted = _date.strftime('%Y-%m-%d')
-    text = 'Created automatically within update_future_time_sheet()'
+    text = 'Created automatically within create_future_time_sheet()'
+    with atomic():
+        if status == 5:
+            return create_day_off_timesheet(role_id, date_formatted, text)
+        elif status == 6:
+            schedules = EmployeeSchedule.objects.filter(role_id=role_id)
+            is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
+            if is_workday_schedule:
+                local_time_from = is_workday_schedule.time_from
+                local_time_to = is_workday_schedule.time_to
+            else:
+                if not (time_from and time_to):
+                    return {'message': 'Enter time_from & time_to'}, 400
 
-    if status == 5:
-        return create_day_off_timesheet(role_id, date_formatted, text)
-    elif status == 6:
-        schedules = EmployeeSchedule.objects.filter(role_id=role_id)
-        is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
-        return create_future_day_timesheet(role_id, date_formatted, is_workday_schedule, text)
-    return None
+                local_time_from = time_from
+                local_time_to = time_to
 
-
-
+            return create_future_day_timesheet(role_id, date_formatted, local_time_from, local_time_to, text), 201
+        else:
+            return {'message': 'Wrong status!'}, 400

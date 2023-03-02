@@ -11,7 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
-    VacationTimeSheetSerializer, UpdateFutureTimeSheetSerializer
+    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month, create_future_time_sheet
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
@@ -165,10 +165,9 @@ class CreateFutureTimeSheetAPI(APIView):
     permission_classes = (IsAuthenticated,)
     # permission_classes = (ChangeTimeSheetPermissions,)
 
-    def put(self, request):
-        serializer = UpdateFutureTimeSheetSerializer(data=self.request.query_params)
+    @swagger_auto_schema(request_body=CreateFutureTimeSheetSerializer)
+    def post(self, request):
+        serializer = CreateFutureTimeSheetSerializer(data=self.request.query_params)
         serializer.is_valid(raise_exception=True)
-        response = create_future_time_sheet(**serializer.validated_data)
-        if response is None:
-            return Response({'message': 'Wrong status!'}, status.HTTP_400_BAD_REQUEST)
-        return Response(response, status=status.HTTP_201_CREATED)
+        response, status_code = create_future_time_sheet(**serializer.validated_data)
+        return Response(response, status=status_code)
