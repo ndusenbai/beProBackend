@@ -167,7 +167,7 @@ class CreateFutureTimeSheetAPI(APIView):
 
     @swagger_auto_schema(request_body=CreateFutureTimeSheetSerializer)
     def post(self, request):
-        serializer = CreateFutureTimeSheetSerializer(data=self.request.query_params)
+        serializer = CreateFutureTimeSheetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         response, status_code = create_future_time_sheet(**serializer.validated_data)
         return Response(response, status=status_code)
