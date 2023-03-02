@@ -16,6 +16,7 @@ router.register('vacation', views.VacationTimeSheetViewSet, basename='vacation')
 urlpatterns = [
     path('last-timesheet/', views.LastTimeSheet.as_view(), name='last-timesheet'),
     path('task-absence-check/', tasks.absence_check_request, name='task-absence-check'),
+    path('create-future-timesheet/', views.CreateFutureTimeSheetAPI.as_view(), name='future-timesheet')
 ]
 
 urlpatterns += router.urls

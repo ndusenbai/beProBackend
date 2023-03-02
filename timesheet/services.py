@@ -67,7 +67,8 @@ def get_timesheet_by_month(role_id, year, month):
                 if is_workday_schedule:
                     result.append(create_absent_timesheet(role_id, date_formatted, is_workday_schedule))
                 else:
-                    result.append(create_day_off_timesheet(role_id, date_formatted))
+                    text = 'Created automatically within get_timesheet_by_month()'
+                    result.append(create_day_off_timesheet(role_id, date_formatted, text))
         else:
             timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
             if timesheet_for_day:
@@ -108,7 +109,7 @@ def create_absent_timesheet(role_id, date_formatted, is_workday_schedule):
     }
 
 
-def create_day_off_timesheet(role_id, date_formatted):
+def create_day_off_timesheet(role_id, date_formatted, text):
     day_off_timesheet = TimeSheet.objects.create(
         role_id=role_id,
         day=date_formatted,
@@ -116,7 +117,7 @@ def create_day_off_timesheet(role_id, date_formatted):
         check_out=None,
         time_from=None,
         time_to=None,
-        debug_comment='Created automatically within get_timesheet_by_month()',
+        debug_comment=text,
         status=TimeSheetChoices.DAY_OFF,
     )
     return {
@@ -131,6 +132,32 @@ def create_day_off_timesheet(role_id, date_formatted):
         'file': None,
         'status': TimeSheetChoices.DAY_OFF,
         'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+    }
+
+
+def create_future_day_timesheet(role_id, date_formatted, is_workday_schedule, text):
+    future_day_timesheet = TimeSheet.objects.create(
+        role_id=role_id,
+        day=date_formatted,
+        check_in=None,
+        check_out=None,
+        time_from=is_workday_schedule.time_from,
+        time_to=is_workday_schedule.time_to,
+        debug_comment=text,
+        status=TimeSheetChoices.FUTURE_DAY,
+    )
+    return {
+        'id': future_day_timesheet.id,
+        'role': role_id,
+        'day': date_formatted,
+        'check_in': '',
+        'check_out': '',
+        'time_from': is_workday_schedule.time_from,
+        'time_to': is_workday_schedule.time_to,
+        'comment': '',
+        'file': None,
+        'status': TimeSheetChoices.FUTURE_DAY,
+        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.FUTURE_DAY),
     }
 
 
@@ -416,3 +443,20 @@ def create_vacation(data: OrderedDict):
         return {'message': 'Дата начала отпуска не может быть позже или равным, чем дата окончания отпуска'}, 400
 
     return bulk_create_vacation_timesheets(data)
+
+
+def create_future_time_sheet(role_id, day, month, year, status):
+    _date = date(year, month, day)
+    date_formatted = _date.strftime('%Y-%m-%d')
+    text = 'Created automatically within update_future_time_sheet()'
+
+    if status == 5:
+        return create_day_off_timesheet(role_id, date_formatted, text)
+    elif status == 6:
+        schedules = EmployeeSchedule.objects.filter(role_id=role_id)
+        is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
+        return create_future_day_timesheet(role_id, date_formatted, is_workday_schedule, text)
+    return None
+
+
+
