@@ -35,7 +35,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('api/', include('config.api_urls')),
     path('django-admin/', admin.site.urls),
-    path('devices', FCMDeviceAuthorizedViewSet.as_view({'post': 'create'}), name='create_fcm_device'),
+    path('devices/', FCMDeviceAuthorizedViewSet.as_view({'post': 'create'}), name='create_fcm_device'),
 ]
 
 
