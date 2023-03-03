@@ -15,11 +15,11 @@ from companies.serializers import CompanyModelSerializer, DepartmentSerializer, 
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
     ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer, \
-    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer
+    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer, ZoneCreateSerializer, ZoneListSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
-    update_company_services, get_qs_retrieve_company_services
+    update_company_services, get_qs_retrieve_company_services, get_zones_qs
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
     SuperuserOrOwnerOrHRPermission
@@ -233,3 +233,15 @@ class ObserverViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         update_observer(self.get_object(), serializer.validated_data)
         return Response({'message': 'updated'})
+
+
+class ZoneViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return get_zones_qs(self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return ZoneListSerializer
+        return ZoneCreateSerializer

@@ -7,7 +7,7 @@ from django.db.transaction import atomic
 from rest_framework import status
 
 from auth_user.services import User
-from companies.models import Department, Company, Role, RoleChoices, CompanyService
+from companies.models import Department, Company, Role, RoleChoices, CompanyService, Zone
 from scores.models import Reason
 from scores.utils import GetScoreForRole
 from timesheet.models import DepartmentSchedule, EmployeeSchedule
@@ -282,4 +282,10 @@ def get_qs_retrieve_company_services():
         analytics_enabled=F('service__analytics_enabled'),
         time_tracking_enabled=F('service__time_tracking_enabled'),
         tests_enabled=F('service__tests_enabled'),
+    )
+
+
+def get_zones_qs(user):
+    return Zone.objects.filter(
+        company=user.role.company
     )

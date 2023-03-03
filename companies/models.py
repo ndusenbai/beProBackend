@@ -80,6 +80,7 @@ class CompanyService(BaseModel):
 
 
 class Zone(BaseModel):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='zones')
     address = models.CharField(max_length=255, blank=True)
     latitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])

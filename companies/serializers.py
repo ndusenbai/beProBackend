@@ -3,7 +3,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 from auth_user.serializers import UserModelSerializer, UserSerializer
-from companies.models import Company, Department, CompanyService
+from companies.models import Company, Department, CompanyService, Zone
 from timesheet.serializers import ScheduleSerializer
 from utils.serializers import BaseSerializer
 
@@ -270,3 +270,25 @@ class RetrieveCompanyServiceSerializer(BaseSerializer):
     analytics_enabled = serializers.BooleanField()
     time_tracking_enabled = serializers.BooleanField()
     tests_enabled = serializers.BooleanField()
+
+
+class ZoneEmployeeSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    user = UserSerializer()
+    role = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class ZoneListSerializer(serializers.ModelSerializer):
+    employees = ZoneEmployeeSerializer(many=True)
+
+    class Meta:
+        model = Zone
+        exclude = ("created_at", 'updated_at')
+
+
+class ZoneCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Zone
+        exclude = ("created_at", 'updated_at')
