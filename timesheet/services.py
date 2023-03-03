@@ -230,10 +230,21 @@ def subtract_scores(role, check_in):
         Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
 
 
-def check_distance(department: Department, latitude: float, longitude: float) -> None:
+def check_distance(role: Role, latitude: float, longitude: float) -> None:
+    zones = role.zones.all()
+    department = role.department
+    all_zones_far = True
+    for zone in zones:
+        distance = geopy.distance.geodesic((latitude, longitude), (zone.latitude, zone.longitude)).m
+        if distance <= zone.radius:
+            all_zones_far = False
+            break
     distance = geopy.distance.geodesic((latitude, longitude), (department.latitude, department.longitude)).m
-    if distance > department.radius:
+    if distance <= department.radius:
+        all_zones_far = False
+    if all_zones_far:
         raise EmployeeTooFarFromDepartment()
+
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
@@ -263,22 +274,35 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         status = TimeSheetChoices.LATE
         subtract_scores(role, check_in)
 
-    TimeSheet.objects.create(
-        role=role,
-        day=check_in.date(),
-        check_in=check_in.time(),
-        check_out=None,
-        time_from=today_schedule.time_from,
-        time_to=today_schedule.time_to,
-        status=status,
-        comment=data.get('comment', ''),
-        file=data.get('file', None),
-    )
+    # changed logic of creation, because there might be created future_day timesheet
+
+    timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date())
+
+    timesheet.check_in = check_in.time()
+    timesheet.check_out = None
+    timesheet.time_from = today_schedule.time_from
+    timesheet.time_to = today_schedule.time_to
+    timesheet.status = status
+    timesheet.comment = data.get('comment', '')
+    timesheet.file = data.get('file', None)
+    timesheet.save()
+
+    # TimeSheet.objects.create(
+    #     role=role,
+    #     day=check_in.date(),
+    #     check_in=check_in.time(),
+    #     check_out=None,
+    #     time_from=today_schedule.time_from,
+    #     time_to=today_schedule.time_to,
+    #     status=status,
+    #     comment=data.get('comment', ''),
+    #     file=data.get('file', None),
+    # )
 
 
 @atomic
 def create_check_in_timesheet(role: Role, data: dict) -> None:
-    check_distance(role.department, data['latitude'], data['longitude'])
+    check_distance(role, data['latitude'], data['longitude'])
     handle_check_in_timesheet(role, data)
 
 
@@ -451,7 +475,7 @@ def create_future_time_sheet(role_id, day, month, year, status, time_from=None, 
     text = 'Created automatically within create_future_time_sheet()'
     with atomic():
         if status == 5:
-            return create_day_off_timesheet(role_id, date_formatted, text)
+            return create_day_off_timesheet(role_id, date_formatted, text), 201
         elif status == 6:
             schedules = EmployeeSchedule.objects.filter(role_id=role_id)
             is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())

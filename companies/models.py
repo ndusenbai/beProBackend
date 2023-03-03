@@ -77,3 +77,11 @@ class CompanyService(BaseModel):
 
     def __str__(self):
         return f'Service of {self.company}'
+
+
+class Zone(BaseModel):
+    address = models.CharField(max_length=255, blank=True)
+    latitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
+    longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
+    radius = models.IntegerField()
+    employees = models.ManyToManyField('Role', blank=True, related_name='zones')
