@@ -238,6 +238,9 @@ class ObserverViewSet(ModelViewSet):
 class ZoneViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.role.company)
+
     def get_queryset(self):
         return get_zones_qs(self.request.user)
 

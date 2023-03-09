@@ -288,4 +288,9 @@ def get_qs_retrieve_company_services():
 def get_zones_qs(user):
     return Zone.objects.filter(
         company=user.role.company
+    ).prefetch_related(
+        Prefetch(
+            'employees',
+            queryset=Role.objects.select_related('user')
+        )
     )

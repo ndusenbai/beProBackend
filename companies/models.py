@@ -86,3 +86,6 @@ class Zone(BaseModel):
     longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
     radius = models.IntegerField()
     employees = models.ManyToManyField('Role', blank=True, related_name='zones')
+
+    def __str__(self):
+        return f'{self.company} - {self.address}'
