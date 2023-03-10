@@ -13,11 +13,11 @@ from django.db.models import F, Sum
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
-    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer
+    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer, MonthHoursValidationSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month, create_future_time_sheet
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
-from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
+from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE, QUERY_MONTHS
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
 from utils.tools import log_exception
 
@@ -180,6 +180,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('role',)
     serializer_class = MonthHoursSerializer
+    filter_serializer = None
 
     def get_queryset(self):
         TimeSheet.objects.annotate(
@@ -210,3 +211,12 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
             return queryset.filter(created_at__year=data['year'], role_id=data['role']).distinct().order_by('month')
         else:
             return queryset.filter(role_id=data['role']).distinct().order_by('month')
+
+    @swagger_auto_schema(manual_parameters=[QUERY_YEAR, QUERY_MONTHS])
+    def list(self, request, *args, **kwargs):
+        """
+        Получить кол-во баллов за каждый выбранный месяц в году по роли, или за весь период
+        """
+        self.filter_serializer = MonthHoursValidationSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
+        return super().list(request, *args, **kwargs)

@@ -108,3 +108,15 @@ class CreateFutureTimeSheetSerializer(BaseSerializer):
 class MonthHoursSerializer(BaseSerializer):
     month = serializers.DateTimeField()
     total_duration = serializers.FloatField()
+
+
+class MonthHoursValidationSerializer(BaseSerializer):
+    year = serializers.IntegerField(required=False)
+    months = serializers.ListField(child=serializers.CharField(), required=False,)
+    role = serializers.IntegerField()
+
+    def to_internal_value(self, data):
+        if 'months' in data:
+            data = super().to_internal_value(data)
+            data['months'] = [int(i) for i in data['months'][0].split(',')]
+        return data
