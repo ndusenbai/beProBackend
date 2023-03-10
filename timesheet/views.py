@@ -197,6 +197,8 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
             'month'
         ).annotate(
             total_duration=Sum('total_minutes') / 60
+        ).exclude(
+            total_duration=None
         ).order_by(
             'month'
         )
