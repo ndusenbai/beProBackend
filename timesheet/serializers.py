@@ -103,3 +103,8 @@ class CreateFutureTimeSheetSerializer(BaseSerializer):
     status = serializers.ChoiceField(choices=[timesheet_choice for timesheet_choice in TimeSheetChoices.choices])
     time_from = serializers.TimeField(required=False, allow_null=True)
     time_to = serializers.TimeField(required=False, allow_null=True)
+
+
+class MonthHoursSerializer(BaseSerializer):
+    month = serializers.DateTimeField()
+    total_duration = serializers.FloatField()

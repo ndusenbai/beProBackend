@@ -3,15 +3,17 @@ from django.db import IntegrityError
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, UpdateModelMixin
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
-
+from django.db.models.functions import TruncMonth, Extract
+from django.db.models import F, Sum
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
-    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer
+    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month, create_future_time_sheet
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
@@ -171,3 +173,40 @@ class CreateFutureTimeSheetAPI(APIView):
         serializer.is_valid(raise_exception=True)
         response, status_code = create_future_time_sheet(**serializer.validated_data)
         return Response(response, status=status_code)
+
+
+class MonthHoursViewSet(ListModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('role',)
+    serializer_class = MonthHoursSerializer
+
+    def get_queryset(self):
+        TimeSheet.objects.annotate(
+            month=TruncMonth('check_in'),
+            check_in_hour=Extract('check_in', 'hour'),
+            check_in_minute=Extract('check_in', 'minute'),
+            check_out_hour=Extract('check_out', 'hour'),
+            check_out_minute=Extract('check_out', 'minute'),
+            total_minutes=(
+                    (F('check_out_hour') * 60 + F('check_out_minute')) -
+                    (F('check_in_hour') * 60 + F('check_in_minute'))
+            )
+        ).values(
+            'month'
+        ).annotate(
+            total_duration=Sum('total_minutes') / 60
+        ).order_by(
+            'month'
+        )
+
+    def filter_queryset(self, queryset):
+        data = self.filter_serializer.validated_data
+
+        if 'year' in data:
+            if 'months' in data:
+                return queryset.filter(created_at__year=data['year'], role_id=data['role'],
+                                       created_at__month__in=data['months']).distinct().order_by('month')
+            return queryset.filter(created_at__year=data['year'], role_id=data['role']).distinct().order_by('month')
+        else:
+            return queryset.filter(role_id=data['role']).distinct().order_by('month')
