@@ -183,7 +183,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_serializer = None
 
     def get_queryset(self):
-        TimeSheet.objects.annotate(
+        return TimeSheet.objects.annotate(
             month=TruncMonth('created_at'),
             check_in_hour=Extract('check_in', 'hour'),
             check_in_minute=Extract('check_in', 'minute'),
