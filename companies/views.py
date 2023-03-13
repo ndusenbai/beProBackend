@@ -237,6 +237,8 @@ class ObserverViewSet(ModelViewSet):
 
 class ZoneViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('address',)
 
     def perform_create(self, serializer):
         serializer.save(company=self.request.user.role.company)

@@ -302,7 +302,8 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
 
 @atomic
 def create_check_in_timesheet(role: Role, data: dict) -> None:
-    check_distance(role, data['latitude'], data['longitude'])
+    if role.in_zone:
+        check_distance(role, data['latitude'], data['longitude'])
     handle_check_in_timesheet(role, data)
 
 
@@ -409,8 +410,10 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
-    analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
+    if role.in_zone:
+        check_distance(role, data['latitude'], data['longitude'])
 
+    analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
     if not handle_check_out_absent_days(role, data, analytics_enabled):
         return False
     if analytics_enabled:

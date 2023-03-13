@@ -191,6 +191,7 @@ class CreateEmployeeSerializer(BaseSerializer):
     middle_name = serializers.CharField(allow_blank=True)
     email = serializers.EmailField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
+    in_zone = serializers.BooleanField(allow_null=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()
