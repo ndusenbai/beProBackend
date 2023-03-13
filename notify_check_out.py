@@ -15,7 +15,7 @@ now = timezone.now()
 
 
 check_out_schedules = EmployeeSchedule.objects.filter(
-    weekday=now.weekday(),
+    week_day=now.weekday(),
     time_to__gte=now.time(),
     time_to__lte=(now + datetime.timedelta(minutes=5)).time()
 )

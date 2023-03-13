@@ -14,7 +14,7 @@ now = timezone.now()
 
 # Get all employee schedules that have a check-in time within the next 5 minutes
 check_in_schedules = EmployeeSchedule.objects.filter(
-    weekday=now.weekday(),
+    week_day=now.weekday(),
     time_from__gte=now.time(),
     time_from__lte=(now + datetime.timedelta(minutes=5)).time()
 )
