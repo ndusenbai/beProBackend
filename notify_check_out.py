@@ -1,3 +1,9 @@
+import django
+import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+django.setup()
+
 import datetime
 from django.utils import timezone
 from timesheet.models import TimeSheet, EmployeeSchedule
