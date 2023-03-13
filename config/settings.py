@@ -3,6 +3,7 @@ from datetime import timedelta
 import environ
 import redis
 import os
+from firebase_admin import initialize_app
 env = environ.Env()
 environ.Env.read_env()
 
@@ -10,7 +11,7 @@ environ.Env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-
+FIREBASE_APP = initialize_app()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
