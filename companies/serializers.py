@@ -172,6 +172,7 @@ class EmployeesSerializer(BaseSerializer):
     score = serializers.IntegerField()
     department = DepartmentListSerializer()
     schedules = ScheduleSerializer(many=True)
+    in_zone = serializers.BooleanField()
     today_schedule = serializers.SerializerMethodField()
 
     def get_today_schedule(self, instance):
