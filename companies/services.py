@@ -161,6 +161,7 @@ def create_employee(data: dict) -> None:
     grade = data.pop('grade')
     department_id = data.pop('department_id')
     schedules = data.pop('schedules')
+    in_zone = data.pop('in_zone')
 
     department = Department.objects.get(id=department_id)
     data['selected_company_id'] = department.company_id
@@ -181,7 +182,8 @@ def create_employee(data: dict) -> None:
             role=RoleChoices.HR if department.is_hr else RoleChoices.EMPLOYEE,
             user=employee,
             title=title,
-            grade=grade
+            grade=grade,
+            in_zone=in_zone
         )
         create_employee_schedules(role, schedules)
     else:
