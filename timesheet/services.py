@@ -6,7 +6,7 @@ import geopy.distance
 import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.db.transaction import atomic
 from django.utils import timezone
 
@@ -480,18 +480,33 @@ def create_future_time_sheet(role_id, day, month, year, status, time_from=None, 
         if status == 5:
             return create_day_off_timesheet(role_id, date_formatted, text), 201
         elif status == 6:
-            schedules = EmployeeSchedule.objects.filter(role_id=role_id)
-            is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
-            if is_workday_schedule:
-                local_time_from = is_workday_schedule.time_from
-                local_time_to = is_workday_schedule.time_to
-            else:
-                if not (time_from and time_to):
-                    return {'message': 'Enter time_from & time_to'}, 400
+            # schedules = EmployeeSchedule.objects.filter(role_id=role_id)
+            # is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
+            # if is_workday_schedule:
+            #     local_time_from = is_workday_schedule.time_from
+            #     local_time_to = is_workday_schedule.time_to
+            # else:
+            if not (time_from and time_to):
+                return {'message': 'Enter time_from & time_to'}, 400
 
-                local_time_from = time_from
-                local_time_to = time_to
+            local_time_from = time_from
+            local_time_to = time_to
 
             return create_future_day_timesheet(role_id, date_formatted, local_time_from, local_time_to, text), 201
         else:
             return {'message': 'Wrong status!'}, 400
+
+
+def generate_total_hours(role_id, year, month):
+    timesheets = TimeSheet.objects.filter(
+        role_id=role_id,
+        created_at__year=year,
+        created_at__month=month
+    )
+
+    # calculate the total working hours
+    total_working_hours = timesheets.aggregate(
+        total=Sum('check_out') - Sum('check_in')
+    )['total']
+
+    return total_working_hours.total_seconds() / 3600.0
