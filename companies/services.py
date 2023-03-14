@@ -143,6 +143,7 @@ def get_employee_list():
     ).annotate(
         score=GetScoreForRole('companies_role.id')
     ).prefetch_related(
+        'timesheet',
         Prefetch(
             'employee_schedules',
             queryset=EmployeeSchedule.objects.order_by().select_related(
