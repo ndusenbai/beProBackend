@@ -15,11 +15,12 @@ from companies.serializers import CompanyModelSerializer, DepartmentSerializer, 
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
     ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer, \
-    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer, ZoneCreateSerializer, ZoneListSerializer
+    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer, ZoneCreateSerializer, ZoneListSerializer, \
+    EmployeeTimeSheetSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
-    update_company_services, get_qs_retrieve_company_services, get_zones_qs
+    update_company_services, get_qs_retrieve_company_services, get_zones_qs, get_employee_time_sheet
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
     SuperuserOrOwnerOrHRPermission
@@ -198,6 +199,34 @@ class EmployeesViewSet(ModelViewSet):
         except Exception as e:
             log_exception(e, 'Error in DepartmentViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class EmployeeTimeSheetViewSet(ModelViewSet):
+    http_method_names = ['get']
+    permission_classes = (EmployeesPermissions,)
+    serializer_class = EmployeeTimeSheetSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
+    filterset_fields = ('company', 'department')
+    filter_serializer = None
+
+    def get_queryset(self):
+        return get_employee_time_sheet()
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+
+        if self.filter_serializer:
+            data = self.filter_serializer.validated_data
+            if 'departments' in data:
+                return queryset.filter(department__in=data['departments'])
+        return queryset
+
+    @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS])
+    def list(self, request, *args, **kwargs):
+        self.filter_serializer = FilterEmployeesSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
+        return super().list(request, *args, **kwargs)
 
 
 class ObserverViewSet(ModelViewSet):

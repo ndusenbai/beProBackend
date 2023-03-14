@@ -143,6 +143,7 @@ def get_employee_list():
     ).annotate(
         score=GetScoreForRole('companies_role.id')
     ).select_related(
+        'user',
         'department'
     ).prefetch_related(
         Prefetch(
@@ -154,6 +155,14 @@ def get_employee_list():
             ),
             to_attr='schedules'
         )
+    ).distinct()
+
+
+def get_employee_time_sheet():
+    return Role.objects.exclude(
+        role=RoleChoices.OBSERVER
+    ).select_related(
+        'user'
     ).distinct()
 
 

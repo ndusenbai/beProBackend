@@ -176,14 +176,6 @@ class EmployeesSerializer(BaseSerializer):
     in_zone = serializers.BooleanField()
     today_schedule = serializers.SerializerMethodField()
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        year = datetime.now().year
-        month = datetime.now().month
-        ret['timesheet'] = get_timesheet_by_month(instance.id, year, month)
-        ret['total_hours'] = generate_total_hours(instance.id, year, month)
-        return ret
-
     def get_today_schedule(self, instance):
         try:
             week_day = datetime.today().weekday()
@@ -193,6 +185,18 @@ class EmployeesSerializer(BaseSerializer):
             return f'{time_from} - {time_to}'
         except IndexError:
             return ''
+
+class EmployeeTimeSheetSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    user = UserSerializer()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        year = datetime.now().year
+        month = datetime.now().month
+        ret['timesheet'] = get_timesheet_by_month(instance.id, year, month)
+        ret['total_hours'] = generate_total_hours(instance.id, year, month)
+        return ret
 
 
 class CreateEmployeeSerializer(BaseSerializer):
