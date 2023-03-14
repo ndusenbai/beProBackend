@@ -503,10 +503,11 @@ def generate_total_hours(role_id, year, month):
         created_at__year=year,
         created_at__month=month
     )
+    if timesheets.exists():
+        # calculate the total working hours
+        total_working_hours = timesheets.aggregate(
+            total=Sum('check_out') - Sum('check_in')
+        )['total']
 
-    # calculate the total working hours
-    total_working_hours = timesheets.aggregate(
-        total=Sum('check_out') - Sum('check_in')
-    )['total']
-
-    return total_working_hours.total_seconds() / 3600.0
+        return total_working_hours.total_seconds() / 3600.0
+    return 0
