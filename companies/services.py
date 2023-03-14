@@ -147,9 +147,7 @@ def get_employee_list():
     ).prefetch_related(
         Prefetch(
             'employee_schedules',
-            queryset=EmployeeSchedule.objects.order_by().select_related(
-                'role', 'role__department'
-            ).annotate(
+            queryset=EmployeeSchedule.objects.order_by().annotate(
                 timezone=F('role__department__timezone')
             ),
             to_attr='schedules'
