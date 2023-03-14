@@ -5,6 +5,7 @@ from rest_framework import serializers
 from auth_user.serializers import UserModelSerializer, UserSerializer
 from companies.models import Company, Department, CompanyService, Zone
 from timesheet.serializers import ScheduleSerializer
+from timesheet.services import get_timesheet_by_month
 from utils.serializers import BaseSerializer
 
 
@@ -174,6 +175,13 @@ class EmployeesSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
     in_zone = serializers.BooleanField()
     today_schedule = serializers.SerializerMethodField()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        year = datetime.now().year
+        month = datetime.now().month
+        ret['timesheet'] = get_timesheet_by_month(instance.id, year, month)
+        return ret
 
     def get_today_schedule(self, instance):
         try:
