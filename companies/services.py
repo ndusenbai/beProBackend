@@ -142,8 +142,9 @@ def get_employee_list():
         role=RoleChoices.OBSERVER
     ).annotate(
         score=GetScoreForRole('companies_role.id')
+    ).select_related(
+        'department'
     ).prefetch_related(
-        'timesheet',
         Prefetch(
             'employee_schedules',
             queryset=EmployeeSchedule.objects.order_by().select_related(
