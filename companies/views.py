@@ -266,15 +266,13 @@ class ObserverViewSet(ModelViewSet):
 
 
 class ZoneViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    filter_backends = (SearchFilter,)
+    permission_classes = (EmployeesPermissions,)
+    filter_backends = (SearchFilter, DjangoFilterBackend)
     search_fields = ('address',)
-
-    def perform_create(self, serializer):
-        serializer.save(company=self.request.user.role.company)
+    filterset_fields = ('company',)
 
     def get_queryset(self):
-        return get_zones_qs(self.request.user)
+        return get_zones_qs()
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:

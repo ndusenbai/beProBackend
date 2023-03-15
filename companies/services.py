@@ -302,10 +302,8 @@ def get_qs_retrieve_company_services():
     )
 
 
-def get_zones_qs(user):
-    return Zone.objects.filter(
-        company=user.role.company
-    ).prefetch_related(
+def get_zones_qs():
+    return Zone.objects.order_by('-id').prefetch_related(
         Prefetch(
             'employees',
             queryset=Role.objects.select_related('user')
@@ -341,7 +339,7 @@ def generate_employees_timesheet_excel(company, departments):
             if timesheet:
                 row[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet.status)
             elif not schedule:
-                row[date.date().strftime('%d.%m.%Y')] = 'Off'
+                row[date.date().strftime('%d.%m.%Y')] = 'day_off'
             else:
                 row[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
 

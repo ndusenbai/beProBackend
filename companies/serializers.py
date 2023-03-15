@@ -308,10 +308,6 @@ class ZoneCreateSerializer(serializers.ModelSerializer):
         model = Zone
         exclude = ("created_at", 'updated_at')
 
-        extra_kwargs = {
-            'company': {'read_only': True}
-        }
-
 
 class GenerateEmployeeTimeSheetSerializer(BaseSerializer):
     company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
