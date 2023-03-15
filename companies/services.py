@@ -13,7 +13,7 @@ from auth_user.services import User
 from companies.models import Department, Company, Role, RoleChoices, CompanyService, Zone
 from scores.models import Reason
 from scores.utils import GetScoreForRole
-from timesheet.models import DepartmentSchedule, EmployeeSchedule, TimeSheet
+from timesheet.models import DepartmentSchedule, EmployeeSchedule, TimeSheet, TimeSheetChoices
 from django.utils.encoding import iri_to_uri
 User = get_user_model()
 
@@ -339,17 +339,16 @@ def generate_employees_timesheet_excel(company, departments):
             timesheet = TimeSheet.objects.filter(role=employee, created_at__date=date).first()
             schedule = EmployeeSchedule.objects.filter(role=employee, week_day=date.weekday() + 1).first()
             if timesheet:
-                row[date.date()] = timesheet.status
-            elif schedule:
-                row[date.date()] = 'Off'
+                row[date.date().strftime('%m/%d/%Y')] = TimeSheetChoices.get_status(timesheet.status)
+            elif not schedule:
+                row[date.date().strftime('%m/%d/%Y')] = 'Off'
             else:
-                row[date.date()] = 'Not filled in'
+                row[date.date().strftime('%m/%d/%Y')] = 'Not filled in'
 
         data.append(row)
 
-
     df = pd.DataFrame(data)
-    file_name = f'./media/excels/employees_timesheet_{year}_{month}.xlsx'
+    file_name = f'employees_timesheet_{year}_{month}.xlsx'
 
     with BytesIO() as b:
         writer = pd.ExcelWriter(b, engine='openpyxl')
