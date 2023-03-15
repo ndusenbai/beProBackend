@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from bepro_statistics.models import Statistic, UserStatistic
+from bepro_statistics.models import Statistic, UserStatistic, StatisticType
 from companies.models import Role, Department
 
 from utils.serializers import BaseSerializer
@@ -116,3 +116,27 @@ class HistoryPdfStatsSerializer(BaseSerializer):
         data = super().to_internal_value(data)
         data['role'] = data.pop('role_id')
         return data
+
+
+class DynamicPdfStatsSerializer(BaseSerializer):
+    statistic_id = serializers.PrimaryKeyRelatedField(queryset=Statistic.objects.only('id'))
+    role_id = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'))
+    first_date = serializers.DateField()
+    last_date = serializers.DateField()
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['role'] = data.pop('role_id')
+        data['statistic'] = data.pop('statistic_id')
+        return data
+
+
+class DynamicUserStatsSerializer(BaseSerializer):
+    day = serializers.DateField()
+    fact = serializers.FloatField()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.statistic.statistic_type == StatisticType.DOUBLE:
+            ret['plan'] = instance.statistic.plan
+        return ret

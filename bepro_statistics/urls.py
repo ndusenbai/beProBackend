@@ -14,6 +14,7 @@ router.register('change-user-stat', views.ChangeUserStat, basename='change-user-
 urlpatterns = [
     path('pdf/generate-stat/', views.GenerateStatPdfViewSet.as_view(), name='generate-stat-pdf'),
     path('pdf/generate-history-stat/', views.GenerateHistoryStatPdfViewSet.as_view(), name='generate-history-stat-pdf'),
+    path('pdf/generate-dynamic-stat/', views.GenerateDynamicStatPdfViewSet.as_view(), name='generate-dynamic-stat-pdf'),
 ]
 
 urlpatterns += router.urls

@@ -16,11 +16,12 @@ from bepro_statistics.models import UserStatistic, Statistic
 from utils.permissions import StatisticsPermission
 from bepro_statistics.serializers import StatisticSerializer, UserStatisticModelSerializer, \
     CreateUserStatSerializer, StatsForUserSerializer, HistoryStatsForUserSerializer, ChangeUserStatSerializer, \
-    GetStatisticSerializer, HistoryPdfStatsSerializer
+    GetStatisticSerializer, HistoryPdfStatsSerializer, DynamicPdfStatsSerializer
 from bepro_statistics.services import get_statistics_queryset, create_statistic, create_user_statistic, \
     get_stats_for_user, get_history_stats_for_user, change_user_statistic, generate_stat_pdf, generate_history_stat_pdf, \
-    bulk_create_observers, get_date_for_statistic
-from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT
+    bulk_create_observers, get_date_for_statistic, generate_dynamic_stat_pdf
+from utils.manual_parameters import QUERY_ROLE, QUERY_SUNDAY, QUERY_MONDAY, QUERY_STATISTIC_TYPE_LIST, QUERY_STAT, \
+    QUERY_STATISTIC, QUERY_LAST_DATE, QUERY_FIRST_DATE
 from utils.permissions import StatisticPermissions, HistoryStatisticPermissions
 from utils.tools import log_exception
 
@@ -170,3 +171,13 @@ class GenerateHistoryStatPdfViewSet(APIView):
         serializer.is_valid(raise_exception=True)
         file_name = generate_history_stat_pdf(**serializer.validated_data)
         return Response({'link': file_name})
+
+
+class GenerateDynamicStatPdfViewSet(APIView):
+    permission_classes = (HistoryStatisticPermissions,)
+
+    @swagger_auto_schema(manual_parameters=[QUERY_STATISTIC, QUERY_ROLE, QUERY_FIRST_DATE, QUERY_LAST_DATE])
+    def get(self, request, **kwargs):
+        serializer = DynamicPdfStatsSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        return Response({'link': generate_dynamic_stat_pdf(**serializer.validated_data)})

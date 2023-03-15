@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from auth_user.services import get_user_role
 from bepro_statistics.models import StatisticObserver, Statistic, UserStatistic, VisibilityType, StatisticType
-from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer
+from bepro_statistics.serializers import UserStatsSerializer, StatsForUserSerializer, DynamicUserStatsSerializer
 from companies.models import Role, CompanyService
 from timesheet.models import TimeSheet, TimeSheetChoices
 
@@ -373,6 +373,8 @@ def save_stat_to_pdf(statistic_type: str) -> str:
             file_name = f'media/statistics/double_stats/{unique_name}.pdf'
         case 'history_stat':
             file_name = f'media/statistics/history_stats/{unique_name}.pdf'
+        case 'dynamic_stat':
+            file_name = f'media/statistics/dynamic_stats/{unique_name}.pdf'
 
     plt.savefig(file_name)
     return f'{settings.CURRENT_SITE}/{file_name}'
@@ -483,3 +485,77 @@ def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
     for a, b in zip(days, y_axis_values):
         ax.text(a, b, str(b))
     ax.text(days[6], plans[6], str(plans[6]))
+
+
+def generate_dynamic_stat_pdf(role: Role, statistic: Statistic, first_date: date, last_date: date) -> str:
+    user_stat = UserStatistic.objects.filter(
+        statistic=statistic, role=role, day__range=[first_date, last_date]
+    ).select_related('statistic').order_by('day')
+
+    user_stats = DynamicUserStatsSerializer(user_stat, many=True).data
+    user_stats_by_day = {i['day']: i for i in user_stats}
+    dates = [str(first_date + timedelta(days=1) * i) for i in range((last_date - first_date).days + 1)]
+
+    inverted = statistic.statistic_type == StatisticType.INVERTED
+    polarity = -1 if inverted else 1
+
+    return _make_dynamic_graph(
+        statistic=statistic,
+        dates=dates,
+        fact_values=[user_stats_by_day.get(day, {'fact': 0})['fact'] * polarity for day in dates],
+        inverted=inverted,
+        plan_values=([statistic.plan for _ in range(len(dates))]
+                     if statistic.statistic_type == StatisticType.DOUBLE else None),
+    )
+
+
+def _make_dynamic_graph(
+        statistic: Statistic, dates: list, fact_values: list, inverted: bool, plan_values: list | None
+) -> str:
+    _, axis = plt.subplots(figsize=_get_figure_size(dates))  # create figure and axis
+    plt.ylabel(statistic.name)  # set label
+    plt.title(_get_title(statistic))  # set title
+
+    if plan_values:
+        # set 'plan_values' line
+        plt.plot(dates, plan_values, 'r', label='план', marker=".", markersize=14)
+        axis.text(dates[-1], plan_values[-1], str(plan_values[-1]))
+
+    # set 'fact_values' line
+    plt.plot(dates, fact_values, label='факт', marker=".", markersize=14)
+    for a, b in zip(dates, fact_values):
+        plt.text(a, b, str(b))
+
+    _customize_axis(axis, inverted)
+
+    file_name = save_stat_to_pdf('dynamic_stat')
+    plt.show()
+    return file_name
+
+
+def _get_figure_size(dates: list) -> tuple[float, float]:
+    # Calculate the graph size based on the number of dates
+    fig_width = max(12., len(dates) / 2)  # minimum width of 12 inches
+    fig_height = max(6., len(dates) / 10)  # minimum height of 6 inches
+    return fig_width, fig_height
+
+
+def _get_title(statistic: Statistic) -> str:
+    match statistic.statistic_type:
+        case StatisticType.GENERAL:
+            return 'Обычная статистика'
+        case StatisticType.DOUBLE:
+            return 'Двойная статистика'
+        case StatisticType.INVERTED:
+            return 'Перевернутая статистика'
+
+
+def _customize_axis(axis, inverted: bool) -> None:
+    axis.set_xlim(left=0)
+    axis.set_ylim(bottom=0) if not inverted else None
+    axis.spines['top'].set_visible(False)
+    axis.spines['right'].set_visible(False)
+    axis.grid()
+    plt.legend(loc='best')
+    plt.xticks(rotation=-90)  # rotate dates on x axis
+    plt.gcf().subplots_adjust(bottom=0.2)  # bottom padding
