@@ -109,6 +109,9 @@ class CreateUserStat(RetrieveModelMixin, CreateModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = CreateUserStatSerializer
 
+    def get_queryset(self):
+        return UserStatistic.objects.all()
+
     def retrieve(self, request, *args, **kwargs):
         try:
             date = get_date_for_statistic(request.user.role, kwargs['pk'])
