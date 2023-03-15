@@ -336,14 +336,14 @@ def generate_employees_timesheet_excel(company, departments):
     for employee in employees:
         row = {'Full Name': employee.user.full_name}
         for date in date_list:
-            timesheet = TimeSheet.objects.filter(role=employee, created_at__date=date).first()
+            timesheet = TimeSheet.objects.filter(role=employee, day=date).first()
             schedule = EmployeeSchedule.objects.filter(role=employee, week_day=date.weekday() + 1).first()
             if timesheet:
-                row[date.date().strftime('%m/%d/%Y')] = TimeSheetChoices.get_status(timesheet.status)
+                row[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet.status)
             elif not schedule:
-                row[date.date().strftime('%m/%d/%Y')] = 'Off'
+                row[date.date().strftime('%d.%m.%Y')] = 'Off'
             else:
-                row[date.date().strftime('%m/%d/%Y')] = 'Not filled in'
+                row[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
 
         data.append(row)
 
