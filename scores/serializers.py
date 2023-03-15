@@ -59,7 +59,9 @@ class ScoreRoleSerializer(BaseSerializer):
         return instance.user.full_name
 
 
-class ScoreFeedSerializer(BaseSerializer):
+class ScoreFeedSerializer(serializers.ModelSerializer):
     role = ScoreRoleSerializer()
-    name = serializers.CharField()
-    points = serializers.IntegerField()
+
+    class Meta:
+        model = Score
+        fields = "__all__"

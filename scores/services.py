@@ -18,8 +18,7 @@ def create_score(user: User, data: OrderedDict) -> None:
 
 def get_score_feed(user):
     extra_kwargs = {}
-    role = 'owner'
-    # role = get_user_role(user)
+    role = get_user_role(user)
     if role == 'owner':
         extra_kwargs['role__company'] = user.owner.company
     elif role in ('observer', 'hr', 'head_of_hr_department'):

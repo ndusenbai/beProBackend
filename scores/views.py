@@ -97,7 +97,6 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
 class ScoreFeedListView(ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ScoreFeedSerializer
-    queryset = Score.objects.order_by()
 
     def get_queryset(self):
         return get_score_feed(self.request.user)
