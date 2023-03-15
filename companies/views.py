@@ -289,4 +289,7 @@ class GenerateEmployeeTimeSheetAPI(APIView):
     def post(self, request):
         serializer = GenerateEmployeeTimeSheetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return generate_employees_timesheet_excel(**serializer.validated_data)
+        return generate_employees_timesheet_excel(
+            serializer.validated_data['company'],
+            None
+        )
