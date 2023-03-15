@@ -327,9 +327,7 @@ def generate_employees_timesheet_excel(company, departments):
     ).filter(
         company=company,
         **extra_kwargs
-    ).prefetch_related(
-        Prefetch('user', queryset=User.objects.only('full_name')),
-    )
+    ).select_related('user')
 
     data = []
 
