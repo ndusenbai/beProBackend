@@ -6,11 +6,11 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
-
+from rest_framework.permissions import IsAuthenticated
 from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScoresValidationSerializer, ScoreSerializer, \
-    MonthScoresSerializer
+    MonthScoresSerializer, ScoreFeedSerializer
 from scores.models import Reason, Score
-from scores.services import create_score
+from scores.services import create_score, get_score_feed
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS
 from utils.permissions import ReasonPermissions, MonthScorePermissions, ScorePermission
 
@@ -92,3 +92,11 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
         self.filter_serializer = MonthScoresValidationSerializer(data=request.query_params)
         self.filter_serializer.is_valid(raise_exception=True)
         return super().list(request, *args, **kwargs)
+
+
+class ScoreFeedListView(ListModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ScoreFeedSerializer
+
+    def get_queryset(self):
+        return get_score_feed(self.request.user)
