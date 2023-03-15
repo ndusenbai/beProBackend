@@ -55,7 +55,7 @@ class ScoreRoleSerializer(BaseSerializer):
     title = serializers.CharField()
     role = serializers.IntegerField()
 
-    def get_user(self, instance):
+    def get_full_name(self, instance):
         return instance.user.full_name
 
 
