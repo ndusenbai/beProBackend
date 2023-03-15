@@ -27,6 +27,9 @@ django-celery-results = "^2.3.1"
 django-celery-beat = "^2.3.0"
 weasyprint = "^56.1"
 fcm-django = "^1.0.12"
+pandas = "^1.5.3"
+xlsxwriter = "^3.0.9"
+openpyxl = "^3.1.2"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.4.0"

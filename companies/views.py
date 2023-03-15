@@ -9,18 +9,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-
+from rest_framework.views import APIView
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
     ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer, \
     RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer, ZoneCreateSerializer, ZoneListSerializer, \
-    EmployeeTimeSheetSerializer
+    EmployeeTimeSheetSerializer, GenerateEmployeeTimeSheetSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
-    update_company_services, get_qs_retrieve_company_services, get_zones_qs, get_employee_time_sheet
+    update_company_services, get_qs_retrieve_company_services, get_zones_qs, get_employee_time_sheet, \
+    generate_employees_timesheet_excel
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
     SuperuserOrOwnerOrHRPermission
@@ -279,3 +280,13 @@ class ZoneViewSet(ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return ZoneListSerializer
         return ZoneCreateSerializer
+
+
+class GenerateEmployeeTimeSheetAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(request_body=GenerateEmployeeTimeSheetSerializer)
+    def post(self, request):
+        serializer = GenerateEmployeeTimeSheetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return generate_employees_timesheet_excel(**serializer.validated_data)

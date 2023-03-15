@@ -311,3 +311,14 @@ class ZoneCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'company': {'read_only': True}
         }
+
+
+class GenerateEmployeeTimeSheetSerializer(BaseSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
+    departments = serializers.ListField(child=serializers.CharField(), required=False)
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if 'departments' in data:
+            data['departments'] = [int(i) for i in data['departments'][0].split(',')]
+        return data

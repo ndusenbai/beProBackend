@@ -1,17 +1,20 @@
+import datetime
+from io import BytesIO
 from typing import OrderedDict
-
+import pandas as pd
+from calendar import monthrange
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, F
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
 from rest_framework import status
-
+from django.http import HttpRequest, HttpResponse
 from auth_user.services import User
 from companies.models import Department, Company, Role, RoleChoices, CompanyService, Zone
 from scores.models import Reason
 from scores.utils import GetScoreForRole
-from timesheet.models import DepartmentSchedule, EmployeeSchedule
-
+from timesheet.models import DepartmentSchedule, EmployeeSchedule, TimeSheet
+from django.utils.encoding import iri_to_uri
 User = get_user_model()
 
 
@@ -308,3 +311,51 @@ def get_zones_qs(user):
             queryset=Role.objects.select_related('user')
         )
     )
+
+
+def generate_employees_timesheet_excel(company, departments):
+    extra_kwargs = {}
+    if departments:
+        extra_kwargs['department__in'] = departments
+    now = datetime.datetime.now()
+    year = now.year
+    month = now.month
+    start_date = datetime.datetime(year, month, 1)
+    end_date = datetime.datetime(year, month + 1, 1) - datetime.timedelta(days=1)
+    date_list = pd.date_range(start_date, end_date)
+
+    employees = Role.objects.exclude(
+        role=RoleChoices.OBSERVER
+    ).filter(
+        company=company,
+        **extra_kwargs
+    ).select_related('user')
+
+    data = []
+
+    for employee in employees:
+        row = {'Full Name': employee.user.full_name}
+        for date in date_list:
+            timesheet = TimeSheet.objects.filter(role=employee, created_at__date=date).first()
+            schedule = EmployeeSchedule.objects.filter(role=employee, week_day=date.weekday() + 1).first()
+            if timesheet:
+                row[date.date()] = timesheet.status
+            elif schedule:
+                row[date.date()] = 'Off'
+            else:
+                row[date.date()] = 'Not filled in'
+
+        data.append(row)
+
+
+    df = pd.DataFrame(data)
+    file_name = f'./media/excels/employees_timesheet_{year}_{month}.xlsx'
+
+    with BytesIO() as b:
+        writer = pd.ExcelWriter(b, engine='openpyxl')
+        df.to_excel(writer, sheet_name='page1', index=False)
+
+        writer.save()
+        response = HttpResponse(b.getvalue(), content_type='application/*')
+        response['Content-Disposition'] = f"attachment; filename={iri_to_uri(file_name)}"
+        return response

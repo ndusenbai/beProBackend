@@ -13,5 +13,6 @@ router.register('observer', views.ObserverViewSet, basename='observer-viewset')
 router.register('zone', views.ZoneViewSet, basename='zone-viewset')
 
 urlpatterns = [
+    path('employees/timesheet-excel/', views.GenerateEmployeeTimeSheetAPI.as_view()),
     path('company-service/<int:company_id>/', views.RetrieveCompanyServiceViewSet.as_view({'get': 'retrieve'}), name='retrieve-company-service'),
 ] + router.urls
