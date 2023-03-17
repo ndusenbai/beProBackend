@@ -1,3 +1,5 @@
+from dateutil.relativedelta import relativedelta
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -121,8 +123,18 @@ class HistoryPdfStatsSerializer(BaseSerializer):
 class DynamicPdfStatsSerializer(BaseSerializer):
     statistic_id = serializers.PrimaryKeyRelatedField(queryset=Statistic.objects.only('id'))
     role_id = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'))
-    first_date = serializers.DateField()
-    last_date = serializers.DateField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+
+    def validate(self, attrs):
+        if attrs['start_date'] >= attrs['end_date']:
+            raise serializers.ValidationError('Дата начала не должна быть позже даты конца')
+
+        if not relativedelta(attrs['end_date'], attrs['start_date']).months < 3:
+            raise serializers.ValidationError('Разница между датой начала и датой конца должна быть меньше 3 месяцев')
+
+        return attrs
+
 
     def to_internal_value(self, data):
         data = super().to_internal_value(data)

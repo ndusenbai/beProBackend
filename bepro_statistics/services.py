@@ -487,14 +487,14 @@ def generate_double_history_graph_pdf(user_stat_data_dict, ax, statistic):
     ax.text(days[6], plans[6], str(plans[6]))
 
 
-def generate_dynamic_stat_pdf(role: Role, statistic: Statistic, first_date: date, last_date: date) -> str:
+def generate_dynamic_stat_pdf(role: Role, statistic: Statistic, start_date: date, end_date: date) -> str:
     user_stat = UserStatistic.objects.filter(
-        statistic=statistic, role=role, day__range=[first_date, last_date]
+        statistic=statistic, role=role, day__range=[start_date, end_date]
     ).select_related('statistic').order_by('day')
 
     user_stats = DynamicUserStatsSerializer(user_stat, many=True).data
     user_stats_by_day = {i['day']: i for i in user_stats}
-    dates = [str(first_date + timedelta(days=1) * i) for i in range((last_date - first_date).days + 1)]
+    dates = [str(start_date + timedelta(days=1) * i) for i in range((end_date - start_date).days + 1)]
 
     inverted = statistic.statistic_type == StatisticType.INVERTED
     polarity = -1 if inverted else 1
