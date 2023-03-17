@@ -34,6 +34,8 @@ class TimeSheetUpdateSerializer(BaseSerializer):
     check_in = serializers.TimeField(format='%Y-%m-%dT%H:%M:%S%z', required=False)
     check_out = serializers.TimeField(format='%Y-%m-%dT%H:%M:%S%z', required=False)
     status = serializers.IntegerField(required=False)
+    time_from = serializers.TimeField(format='%H:%M', required=False)
+    time_to = serializers.TimeField(format='%H:%M', required=False)
 
 
 class CheckInSerializer(BaseSerializer):
