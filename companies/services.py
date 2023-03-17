@@ -131,6 +131,15 @@ def get_departments_qs() -> QuerySet[Department]:
                 timezone=F('department__timezone')
             ),
             to_attr='schedules'
+        ),
+        Prefetch(
+            'company',
+            queryset=Company.objects.order_by().prefetch_related(
+                Prefetch(
+                    'zones',
+                    queryset=Zone.objects.order_by()
+                )
+            )
         )
     ).order_by('id')
 
