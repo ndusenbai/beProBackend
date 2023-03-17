@@ -161,6 +161,7 @@ class UserProfileSerializer(BaseSerializer):
             return {
                 'role_id': instance.role.id,
                 'role': get_user_role(instance),
+                'in_zone': instance.role.in_zone,
                 'department_id': instance.role.department.id,
                 'department_name': instance.role.department.name
             }
