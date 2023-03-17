@@ -15,6 +15,9 @@ from scores.models import Reason
 from scores.utils import GetScoreForRole
 from timesheet.models import DepartmentSchedule, EmployeeSchedule, TimeSheet, TimeSheetChoices
 from django.utils.encoding import iri_to_uri
+
+from timesheet.services import generate_total_hours
+
 User = get_user_model()
 
 
@@ -343,10 +346,12 @@ def generate_employees_timesheet_excel(company, departments):
             else:
                 row[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
 
+        row['Total hours'] = generate_total_hours(employee.id, year, month)
+
         data.append(row)
 
     df = pd.DataFrame(data)
-    file_name = f'employees_timesheet_{year}_{month}.xlsx'
+    file_name = f'employees_timesheet_{year}_{month}_{company.name}.xlsx'
 
     with BytesIO() as b:
         writer = pd.ExcelWriter(b, engine='openpyxl')

@@ -312,3 +312,6 @@ class ZoneCreateSerializer(serializers.ModelSerializer):
 class GenerateEmployeeTimeSheetSerializer(BaseSerializer):
     company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
 
+
+class EmployeeAvatarSerializer(BaseSerializer):
+    avatar = serializers.FileField()

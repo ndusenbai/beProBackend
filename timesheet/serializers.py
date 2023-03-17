@@ -34,6 +34,8 @@ class TimeSheetUpdateSerializer(BaseSerializer):
     check_in = serializers.TimeField(format='%Y-%m-%dT%H:%M:%S%z', required=False)
     check_out = serializers.TimeField(format='%Y-%m-%dT%H:%M:%S%z', required=False)
     status = serializers.IntegerField(required=False)
+    time_from = serializers.TimeField(format='%H:%M', required=False)
+    time_to = serializers.TimeField(format='%H:%M', required=False)
 
 
 class CheckInSerializer(BaseSerializer):
@@ -122,3 +124,10 @@ class MonthHoursValidationSerializer(BaseSerializer):
             data = super().to_internal_value(data)
             data['months'] = [int(i) for i in data['months'][0].split(',')]
         return data
+
+
+class UpdateTimeSheetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TimeSheet
+        fields = ("status", "time_from", "time_to")
