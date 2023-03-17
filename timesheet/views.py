@@ -13,7 +13,8 @@ from django.db.models import F, Sum
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
-    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer, MonthHoursValidationSerializer
+    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer, MonthHoursValidationSerializer, \
+    UpdateTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
     update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month, create_future_time_sheet
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
@@ -173,6 +174,12 @@ class CreateFutureTimeSheetAPI(APIView):
         serializer.is_valid(raise_exception=True)
         response, status_code = create_future_time_sheet(**serializer.validated_data)
         return Response(response, status=status_code)
+
+
+class UpdateTimeSheetAPI(UpdateModelMixin, GenericViewSet):
+    permission_classes = (ChangeTimeSheetPermissions,)
+    serializer_class = UpdateTimeSheetSerializer
+    queryset = TimeSheet.objects.order_by()
 
 
 class MonthHoursViewSet(ListModelMixin, GenericViewSet):

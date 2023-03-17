@@ -13,11 +13,12 @@ router.register('take-time-off', views.TakeTimeOffView, basename='take-time-off'
 router.register('change-timesheet', views.ChangeTimeSheetViewSet, basename='change-timesheet')
 router.register('vacation', views.VacationTimeSheetViewSet, basename='vacation')
 router.register('month-hours', views.MonthHoursViewSet, basename='month-hours')
+router.register('time-sheet-update', views.UpdateTimeSheetAPI, basename='time-sheet-update')
 
 urlpatterns = [
     path('last-timesheet/', views.LastTimeSheet.as_view(), name='last-timesheet'),
     path('task-absence-check/', tasks.absence_check_request, name='task-absence-check'),
-    path('create-future-timesheet/', views.CreateFutureTimeSheetAPI.as_view(), name='future-timesheet')
+    path('create-future-timesheet/', views.CreateFutureTimeSheetAPI.as_view(), name='future-timesheet'),
 ]
 
 urlpatterns += router.urls

@@ -124,3 +124,10 @@ class MonthHoursValidationSerializer(BaseSerializer):
             data = super().to_internal_value(data)
             data['months'] = [int(i) for i in data['months'][0].split(',')]
         return data
+
+
+class UpdateTimeSheetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TimeSheet
+        fields = ("status", "time_from", "time_to")

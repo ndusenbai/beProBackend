@@ -145,6 +145,12 @@ class OwnerRetrieveSerializer(OwnerSerializer):
             return {}
 
 
+class UserZonesSerializer(BaseSerializer):
+    address = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=22, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=22, decimal_places=6)
+
+
 class UserProfileSerializer(BaseSerializer):
     id = serializers.IntegerField(required=False, read_only=True)
     full_name = serializers.CharField()
@@ -163,7 +169,8 @@ class UserProfileSerializer(BaseSerializer):
                 'role': get_user_role(instance),
                 'in_zone': instance.role.in_zone,
                 'department_id': instance.role.department.id,
-                'department_name': instance.role.department.name
+                'department_name': instance.role.department.name,
+                'zones': UserZonesSerializer(instance.role.zones, many=True).data
             }
         except:
             return {

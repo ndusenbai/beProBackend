@@ -126,23 +126,11 @@ class HeadOfDepartmentSerializer(BaseSerializer):
         return instance.user.middle_name
 
 
-class CompanyZoneSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Zone
-        exclude = ('company', 'employees', 'created_at', 'updated_at')
-
-
-class DepartmentCompanySerializer(BaseSerializer):
-    zones = CompanyZoneSerializer(many=True)
-
-
 class DepartmentList2Serializer(DepartmentSerializer):
     head_of_department = HeadOfDepartmentSerializer()
     today_schedule = serializers.SerializerMethodField()
     employees_count = serializers.IntegerField()
     is_hr = serializers.BooleanField()
-    company = DepartmentCompanySerializer()
 
     def get_today_schedule(self, instance):
         week_day = datetime.today().weekday()
