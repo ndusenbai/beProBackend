@@ -257,3 +257,29 @@ def get_owners_qs():
         .alias(owned_companies_count=Count('owned_companies', distinct=True)) \
         .filter(owned_companies_count__gt=0) \
         .order_by('id')
+
+
+def update_email(request, user, email_new):
+    user.email_new = email_new
+    user.save()
+    domain = get_domain(request)
+    context = {
+        'domain': domain,
+        'token': password_reset_token.make_token(user),
+        'uid': urlsafe_base64_encode(force_bytes(user.pk))
+    }
+    send_email.delay(subject='Смена почты', to_list=[user.email], template_name='reset_password.html', context=context)
+
+
+def set_new_email(uid, token):
+    pk = force_str(urlsafe_base64_decode(uid))
+    try:
+        user = User.objects.get(pk=pk)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and password_reset_token.check_token(user, token):
+        user.email = user.email_new
+        user.email_new = None
+        user.save()
+    else:
+        raise serializers.ValidationError('Token expired', code='expired_token')

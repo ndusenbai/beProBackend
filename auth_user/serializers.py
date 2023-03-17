@@ -200,3 +200,7 @@ class UserProfileSerializer(BaseSerializer):
         data = super().to_internal_value(data)
         data['phone_number'] = data['phone_number'].replace(' ', '').replace('(', '').replace(')', '')
         return data
+
+
+class NewEmailSerializer(BaseSerializer):
+    email_new = serializers.EmailField()

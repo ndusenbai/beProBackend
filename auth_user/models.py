@@ -52,6 +52,7 @@ class AssistantTypes(models.IntegerChoices):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=70, unique=True)
+    email_new = models.EmailField(max_length=70, null=True, blank=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True)
