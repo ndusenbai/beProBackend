@@ -494,7 +494,7 @@ def generate_dynamic_stat_pdf(role: Role, statistic: Statistic, start_date: date
 
     user_stats = DynamicUserStatsSerializer(user_stat, many=True).data
     user_stats_by_day = {i['day']: i for i in user_stats}
-    dates = [str(start_date + timedelta(days=1) * i) for i in range((end_date - start_date).days + 1)]
+    dates = [str(start_date + timedelta(days=1) * i) for i in range((end_date - start_date).days)]
 
     inverted = statistic.statistic_type == StatisticType.INVERTED
     polarity = -1 if inverted else 1

@@ -130,7 +130,8 @@ class DynamicPdfStatsSerializer(BaseSerializer):
         if attrs['start_date'] >= attrs['end_date']:
             raise serializers.ValidationError('Дата начала не должна быть позже даты конца')
 
-        if not relativedelta(attrs['end_date'], attrs['start_date']).months < 3:
+        diff = relativedelta(attrs['end_date'], attrs['start_date'])
+        if diff.months >= 3 and diff.days > 0:
             raise serializers.ValidationError('Разница между датой начала и датой конца должна быть меньше 3 месяцев')
 
         return attrs
