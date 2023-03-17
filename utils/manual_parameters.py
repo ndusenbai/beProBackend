@@ -43,6 +43,9 @@ QUERY_MONTH = openapi.Parameter('month', openapi.IN_QUERY, description='06', typ
 QUERY_YEAR = openapi.Parameter('year', openapi.IN_QUERY, description='2022', type=openapi.TYPE_INTEGER)
 QUERY_MONTHS = openapi.Parameter('months', openapi.IN_QUERY, description='[1,2,...,12]', type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_INTEGER))
 QUERY_ROLE = openapi.Parameter('role_id', openapi.IN_QUERY, description='role id', type=openapi.TYPE_INTEGER)
+QUERY_STATISTIC = openapi.Parameter('statistic_id', openapi.IN_QUERY, description='statistic id', type=openapi.TYPE_INTEGER)
+QUERY_START_DATE = openapi.Parameter('start_date', openapi.IN_QUERY, description='start date (Example: 2022-01-01)', type=openapi.FORMAT_DATE)
+QUERY_END_DATE = openapi.Parameter('end_date', openapi.IN_QUERY, description='end date (Example: 2022-01-01)', type=openapi.FORMAT_DATE)
 QUERY_MONDAY = openapi.Parameter('monday', openapi.IN_QUERY, description='monday date (Example: 2022-01-01)', type=openapi.FORMAT_DATE)
 QUERY_SUNDAY = openapi.Parameter('sunday', openapi.IN_QUERY, description='sunday date (Example: 2022-01-07)', type=openapi.FORMAT_DATE)
 QUERY_STATISTIC_TYPE_LIST = openapi.Parameter('statistic_types', openapi.IN_QUERY, description='GENERAL=1, DOUBLE=2, INVERTED=3',
