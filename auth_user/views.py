@@ -12,11 +12,12 @@ from drf_yasg.utils import swagger_auto_schema
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     AssistantSerializer, \
     ChangeSelectedCompanySerializer, OwnerSerializer, UserProfileSerializer, ForgotPasswordWithPinResetSerializer, \
-    AssistantUpdateSerializer, OwnerRetrieveSerializer
+    AssistantUpdateSerializer, OwnerRetrieveSerializer, NewEmailSerializer
 from auth_user.services import change_password, forgot_password, change_password_after_forgot, \
     check_link_after_forgot, create_assistant, assistants_queryset, get_additional_user_info, change_selected_company, \
     activate_owner_companies, deactivate_owner_companies, update_user_profile, forgot_password_with_pin, \
-    check_code_after_forgot, change_password_with_code_after_forgot, update_user, get_owners_qs
+    check_code_after_forgot, change_password_with_code_after_forgot, update_user, get_owners_qs, set_new_email, \
+    update_email
 
 from utils.manual_parameters import QUERY_CODE
 from utils.permissions import IsAssistantProductOrSuperuser, IsSuperuser
@@ -208,3 +209,24 @@ class UserProfileView(UpdateModelMixin, GenericViewSet):
         response, status_code = update_user_profile(request.user, serializer,)
 
         return Response(response, status=status_code)
+
+
+class ChangeUserEmailAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(request_body=NewEmailSerializer)
+    def put(self, request):
+        serializer = NewEmailSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            update_email(request, request.user, serializer.validated_data['email_new'])
+            return Response({'message': 'Email has been sent!'})
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetUserEmailAPI(APIView):
+
+    def post(self, request, uid, token):
+        set_new_email(uid, token)
+        return Response({'message': 'changed'})

@@ -9,6 +9,7 @@ from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 
 env = environ.Env()
 environ.Env.read_env()
@@ -34,6 +35,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('api/', include('config.api_urls')),
     path('django-admin/', admin.site.urls),
+    path('api/devices/', FCMDeviceAuthorizedViewSet.as_view({'post': 'create'}), name='create_fcm_device'),
 ]
 
 

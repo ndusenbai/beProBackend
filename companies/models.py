@@ -60,6 +60,7 @@ class Role(BaseModel):
     user = models.OneToOneField(to='auth_user.User', on_delete=models.CASCADE)
     title = models.CharField(max_length=200, default='')
     grade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(4)])
+    in_zone = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('-created_at',)
@@ -77,3 +78,15 @@ class CompanyService(BaseModel):
 
     def __str__(self):
         return f'Service of {self.company}'
+
+
+class Zone(BaseModel):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='zones')
+    address = models.CharField(max_length=255, blank=True)
+    latitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
+    longitude = models.DecimalField(max_digits=22, decimal_places=6, default=0, validators=[MinValueValidator(0)])
+    radius = models.IntegerField()
+    employees = models.ManyToManyField('Role', blank=True, related_name='zones')
+
+    def __str__(self):
+        return f'{self.company} - {self.address}'

@@ -1,7 +1,9 @@
+from dateutil.relativedelta import relativedelta
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from bepro_statistics.models import Statistic, UserStatistic
+from bepro_statistics.models import Statistic, UserStatistic, StatisticType
 from companies.models import Role, Department
 
 from utils.serializers import BaseSerializer
@@ -116,3 +118,38 @@ class HistoryPdfStatsSerializer(BaseSerializer):
         data = super().to_internal_value(data)
         data['role'] = data.pop('role_id')
         return data
+
+
+class DynamicPdfStatsSerializer(BaseSerializer):
+    statistic_id = serializers.PrimaryKeyRelatedField(queryset=Statistic.objects.only('id'))
+    role_id = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'))
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+
+    def validate(self, attrs):
+        if attrs['start_date'] >= attrs['end_date']:
+            raise serializers.ValidationError('Дата начала не должна быть позже даты конца')
+
+        diff = relativedelta(attrs['end_date'], attrs['start_date'])
+        if diff.months >= 3 and diff.days > 0:
+            raise serializers.ValidationError('Разница между датой начала и датой конца должна быть меньше 3 месяцев')
+
+        return attrs
+
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['role'] = data.pop('role_id')
+        data['statistic'] = data.pop('statistic_id')
+        return data
+
+
+class DynamicUserStatsSerializer(BaseSerializer):
+    day = serializers.DateField()
+    fact = serializers.FloatField()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.statistic.statistic_type == StatisticType.DOUBLE:
+            ret['plan'] = instance.statistic.plan
+        return ret

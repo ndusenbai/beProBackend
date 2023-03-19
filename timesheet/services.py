@@ -6,7 +6,7 @@ import geopy.distance
 import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.db.transaction import atomic
 from django.utils import timezone
 
@@ -67,7 +67,8 @@ def get_timesheet_by_month(role_id, year, month):
                 if is_workday_schedule:
                     result.append(create_absent_timesheet(role_id, date_formatted, is_workday_schedule))
                 else:
-                    result.append(create_day_off_timesheet(role_id, date_formatted))
+                    text = 'Created automatically within get_timesheet_by_month()'
+                    result.append(create_day_off_timesheet(role_id, date_formatted, text))
         else:
             timesheet_for_day = get_timesheet_for_day(timesheets, date_formatted)
             if timesheet_for_day:
@@ -108,7 +109,7 @@ def create_absent_timesheet(role_id, date_formatted, is_workday_schedule):
     }
 
 
-def create_day_off_timesheet(role_id, date_formatted):
+def create_day_off_timesheet(role_id, date_formatted, text):
     day_off_timesheet = TimeSheet.objects.create(
         role_id=role_id,
         day=date_formatted,
@@ -116,7 +117,7 @@ def create_day_off_timesheet(role_id, date_formatted):
         check_out=None,
         time_from=None,
         time_to=None,
-        debug_comment='Created automatically within get_timesheet_by_month()',
+        debug_comment=text,
         status=TimeSheetChoices.DAY_OFF,
     )
     return {
@@ -131,6 +132,32 @@ def create_day_off_timesheet(role_id, date_formatted):
         'file': None,
         'status': TimeSheetChoices.DAY_OFF,
         'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.DAY_OFF),
+    }
+
+
+def create_future_day_timesheet(role_id, date_formatted, time_from, time_to, text):
+    future_day_timesheet = TimeSheet.objects.create(
+        role_id=role_id,
+        day=date_formatted,
+        check_in=None,
+        check_out=None,
+        time_from=time_from,
+        time_to=time_to,
+        debug_comment=text,
+        status=TimeSheetChoices.FUTURE_DAY,
+    )
+    return {
+        'id': future_day_timesheet.id,
+        'role': role_id,
+        'day': date_formatted,
+        'check_in': '',
+        'check_out': '',
+        'time_from': time_from,
+        'time_to': time_to,
+        'comment': '',
+        'file': None,
+        'status': TimeSheetChoices.FUTURE_DAY,
+        'status_decoded': TimeSheetChoices.get_status(TimeSheetChoices.FUTURE_DAY),
     }
 
 
@@ -203,10 +230,21 @@ def subtract_scores(role, check_in):
         Score.objects.create(role=role, name=reason.name, points=reason.score, created_at=check_in)
 
 
-def check_distance(department: Department, latitude: float, longitude: float) -> None:
+def check_distance(role: Role, latitude: float, longitude: float) -> None:
+    zones = role.zones.all()
+    department = role.department
+    all_zones_far = True
+    for zone in zones:
+        distance = geopy.distance.geodesic((latitude, longitude), (zone.latitude, zone.longitude)).m
+        if distance <= zone.radius:
+            all_zones_far = False
+            break
     distance = geopy.distance.geodesic((latitude, longitude), (department.latitude, department.longitude)).m
-    if distance > department.radius:
+    if distance <= department.radius:
+        all_zones_far = False
+    if all_zones_far:
         raise EmployeeTooFarFromDepartment()
+
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
@@ -236,22 +274,36 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
         status = TimeSheetChoices.LATE
         subtract_scores(role, check_in)
 
-    TimeSheet.objects.create(
-        role=role,
-        day=check_in.date(),
-        check_in=check_in.time(),
-        check_out=None,
-        time_from=today_schedule.time_from,
-        time_to=today_schedule.time_to,
-        status=status,
-        comment=data.get('comment', ''),
-        file=data.get('file', None),
-    )
+    # changed logic of creation, because there might be created future_day timesheet
+
+    timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date())
+
+    timesheet.check_in = check_in.time()
+    timesheet.check_out = None
+    timesheet.time_from = today_schedule.time_from
+    timesheet.time_to = today_schedule.time_to
+    timesheet.status = status
+    timesheet.comment = data.get('comment', '')
+    timesheet.file = data.get('file', None)
+    timesheet.save()
+
+    # TimeSheet.objects.create(
+    #     role=role,
+    #     day=check_in.date(),
+    #     check_in=check_in.time(),
+    #     check_out=None,
+    #     time_from=today_schedule.time_from,
+    #     time_to=today_schedule.time_to,
+    #     status=status,
+    #     comment=data.get('comment', ''),
+    #     file=data.get('file', None),
+    # )
 
 
 @atomic
 def create_check_in_timesheet(role: Role, data: dict) -> None:
-    check_distance(role.department, data['latitude'], data['longitude'])
+    if role.in_zone:
+        check_distance(role, data['latitude'], data['longitude'])
     handle_check_in_timesheet(role, data)
 
 
@@ -358,8 +410,10 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
-    analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
+    if role.in_zone:
+        check_distance(role, data['latitude'], data['longitude'])
 
+    analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
     if not handle_check_out_absent_days(role, data, analytics_enabled):
         return False
     if analytics_enabled:
@@ -416,3 +470,44 @@ def create_vacation(data: OrderedDict):
         return {'message': 'Дата начала отпуска не может быть позже или равным, чем дата окончания отпуска'}, 400
 
     return bulk_create_vacation_timesheets(data)
+
+
+def create_future_time_sheet(role_id, day, month, year, status, time_from=None, time_to=None):
+    _date = date(year, month, day)
+    date_formatted = _date.strftime('%Y-%m-%d')
+    text = 'Created automatically within create_future_time_sheet()'
+    with atomic():
+        if status == 5:
+            return create_day_off_timesheet(role_id, date_formatted, text), 201
+        elif status == 6:
+            # schedules = EmployeeSchedule.objects.filter(role_id=role_id)
+            # is_workday_schedule = get_schedule_for_weekday(schedules, _date.weekday())
+            # if is_workday_schedule:
+            #     local_time_from = is_workday_schedule.time_from
+            #     local_time_to = is_workday_schedule.time_to
+            # else:
+            if not (time_from and time_to):
+                return {'message': 'Enter time_from & time_to'}, 400
+
+            local_time_from = time_from
+            local_time_to = time_to
+
+            return create_future_day_timesheet(role_id, date_formatted, local_time_from, local_time_to, text), 201
+        else:
+            return {'message': 'Wrong status!'}, 400
+
+
+def generate_total_hours(role_id, year, month):
+    timesheets = TimeSheet.objects.filter(
+        role_id=role_id,
+        created_at__year=year,
+        created_at__month=month
+    )
+
+    # calculate the total working hours
+    total_working_hours = timesheets.aggregate(
+        total=Sum('check_out') - Sum('check_in')
+    )['total']
+    if total_working_hours is None:
+        return 0
+    return total_working_hours.total_seconds() / 3600.0

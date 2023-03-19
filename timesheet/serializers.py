@@ -34,6 +34,8 @@ class TimeSheetUpdateSerializer(BaseSerializer):
     check_in = serializers.TimeField(format='%Y-%m-%dT%H:%M:%S%z', required=False)
     check_out = serializers.TimeField(format='%Y-%m-%dT%H:%M:%S%z', required=False)
     status = serializers.IntegerField(required=False)
+    time_from = serializers.TimeField(format='%H:%M', required=False)
+    time_to = serializers.TimeField(format='%H:%M', required=False)
 
 
 class CheckInSerializer(BaseSerializer):
@@ -49,6 +51,8 @@ class TakeTimeOffSerializer(BaseSerializer):
 
 
 class CheckOutSerializer(BaseSerializer):
+    latitude = serializers.DecimalField(max_digits=22, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=22, decimal_places=6)
     check_out = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%S%z')
 
 
@@ -93,3 +97,37 @@ class VacationTimeSheetSerializer(BaseSerializer):
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.only('id'))
     start_vacation_date = serializers.DateField()
     end_vacation_date = serializers.DateField()
+
+
+class CreateFutureTimeSheetSerializer(BaseSerializer):
+    role_id = serializers.IntegerField()
+    day = serializers.IntegerField(min_value=1, max_value=31)
+    month = serializers.IntegerField(min_value=1, max_value=12)
+    year = serializers.IntegerField(min_value=2022, max_value=9999)
+    status = serializers.ChoiceField(choices=[timesheet_choice for timesheet_choice in TimeSheetChoices.choices])
+    time_from = serializers.TimeField(required=False, allow_null=True)
+    time_to = serializers.TimeField(required=False, allow_null=True)
+
+
+class MonthHoursSerializer(BaseSerializer):
+    month = serializers.DateTimeField()
+    total_duration = serializers.FloatField()
+
+
+class MonthHoursValidationSerializer(BaseSerializer):
+    year = serializers.IntegerField(required=False)
+    months = serializers.ListField(child=serializers.CharField(), required=False,)
+    role = serializers.IntegerField()
+
+    def to_internal_value(self, data):
+        if 'months' in data:
+            data = super().to_internal_value(data)
+            data['months'] = [int(i) for i in data['months'][0].split(',')]
+        return data
+
+
+class UpdateTimeSheetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TimeSheet
+        fields = ("status", "time_from", "time_to")

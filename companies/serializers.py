@@ -3,8 +3,9 @@ from datetime import datetime
 
 from rest_framework import serializers
 from auth_user.serializers import UserModelSerializer, UserSerializer
-from companies.models import Company, Department, CompanyService
+from companies.models import Company, Department, CompanyService, Zone
 from timesheet.serializers import ScheduleSerializer
+from timesheet.services import get_timesheet_by_month, generate_total_hours
 from utils.serializers import BaseSerializer
 
 
@@ -172,6 +173,7 @@ class EmployeesSerializer(BaseSerializer):
     score = serializers.IntegerField()
     department = DepartmentListSerializer()
     schedules = ScheduleSerializer(many=True)
+    in_zone = serializers.BooleanField()
     today_schedule = serializers.SerializerMethodField()
 
     def get_today_schedule(self, instance):
@@ -184,6 +186,18 @@ class EmployeesSerializer(BaseSerializer):
         except IndexError:
             return ''
 
+class EmployeeTimeSheetSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    user = UserSerializer()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        year = datetime.now().year
+        month = datetime.now().month
+        ret['timesheet'] = get_timesheet_by_month(instance.id, year, month)
+        ret['total_hours'] = generate_total_hours(instance.id, year, month)
+        return ret
+
 
 class CreateEmployeeSerializer(BaseSerializer):
     first_name = serializers.CharField(allow_blank=True)
@@ -191,6 +205,7 @@ class CreateEmployeeSerializer(BaseSerializer):
     middle_name = serializers.CharField(allow_blank=True)
     email = serializers.EmailField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
+    in_zone = serializers.BooleanField(allow_null=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()
@@ -270,3 +285,33 @@ class RetrieveCompanyServiceSerializer(BaseSerializer):
     analytics_enabled = serializers.BooleanField()
     time_tracking_enabled = serializers.BooleanField()
     tests_enabled = serializers.BooleanField()
+
+
+class ZoneEmployeeSerializer(BaseSerializer):
+    id = serializers.IntegerField()
+    user = UserSerializer()
+    role = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class ZoneListSerializer(serializers.ModelSerializer):
+    employees = ZoneEmployeeSerializer(many=True)
+
+    class Meta:
+        model = Zone
+        exclude = ("created_at", 'updated_at')
+
+
+class ZoneCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Zone
+        exclude = ("created_at", 'updated_at')
+
+
+class GenerateEmployeeTimeSheetSerializer(BaseSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'))
+
+
+class EmployeeAvatarSerializer(BaseSerializer):
+    avatar = serializers.FileField()

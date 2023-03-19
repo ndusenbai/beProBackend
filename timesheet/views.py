@@ -3,19 +3,22 @@ from django.db import IntegrityError
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, UpdateModelMixin
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
-
+from django.db.models.functions import TruncMonth, Extract
+from django.db.models import F, Sum
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
-    VacationTimeSheetSerializer
+    VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer, MonthHoursValidationSerializer, \
+    UpdateTimeSheetSerializer
 from timesheet.services import create_check_in_timesheet, get_last_timesheet_action, create_check_out_timesheet, \
-    update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month
+    update_timesheet, change_timesheet, set_took_off, create_vacation, get_timesheet_by_month, create_future_time_sheet
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
-from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE
+from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE, QUERY_MONTHS
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
 from utils.tools import log_exception
 
@@ -111,7 +114,7 @@ class CheckOutViewSet(CreateModelMixin, GenericViewSet):
         except FillUserStatistic as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except Exception as e:
-            log_exception(e, 'Error in CheckInViewSet.create()')
+            log_exception(e, 'Error in CheckOutViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -159,3 +162,70 @@ class VacationTimeSheetViewSet(CreateModelMixin, GenericViewSet):
         except Exception as e:
             log_exception(e, 'Error in ChangeTimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CreateFutureTimeSheetAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    # permission_classes = (ChangeTimeSheetPermissions,)
+
+    @swagger_auto_schema(request_body=CreateFutureTimeSheetSerializer)
+    def post(self, request):
+        serializer = CreateFutureTimeSheetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response, status_code = create_future_time_sheet(**serializer.validated_data)
+        return Response(response, status=status_code)
+
+
+class UpdateTimeSheetAPI(UpdateModelMixin, GenericViewSet):
+    permission_classes = (ChangeTimeSheetPermissions,)
+    serializer_class = UpdateTimeSheetSerializer
+    queryset = TimeSheet.objects.order_by()
+
+
+class MonthHoursViewSet(ListModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('role',)
+    serializer_class = MonthHoursSerializer
+    filter_serializer = None
+
+    def get_queryset(self):
+        return TimeSheet.objects.annotate(
+            month=TruncMonth('created_at'),
+            check_in_hour=Extract('check_in', 'hour'),
+            check_in_minute=Extract('check_in', 'minute'),
+            check_out_hour=Extract('check_out', 'hour'),
+            check_out_minute=Extract('check_out', 'minute'),
+            total_minutes=(
+                    (F('check_out_hour') * 60 + F('check_out_minute')) -
+                    (F('check_in_hour') * 60 + F('check_in_minute'))
+            )
+        ).values(
+            'month'
+        ).annotate(
+            total_duration=Sum('total_minutes') / 60
+        ).exclude(
+            total_duration=None
+        ).order_by(
+            'month'
+        )
+
+    def filter_queryset(self, queryset):
+        data = self.filter_serializer.validated_data
+
+        if 'year' in data:
+            if 'months' in data:
+                return queryset.filter(created_at__year=data['year'], role_id=data['role'],
+                                       created_at__month__in=data['months']).distinct().order_by('month')
+            return queryset.filter(created_at__year=data['year'], role_id=data['role']).distinct().order_by('month')
+        else:
+            return queryset.filter(role_id=data['role']).distinct().order_by('month')
+
+    @swagger_auto_schema(manual_parameters=[QUERY_YEAR, QUERY_MONTHS])
+    def list(self, request, *args, **kwargs):
+        """
+        Получить кол-во баллов за каждый выбранный месяц в году по роли, или за весь период
+        """
+        self.filter_serializer = MonthHoursValidationSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
+        return super().list(request, *args, **kwargs)

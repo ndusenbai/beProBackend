@@ -1,5 +1,5 @@
 from django.contrib import admin
-from companies.models import Company, Department, Role, CompanyService
+from companies.models import Company, Department, Role, CompanyService, Zone
 
 
 @admin.register(Company)
@@ -41,3 +41,8 @@ class CompanyServiceAdmin(admin.ModelAdmin):
     list_display = ('company', 'company_id', 'analytics_enabled', 'time_tracking_enabled', 'tests_enabled')
     list_display_links = ('company',)
     raw_id_fields = ('company',)
+
+
+@admin.register(Zone)
+class ZoneAdmin(admin.ModelAdmin):
+    list_display = ('id', 'company', 'address')

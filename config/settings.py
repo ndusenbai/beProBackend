@@ -1,9 +1,9 @@
 from pathlib import Path
 from datetime import timedelta
-
 import environ
 import redis
 import os
+from firebase_admin import initialize_app
 env = environ.Env()
 environ.Env.read_env()
 
@@ -11,7 +11,7 @@ environ.Env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-
+FIREBASE_APP = initialize_app()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -39,6 +39,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_yasg',
+    'fcm_django',
     'django_filters',
     'django_db_logger',
     'django_celery_beat',
@@ -55,6 +56,7 @@ LOCAL_APPS = [
     'timesheet.apps.TimesheetConfig',
     'tariffs.apps.TariffsConfig',
     'tests.apps.TestsConfig',
+    'app_version.apps.AppVersionConfig'
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -225,6 +227,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
+}
+
+GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
+
+FCM_DJANGO_SETTINGS = {
+    # an instance of firebase_admin.App to be used as default for all fcm-django requests
+    # default: None (the default Firebase app)
+    "DEFAULT_FIREBASE_APP": None,
+     # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "bepro.kz",
+     # true if you want to have only one active device per registered user at a time
+     # default: False
+    "ONE_DEVICE_PER_USER": False,
+     # devices to which notifications cannot be sent,
+     # are deleted upon receiving error response from FCM
+     # default: False
+    "DELETE_INACTIVE_DEVICES": False,
+    # Transform create of an existing Device (based on registration id) into
+                # an update. See the section
+    # "Update of device with duplicate registration ID" for more details.
+    # default: False
+    "UPDATE_ON_DUPLICATE_REG_ID": True,
 }
 
 CURRENT_SITE = env('CURRENT_SITE')

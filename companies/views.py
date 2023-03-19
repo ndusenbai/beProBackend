@@ -3,23 +3,26 @@ from django.core.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, serializers
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from rest_framework.parsers import MultiPartParser
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-
+from rest_framework.views import APIView
 from companies.models import CompanyService
 from companies.serializers import CompanyModelSerializer, DepartmentSerializer, \
     DepartmentList2Serializer, CompanySerializer, CompanyServiceSerializer, EmployeesSerializer, \
     CreateEmployeeSerializer, UpdateDepartmentSerializer, FilterEmployeesSerializer, ObserverListSerializer, \
     ObserverCreateSerializer, ObserverUpdateSerializer, CompanyServicesUpdateSerializer, \
-    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer
+    RetrieveCompanyServiceSerializer, CompanyUpdateModelSerializer, ZoneCreateSerializer, ZoneListSerializer, \
+    EmployeeTimeSheetSerializer, GenerateEmployeeTimeSheetSerializer, EmployeeAvatarSerializer
 from companies.services import update_department, create_company, create_department, \
     get_departments_qs, get_company_qs, update_company, get_employee_list, create_employee, update_employee, \
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
-    update_company_services, get_qs_retrieve_company_services
+    update_company_services, get_qs_retrieve_company_services, get_zones_qs, get_employee_time_sheet, \
+    generate_employees_timesheet_excel
 from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
     SuperuserOrOwnerOrHRPermission
@@ -147,9 +150,10 @@ class DepartmentViewSet(ModelViewSet):
 class EmployeesViewSet(ModelViewSet):
     permission_classes = (EmployeesPermissions,)
     serializer_class = EmployeesSerializer
-    filter_backends = (SearchFilter, DjangoFilterBackend)
+    filter_backends = (SearchFilter, DjangoFilterBackend, OrderingFilter)
     search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
     filterset_fields = ('company', 'department')
+    ordering_fields = ['score']
     http_method_names = ['get', 'post', 'put', 'delete']
     filter_serializer = None
 
@@ -200,6 +204,34 @@ class EmployeesViewSet(ModelViewSet):
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class EmployeeTimeSheetViewSet(ModelViewSet):
+    http_method_names = ['get']
+    permission_classes = (EmployeesPermissions,)
+    serializer_class = EmployeeTimeSheetSerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('user__first_name', 'user__last_name', 'user__middle_name')
+    filterset_fields = ('company', 'department')
+    filter_serializer = None
+
+    def get_queryset(self):
+        return get_employee_time_sheet()
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+
+        if self.filter_serializer:
+            data = self.filter_serializer.validated_data
+            if 'departments' in data:
+                return queryset.filter(department__in=data['departments'])
+        return queryset
+
+    @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS])
+    def list(self, request, *args, **kwargs):
+        self.filter_serializer = FilterEmployeesSerializer(data=request.query_params)
+        self.filter_serializer.is_valid(raise_exception=True)
+        return super().list(request, *args, **kwargs)
+
+
 class ObserverViewSet(ModelViewSet):
     permission_classes = (ObserverPermission,)
     http_method_names = ['get', 'post', 'put', 'delete']
@@ -233,3 +265,45 @@ class ObserverViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         update_observer(self.get_object(), serializer.validated_data)
         return Response({'message': 'updated'})
+
+
+class ZoneViewSet(ModelViewSet):
+    permission_classes = (EmployeesPermissions,)
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    search_fields = ('address',)
+    filterset_fields = ('company',)
+
+    def get_queryset(self):
+        return get_zones_qs()
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return ZoneListSerializer
+        return ZoneCreateSerializer
+
+
+class GenerateEmployeeTimeSheetAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(request_body=GenerateEmployeeTimeSheetSerializer)
+    def post(self, request):
+        serializer = GenerateEmployeeTimeSheetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return generate_employees_timesheet_excel(
+            serializer.validated_data['company'],
+            None
+        )
+
+
+class EmployeeAvatarUpdateAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    parser_classes = (MultiPartParser,)
+
+    @swagger_auto_schema(request_body=EmployeeAvatarSerializer)
+    def put(self, request):
+        serializer = EmployeeAvatarSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        user.avatar = serializer.validated_data['avatar']
+        user.save()
+        return Response({'message': 'Updated!'})

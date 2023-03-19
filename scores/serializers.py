@@ -48,3 +48,20 @@ class MonthScoresValidationSerializer(BaseSerializer):
 class MonthScoresSerializer(BaseSerializer):
     month = serializers.DateTimeField()
     score = serializers.IntegerField()
+
+
+class ScoreRoleSerializer(BaseSerializer):
+    full_name = serializers.SerializerMethodField()
+    title = serializers.CharField()
+    role = serializers.IntegerField()
+
+    def get_full_name(self, instance):
+        return instance.user.full_name
+
+
+class ScoreFeedSerializer(serializers.ModelSerializer):
+    role = ScoreRoleSerializer()
+
+    class Meta:
+        model = Score
+        fields = "__all__"
