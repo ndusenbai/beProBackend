@@ -729,6 +729,22 @@ files = [
 Django = ">=2.2"
 
 [[package]]
+name = "django-modeltranslation"
+version = "0.18.9"
+description = "Translates Django models using a registration approach."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-modeltranslation-0.18.9.tar.gz", hash = "sha256:d92bcd004e48946ae3824289ee76d36faa670f6e3da4a0412cdaeb4fc2526627"},
+    {file = "django_modeltranslation-0.18.9-py3-none-any.whl", hash = "sha256:f79ec5548053ffa2153b7b5ca646f59da1bf9e4c2c62085e21ead662a9c2faf8"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+typing-extensions = "*"
+
+[[package]]
 name = "django-timezone-field"
 version = "5.0"
 description = "A Django app providing DB, form, and REST framework fields for zoneinfo and pytz timezone objects."
@@ -2478,6 +2494,18 @@ files = [
 test = ["pre-commit", "pytest"]
 
 [[package]]
+name = "typing-extensions"
+version = "4.5.0"
+description = "Backported and Experimental Type Hints for Python 3.7+"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
+    {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
+]
+
+[[package]]
 name = "tzdata"
 version = "2022.1"
 description = "Provider of IANA time zone data"
@@ -2730,4 +2758,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3f0c0153f3cba1213697db42f8984647ab86ce153313f4d23269c375c0f25cc3"
+content-hash = "30319498efe03b10acd40fa3c455607f78ce462169f7c9ce1e1150dd39bf84e1"

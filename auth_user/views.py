@@ -216,13 +216,10 @@ class ChangeUserEmailAPI(APIView):
 
     @swagger_auto_schema(request_body=NewEmailSerializer)
     def put(self, request):
-        serializer = NewEmailSerializer(request.user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            update_email(request, request.user, serializer.validated_data['email_new'])
-            return Response({'message': 'Email has been sent!'})
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = NewEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        update_email(request, request.user, serializer.validated_data['email_new'])
+        return Response({'message': 'Email has been sent!'})
 
 
 class SetUserEmailAPI(APIView):

@@ -30,6 +30,7 @@ fcm-django = "^1.0.12"
 pandas = "^1.5.3"
 xlsxwriter = "^3.0.9"
 openpyxl = "^3.1.2"
+django-modeltranslation = "^0.18.9"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.4.0"

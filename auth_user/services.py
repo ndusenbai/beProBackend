@@ -268,7 +268,8 @@ def update_email(request, user, email_new):
         'token': password_reset_token.make_token(user),
         'uid': urlsafe_base64_encode(force_bytes(user.pk))
     }
-    send_email.delay(subject='Смена почты', to_list=[user.email], template_name='reset_password.html', context=context)
+    # need to return send_email.delay in future
+    send_email(subject='Смена почты', to_list=[email_new], template_name='reset_email.html', context=context)
 
 
 def set_new_email(uid, token):

@@ -27,6 +27,7 @@ AUTH_USER_MODEL = 'auth_user.User'
 # Application definition
 
 DEFAULT_APPS = [
+    'modeltranslation', # 3rd party app
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -276,3 +278,14 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': ACCESS_TOKEN_LIFETIME,
     'REFRESH_TOKEN_LIFETIME': REFRESH_TOKEN_LIFETIME,
 }
+
+gettext = lambda s: s
+LANGUAGES = (
+    ('ru', gettext('Russian')),
+    ('kk', gettext('Kazakh')),
+    ('en', gettext('English')),
+
+)
+
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'ru'

@@ -76,7 +76,9 @@ class ApplicationToCreateCompanyCreateViewSet(CreateModelMixin, GenericViewSet):
 class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     permission_classes = (TariffApplicationPermission,)
     queryset = TariffApplication.objects.order_by('-created_at')
+    filter_backends = (SearchFilter,)
     filterset_fields = ('owner',)
+    search_fields = ('owner__first_name', 'owner__last_name', 'owner__middle_name')
     http_method_names = ['get', 'put']
 
     def get_serializer_class(self):
