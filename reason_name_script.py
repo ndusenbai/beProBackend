@@ -24,9 +24,6 @@ for row in rows:
     reason.save()
 
 
-auto_reasons = Reason.objects.filter(is_auto=True)
+Reason.objects.filter(is_auto=True).update(name_ru='Опоздание')
 
-auto_reasons.name_ru = 'Опоздание'
-
-auto_reasons.save()
 

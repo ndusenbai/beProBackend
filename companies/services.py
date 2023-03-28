@@ -143,10 +143,15 @@ def get_company_qs() -> QuerySet[Company]:
         .annotate(employees_count=Count('roles')).order_by('id')
 
 
-def get_employee_list():
-    return Role.objects.exclude(
+def get_employee_list(show_obs):
+    qs = Role.objects.exclude(
         role=RoleChoices.OBSERVER
-    ).annotate(
+    )
+
+    if show_obs:
+        qs = Role.objects.all()
+
+    qs = qs.annotate(
         score=GetScoreForRole('companies_role.id')
     ).select_related(
         'user',
@@ -162,6 +167,8 @@ def get_employee_list():
             to_attr='schedules'
         )
     ).distinct()
+
+    return qs
 
 
 def get_employee_time_sheet():
