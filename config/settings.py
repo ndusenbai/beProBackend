@@ -45,6 +45,7 @@ THIRD_PARTY_APPS = [
     'django_db_logger',
     'django_celery_beat',
     'django_celery_results',
+    'imagekit',
 ]
 
 LOCAL_APPS = [
