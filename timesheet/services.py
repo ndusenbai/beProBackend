@@ -320,7 +320,7 @@ def get_schedule(role, now_date):
 @atomic
 def set_took_off(role: Role, data: dict):
     now_date = date.today()
-
+    check_out = data.pop('check_out')
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
     schedule = get_schedule(role, now_date)
 
@@ -331,15 +331,17 @@ def set_took_off(role: Role, data: dict):
         if time_sheet.check_out:
             return {'message': 'Вы уже осуществили check out на текущий день'}, 400
 
-        time_sheet.check_in = schedule.time_from
-        time_sheet.check_out = schedule.time_to
-        time_sheet.status = TimeSheetChoices.ABSENT
-        time_sheet.save()
+        if check_out and time_sheet.check_in:
+            # time_sheet.check_in = schedule.time_from
+            time_sheet.check_out = check_out
+            time_sheet.status = TimeSheetChoices.TAKE_OFF
+            time_sheet.save()
+
     else:
         if schedule:
 
-            TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date, check_in=schedule.time_from,
-                                     check_out=schedule.time_to, time_to=schedule.time_to, time_from=schedule.time_from, **data)
+            TimeSheet.objects.create(role=role, status=TimeSheetChoices.TAKE_OFF, day=now_date, check_in=schedule.time_from,
+                                     check_out=check_out, time_to=schedule.time_to, time_from=schedule.time_from, **data)
 
     return {'message': 'created'}, 201
 
