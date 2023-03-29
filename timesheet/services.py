@@ -501,6 +501,7 @@ def create_future_time_sheet(role_id, day, month, year, status, time_from=None, 
 
 def generate_total_hours(role_id, year, month):
     timesheets = TimeSheet.objects.filter(
+        (Q(check_in__isnull=False) & Q(check_out__isnull=False)),
         role_id=role_id,
         created_at__year=year,
         created_at__month=month
