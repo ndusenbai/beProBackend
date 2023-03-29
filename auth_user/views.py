@@ -75,7 +75,7 @@ class ForgotPasswordWithPinView(GenericViewSet):
     def reset_password(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        forgot_password_with_pin(serializer.validated_data)
+        forgot_password_with_pin(request, serializer.validated_data)
         return Response({'message': 'email_sent'})
 
     def new_password(self, request):

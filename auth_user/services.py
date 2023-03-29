@@ -50,11 +50,13 @@ def get_accept_code(user):
         get_accept_code(user)
 
 
-def forgot_password_with_pin(validated_data: dict):
+def forgot_password_with_pin(request: HttpRequest, validated_data: dict):
+    domain = get_domain(request)
     user = get_object_or_404(User, **validated_data)
     accept_code = get_accept_code(user)
     context = {
         'accept_code': accept_code,
+        'domain': domain,
     }
     send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_password_with_pin.html', context=context)
 
