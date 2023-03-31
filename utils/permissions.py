@@ -188,7 +188,7 @@ class HistoryStatisticPermissions(BasePermission):
         if not request.GET.get('role_id'):
             return False
 
-        if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer'}):
+        if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'observer', 'head_of_hr_department'}):
             return True
 
         return False
