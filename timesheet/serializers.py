@@ -61,6 +61,7 @@ class ScheduleSerializer(BaseSerializer):
     time_from = serializers.TimeField(format='%H:%M')
     time_to = serializers.TimeField(format='%H:%M')
     timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', read_only=True)
+    is_night_shift = serializers.BooleanField(default=False)
 
 
 class DepartmentScheduleModelSerializer(serializers.ModelSerializer):

@@ -247,6 +247,7 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
+            is_night_shift=schedule['is_night_shift']
         ) for schedule in schedules]
     EmployeeSchedule.objects.bulk_create(new_schedules)
 
