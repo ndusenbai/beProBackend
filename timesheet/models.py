@@ -36,8 +36,13 @@ class TimeSheetChoices(models.IntegerChoices):
 class TimeSheet(BaseModel):
     role = models.ForeignKey(to='companies.Role', on_delete=models.CASCADE, related_name='timesheet')
     day = models.DateField()
-    check_in = models.DateTimeField(null=True)
-    check_out = models.DateTimeField(null=True, blank=True)
+
+    check_in = models.TimeField(null=True)
+    check_out = models.TimeField(null=True, blank=True)
+
+    check_in_new = models.DateTimeField(null=True)
+    check_out_new = models.DateTimeField(null=True, blank=True)
+
     time_from = models.TimeField(null=True)
     time_to = models.TimeField(null=True)
     comment = models.TextField(blank=True)

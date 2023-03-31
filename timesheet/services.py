@@ -1,5 +1,5 @@
 from calendar import monthrange
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, time
 from typing import OrderedDict
 
 import geopy.distance
@@ -89,6 +89,8 @@ def create_absent_timesheet(role_id, date_formatted, is_workday_schedule):
         day=date_formatted,
         check_in=None,
         check_out=None,
+        check_in_new=None,
+        check_out_new=None,
         time_from=is_workday_schedule.time_from,
         time_to=is_workday_schedule.time_to,
         debug_comment='Created automatically within get_timesheet_by_month()',
@@ -100,6 +102,8 @@ def create_absent_timesheet(role_id, date_formatted, is_workday_schedule):
         'day': date_formatted,
         'check_in': '',
         'check_out': '',
+        'check_in_new': '',
+        'check_out_new': '',
         'time_from': is_workday_schedule.time_from,
         'time_to': is_workday_schedule.time_to,
         'comment': '',
@@ -116,6 +120,8 @@ def create_day_off_timesheet(role_id, date_formatted, text):
         day=date_formatted,
         check_in=None,
         check_out=None,
+        check_in_new=None,
+        check_out_new=None,
         time_from=None,
         time_to=None,
         debug_comment=text,
@@ -127,6 +133,8 @@ def create_day_off_timesheet(role_id, date_formatted, text):
         'day': date_formatted,
         'check_in': '',
         'check_out': '',
+        'check_in_new': '',
+        'check_out_new': '',
         'time_from': '',
         'time_to': '',
         'comment': '',
@@ -143,6 +151,8 @@ def create_future_day_timesheet(role_id, date_formatted, time_from, time_to, tex
         day=date_formatted,
         check_in=None,
         check_out=None,
+        check_in_new=None,
+        check_out_new=None,
         time_from=time_from,
         time_to=time_to,
         debug_comment=text,
@@ -154,6 +164,8 @@ def create_future_day_timesheet(role_id, date_formatted, time_from, time_to, tex
         'day': date_formatted,
         'check_in': '',
         'check_out': '',
+        'check_in_new': '',
+        'check_out_new': '',
         'time_from': time_from,
         'time_to': time_to,
         'comment': '',
@@ -171,6 +183,8 @@ def fake_future_day_timesheet(role_id, date_formatted, is_workday_schedule):
         'day': date_formatted,
         'check_in': '',
         'check_out': '',
+        'check_in_new': '',
+        'check_out_new': '',
         'time_from': is_workday_schedule.time_from,
         'time_to': is_workday_schedule.time_to,
         'comment': '',
@@ -188,6 +202,8 @@ def fake_future_day_off_timesheet(role_id, date_formatted):
         'day': date_formatted,
         'check_in': '',
         'check_out': '',
+        'check_in_new': '',
+        'check_out_new': '',
         'time_from': '',
         'time_to': '',
         'comment': '',
@@ -255,7 +271,7 @@ def check_distance(role: Role, latitude: float, longitude: float) -> None:
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
     last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
     if last_timesheet:
-        if last_timesheet.check_in and not last_timesheet.check_out:
+        if last_timesheet.check_in_new and not last_timesheet.check_out_new:
             raise CheckInAlreadyExistsException()
 
     check_in = datetime.now(pytz.timezone(settings.TIME_ZONE))
@@ -283,8 +299,9 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
 
     timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date())
 
-    timesheet.check_in = check_in  # new
-    # timesheet.check_in = check_in.time()
+    timesheet.check_in_new = check_in  # new
+    timesheet.check_in = check_in.time()
+    timesheet.check_out_new = None  # new
     timesheet.check_out = None
     timesheet.time_from = today_schedule.time_from
     timesheet.time_to = today_schedule.time_to
@@ -344,7 +361,7 @@ def set_took_off(role: Role, data: dict):
         time_sheet.save()
     else:
         if schedule:
-
+            # TODO add check_in_new and check_out_new
             TimeSheet.objects.create(role=role, status=TimeSheetChoices.ABSENT, day=now_date, check_in=schedule.time_from,
                                      check_out=schedule.time_to, time_to=schedule.time_to, time_from=schedule.time_from, **data)
 
@@ -371,6 +388,7 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
             if analytics_enabled:
                 check_statistics(role, last_timesheet.day)
             last_timesheet.check_out = '23:59'
+            last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), time(23, 59))
             last_timesheet.debug_comment = 'Automatically filled check_in within create_check_out_timesheet()'
             last_timesheet.save()
 
@@ -386,6 +404,8 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
                         day=day,
                         check_in=None,
                         check_out=None,
+                        check_in_new=None,
+                        check_out_new=None,
                         time_from='00:00',
                         time_to='23:59',
                         debug_comment='Created automatically within handle_check_out_absent_days()',
@@ -400,6 +420,7 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
                 if analytics_enabled:
                     check_statistics(role, last_timesheet.day)
                 last_timesheet.check_out = '23:59'
+                last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), time(23, 59))
                 last_timesheet.debug_comment = 'Automatically filled check_in within create_check_out_timesheet()'
                 last_timesheet.save()
 
@@ -416,6 +437,8 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
                             day=first_absent_day + timedelta(days=i),
                             check_in=None,
                             check_out=None,
+                            check_in_new=None,
+                            check_out_new=None,
                             time_from='00:00',
                             time_to='23:59',
                             debug_comment='Created automatically within handle_check_out_absent_days()',
