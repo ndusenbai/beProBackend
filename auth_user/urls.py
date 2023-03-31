@@ -30,6 +30,6 @@ urlpatterns = [
     path('user-profile/', views.UserProfileView.as_view({'get': 'get', 'patch': 'update'}), name='user-profile'),
 
     path('change-email/', views.ChangeUserEmailAPI.as_view()),
-    path('set-new-email/', views.SetUserEmailAPI.as_view())
+    path('set-new-email/<str:uid>/<str:token>/', views.SetUserEmailAPI.as_view())
 
 ] + router.urls
