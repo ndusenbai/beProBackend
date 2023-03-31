@@ -218,7 +218,9 @@ class ChangeUserEmailAPI(APIView):
     def put(self, request):
         serializer = NewEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        update_email(request, request.user, serializer.validated_data['email_new'])
+        result = update_email(request, request.user, serializer.validated_data['email_new'])
+        if result is False:
+            return Response({'message': 'Such email already exists!'}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'message': 'Email has been sent!'})
 
 
