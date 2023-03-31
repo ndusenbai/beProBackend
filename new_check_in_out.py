@@ -8,9 +8,11 @@ from django.apps import apps
 
 
 TimeSheet = apps.get_model('timesheet', 'TimeSheet')
-for timesheet in TimeSheet.objects.filter(check_in__isnull=False, check_out__isnull=False):
-    timesheet.check_in = datetime.combine(timesheet.day, timesheet.check_in)
-    timesheet.check_out = datetime.combine(timesheet.day, timesheet.check_out)
+for timesheet in TimeSheet.objects.all():
+    if timesheet.check_in:
+        timesheet.check_in_new = datetime.combine(timesheet.day, timesheet.check_in)
+    if timesheet.check_out:
+        timesheet.check_out_new = datetime.combine(timesheet.day, timesheet.check_out)
     timesheet.save()
 
 
