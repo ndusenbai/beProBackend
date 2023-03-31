@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'imagekit',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 LOCAL_APPS = [
