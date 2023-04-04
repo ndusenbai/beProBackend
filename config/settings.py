@@ -64,7 +64,8 @@ LOCAL_APPS = [
     'timesheet.apps.TimesheetConfig',
     'tariffs.apps.TariffsConfig',
     'tests.apps.TestsConfig',
-    'app_version.apps.AppVersionConfig'
+    'app_version.apps.AppVersionConfig',
+    'notifications.apps.NotificationsConfig',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS
