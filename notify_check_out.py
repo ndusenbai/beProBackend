@@ -1,6 +1,8 @@
 import django
 import os
 
+from notifications.models import EmployeeNotification
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
@@ -31,9 +33,21 @@ for department in Department.objects.all():
     # Loop through each check-out schedule and send a notification to the employee
     for schedule in check_out_schedules:
         time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today())
+        employee_notification = EmployeeNotification.objects.filter(
+            role=schedule.role,
+            created_at__date=datetime.date.today(),
+            check_out_notified=True
+        )
 
-        if not time_sheet.exists():
+        if not time_sheet.exists() and not employee_notification.exists():
             devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
+            emp_notification, _ = EmployeeNotification.objects.get_or_create(
+                role=schedule.role,
+                created_at__date=datetime.date.today(),
+            )
+
+            emp_notification.check_out_notified = True
+            emp_notification.save()
 
             title = "Don't forget to check out!"
             text = f"Hey {schedule.role.user.full_name}, just a heads up that your shift is coming to an end and you have 5 minutes left to check out. Thanks for all your hard work today!"
