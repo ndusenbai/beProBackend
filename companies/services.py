@@ -362,7 +362,7 @@ def generate_employees_timesheet_excel(company, departments):
     file_name = f'employees_timesheet_{year}_{month}_{company.name}.xlsx'
 
     with BytesIO() as b:
-        writer = pd.ExcelWriter(b, engine='openpyxl')
+        writer = pd.ExcelWriter(b, engine='xlsxwriter')
         df.to_excel(writer, sheet_name='page1', index=False)
 
         writer.save()
