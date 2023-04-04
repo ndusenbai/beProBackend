@@ -10,7 +10,6 @@ environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -233,8 +232,8 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
+initialize_app()
 
-initialize_app(GOOGLE_APPLICATION_CREDENTIALS)
 
 FCM_DJANGO_SETTINGS = {
     # an instance of firebase_admin.App to be used as default for all fcm-django requests
