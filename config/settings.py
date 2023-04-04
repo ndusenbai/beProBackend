@@ -4,6 +4,9 @@ import environ
 import redis
 import os
 from firebase_admin import initialize_app
+
+FIREBASE_APP = initialize_app()
+
 env = environ.Env()
 environ.Env.read_env()
 
@@ -232,7 +235,6 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
-initialize_app()
 
 
 FCM_DJANGO_SETTINGS = {
