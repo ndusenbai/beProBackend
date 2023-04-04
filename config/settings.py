@@ -3,9 +3,13 @@ from datetime import timedelta
 import environ
 import redis
 import os
-from firebase_admin import initialize_app
+from firebase_admin import initialize_app, credentials
 
-FIREBASE_APP = initialize_app()
+cred = credentials.Certificate('media/bepro-dd75c-firebase-adminsdk-rwbfr-f449f576e8.json')
+
+initialize_app(cred)
+
+#FIREBASE_APP = initialize_app()
 
 env = environ.Env()
 environ.Env.read_env()
@@ -234,7 +238,6 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
 }
 
-GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
 
 
 FCM_DJANGO_SETTINGS = {
@@ -256,6 +259,9 @@ FCM_DJANGO_SETTINGS = {
     # default: False
     "UPDATE_ON_DUPLICATE_REG_ID": True,
 }
+
+GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
+
 
 CURRENT_SITE = env('CURRENT_SITE')
 
