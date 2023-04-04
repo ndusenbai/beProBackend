@@ -5,23 +5,20 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 import datetime
-from django.utils import timezone
 from timesheet.models import TimeSheet, EmployeeSchedule
 from companies.models import Department
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
-import pytz
 
-# Get the current time in UTC
-now_utc = timezone.now()
 
 # Loop through each department and send a notification to employees with check-out schedules
 for department in Department.objects.all():
     # Convert the time zone string to a pytz timezone object
-    department_tz = pytz.timezone(department.timezone)
+    timezone_str = department.timezone
+    timezone = datetime.timezone(datetime.timedelta(hours=int(timezone_str[:3]), minutes=int(timezone_str[4:])))
 
     # Convert the current UTC time to the local time zone for the department
-    now_local = now_utc.astimezone(department_tz)
+    now_local = datetime.datetime.now(timezone)
 
     # Get all employee schedules for the department that have a check-out time within the next 5 minutes
     check_out_schedules = EmployeeSchedule.objects.filter(
