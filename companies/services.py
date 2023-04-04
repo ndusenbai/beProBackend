@@ -340,7 +340,7 @@ def generate_employees_timesheet_excel(company, departments):
         **extra_kwargs
     ).select_related('user').prefetch_related(
         Prefetch('timesheet', queryset=TimeSheet.objects.filter(day__gte=start_date, day__lte=end_date)),
-        Prefetch('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', queryset=EmployeeSchedule.objects.filter(week_day__in=date_list.weekday + 1)),
+        Prefetch('employee_schedules', queryset=EmployeeSchedule.objects.filter(week_day__in=date_list.weekday + 1)),
     )
 
     data = {}
