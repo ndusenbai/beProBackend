@@ -5,11 +5,11 @@ import pytz
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from django.utils import timezone
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
-from timesheet.models import EmployeeSchedule, TimeSheet, Employee, Department
+from timesheet.models import EmployeeSchedule
 
 
 # Get the current time in UTC
