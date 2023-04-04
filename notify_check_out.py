@@ -1,7 +1,6 @@
 import django
 import os
 
-from notifications.models import EmployeeNotification
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
@@ -11,6 +10,7 @@ from timesheet.models import TimeSheet, EmployeeSchedule
 from companies.models import Department
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
+from notifications.models import EmployeeNotification
 
 
 # Loop through each department and send a notification to employees with check-out schedules
