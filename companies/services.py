@@ -346,7 +346,7 @@ def generate_employees_timesheet_excel(company, departments):
     data = {}
     for employee in employees:
         row = {'Full Name': employee.user.full_name}
-        timesheet_dict = {timesheet.day.date(): timesheet for timesheet in employee.timesheet.all()}
+        timesheet_dict = {timesheet.day: timesheet for timesheet in employee.timesheet.all()}
         schedule_dict = {schedule.week_day: schedule for schedule in employee.employee_schedules.all()}
         for date in date_list:
             timesheet = timesheet_dict.get(date.date())
