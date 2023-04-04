@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import TruncMonth
 from drf_yasg.utils import swagger_auto_schema
 from django_filters.rest_framework import DjangoFilterBackend
@@ -117,15 +117,14 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
                 reasons_list.append(reason)
             extra_kwargs['name__in'] = reasons_list
 
-        full_name = self.request.GET.get('full_name', None)
+        full_name = self.request.GET.get('full_name')
         if full_name:
             names = full_name.split(' ')
-            if len(names) == 1:
-                extra_kwargs['role__user__first_name__icontains'] = names[0]
-                extra_kwargs['role__user__last_name__icontains'] = names[0]
-            elif len(names) == 2:
-                extra_kwargs['role__user__first_name__icontains'] = names[0]
-                extra_kwargs['role__user__last_name__icontains'] = names[1]
+            q_objects = Q(role__user__first_name__icontains=names[0]) | Q(role__user__last_name__icontains=names[-1])
+            if len(names) > 2:
+                for name in names[1:-1]:
+                    q_objects |= Q(role__user__first_name__icontains=name) | Q(role__user__last_name__icontains=name)
+            queryset = queryset.filter(q_objects)
 
         return queryset.filter(**extra_kwargs)
 
