@@ -57,3 +57,6 @@ QUERY_SHOW_OBS = openapi.Parameter('show_obs', openapi.IN_QUERY, description='tr
 
 
 QUERY_REASONS = openapi.Parameter('reasons', openapi.IN_QUERY, description='Опоздание, Драка, ...', type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING))
+
+QUERY_FULL_NAME = openapi.Parameter('full_name', openapi.IN_QUERY, description='John Doe', type=openapi.TYPE_STRING)
+

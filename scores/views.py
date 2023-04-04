@@ -11,7 +11,8 @@ from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScor
     MonthScoresSerializer, ScoreFeedSerializer
 from scores.models import Reason, Score
 from scores.services import create_score, get_score_feed
-from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS, QUERY_END_DATE, QUERY_START_DATE, QUERY_REASONS
+from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS, QUERY_END_DATE, QUERY_START_DATE, QUERY_REASONS, \
+    QUERY_FULL_NAME
 from utils.permissions import ReasonPermissions, MonthScorePermissions, ScorePermission
 
 
@@ -97,10 +98,8 @@ class MonthScoresViewSet(ListModelMixin, GenericViewSet):
 class ScoreFeedListView(ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ScoreFeedSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('role__user__first_name', 'role__user__last_name')
 
-    @swagger_auto_schema(manual_parameters=[QUERY_START_DATE, QUERY_END_DATE, QUERY_REASONS])
+    @swagger_auto_schema(manual_parameters=[QUERY_START_DATE, QUERY_END_DATE, QUERY_REASONS, QUERY_FULL_NAME])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -117,6 +116,17 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
             for reason in reasons:
                 reasons_list.append(reason)
             extra_kwargs['name__in'] = reasons_list
+
+        full_name = self.request.GET.get('full_name', None)
+        if full_name:
+            names = full_name.split(' ')
+            if len(names) == 1:
+                extra_kwargs['role__user__first_name__icontains'] = names[0]
+                extra_kwargs['role__user__last_name__icontains'] = names[0]
+            elif len(names) == 2:
+                extra_kwargs['role__user__first_name__icontains'] = names[0]
+                extra_kwargs['role__user__last_name__icontains'] = names[1]
+
         return queryset.filter(**extra_kwargs)
 
     def get_queryset(self):
