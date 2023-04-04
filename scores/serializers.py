@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from auth_user.serializers import UserSerializer
 from scores.models import Score, Reason
 from utils.serializers import BaseSerializer
-
+from modeltranslation.utils import get_language
 User = get_user_model()
 
 
@@ -13,7 +13,7 @@ class ReasonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reason
-        fields = "__all__"
+        exclude = ('name_kk', 'name_en', 'name_ru')
 
 
 class ScoreModelSerializer(serializers.ModelSerializer):

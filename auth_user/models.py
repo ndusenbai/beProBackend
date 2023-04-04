@@ -6,7 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.timezone import now
 from datetime import timedelta
 import random
-
+from imagekit.models import ProcessedImageField
 from auth_user.tasks import send_invitation
 from utils.models import BaseModel
 from utils.tools import log_exception
@@ -57,7 +57,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
-    avatar = models.ImageField(upload_to='avatar/', blank=True, null=True)
+    avatar = ProcessedImageField(
+        upload_to='avatar/',
+        processors=[],
+        format='WEBP',
+        options={'quality': 60},
+        null=True,
+        blank=True
+    )
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.db.models.functions import TruncMonth, Extract
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Case, When, Q
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
@@ -196,9 +196,9 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
             check_in_minute=Extract('check_in', 'minute'),
             check_out_hour=Extract('check_out', 'hour'),
             check_out_minute=Extract('check_out', 'minute'),
-            total_minutes=(
-                    (F('check_out_hour') * 60 + F('check_out_minute')) -
-                    (F('check_in_hour') * 60 + F('check_in_minute'))
+            total_minutes=Case(
+                When(Q(check_in__isnull=True) | Q(check_out__isnull=True), then=0),
+                default=((F('check_out_hour') * 60 + F('check_out_minute')) - (F('check_in_hour') * 60 + F('check_in_minute')))
             )
         ).values(
             'month'
