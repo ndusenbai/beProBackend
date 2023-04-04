@@ -370,9 +370,18 @@ def set_took_off(role: Role, data: dict):
 
 def handle_check_out_timesheet(role: Role, data: dict):
     check_out = data['check_out']
-    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
-    last_timesheet.check_out = check_out
-    last_timesheet.save()
+    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False).order_by('-day').first()
+    if last_timesheet.is_night_shift:
+        if last_timesheet.day + timedelta(days=1) == date.today():
+
+            last_timesheet.check_out = check_out
+            last_timesheet.check_out_new = check_out
+            last_timesheet.save()
+    else:
+        if last_timesheet.day == date.today():
+            last_timesheet.check_out = check_out
+            last_timesheet.check_out_new = check_out
+            last_timesheet.save()
 
 
 def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool) -> bool:
