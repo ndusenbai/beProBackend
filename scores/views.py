@@ -11,7 +11,7 @@ from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScor
     MonthScoresSerializer, ScoreFeedSerializer
 from scores.models import Reason, Score
 from scores.services import create_score, get_score_feed
-from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS, QUERY_END_DATE, QUERY_START_DATE
+from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS, QUERY_END_DATE, QUERY_START_DATE, QUERY_REASONS
 from utils.permissions import ReasonPermissions, MonthScorePermissions, ScorePermission
 
 
@@ -98,9 +98,9 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ScoreFeedSerializer
     filter_backends = (SearchFilter,)
-    search_fields = ('reason__name', 'role__user__first_name', 'role__user__last_name')
+    search_fields = ('role__user__first_name', 'role__user__last_name')
 
-    @swagger_auto_schema(manual_parameters=[QUERY_START_DATE, QUERY_END_DATE])
+    @swagger_auto_schema(manual_parameters=[QUERY_START_DATE, QUERY_END_DATE, QUERY_REASONS])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -110,6 +110,13 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
             start_date = self.request.GET.get('start_date')
             end_date = self.request.GET.get('end_date')
             extra_kwargs['created_at__date__range'] = [start_date, end_date]
+
+        if self.request.GET.get('reasons'):
+            reasons_list = []
+            reasons = self.request.GET.get('reasons').split(',')
+            for reason in reasons:
+                reasons_list.append(reason)
+            extra_kwargs['name__in'] = reasons_list
         return queryset.filter(**extra_kwargs)
 
     def get_queryset(self):
