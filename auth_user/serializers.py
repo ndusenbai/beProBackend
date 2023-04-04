@@ -171,7 +171,8 @@ class UserProfileSerializer(BaseSerializer):
                 'in_zone': instance.role.in_zone,
                 'department_id': instance.role.department.id,
                 'department_name': instance.role.department.name,
-                'zones': UserZonesSerializer(instance.role.zones, many=True).data
+                'zones': UserZonesSerializer(instance.role.zones, many=True).data,
+                'company_active': instance.selected_company.is_active if instance.selected_company else ''
             }
         except:
             return {

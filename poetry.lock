@@ -616,6 +616,21 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-appconf"
+version = "1.0.5"
+description = "A helper class for handling configuration defaults of packaged apps gracefully."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "django-appconf-1.0.5.tar.gz", hash = "sha256:be3db0be6c81fa84742000b89a81c016d70ae66a7ccb620cdef592b1f1a6aaa4"},
+    {file = "django_appconf-1.0.5-py3-none-any.whl", hash = "sha256:ae9f864ee1958c815a965ed63b3fba4874eec13de10236ba063a788f9a17389d"},
+]
+
+[package.dependencies]
+django = "*"
+
+[[package]]
 name = "django-celery-beat"
 version = "2.3.0"
 description = "Database-backed Periodic Tasks."
@@ -727,6 +742,44 @@ files = [
 
 [package.dependencies]
 Django = ">=2.2"
+
+[[package]]
+name = "django-imagekit"
+version = "4.1.0"
+description = "Automated image processing for Django models."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-imagekit-4.1.0.tar.gz", hash = "sha256:e559aeaae43a33b34f87631a9fa5696455e4451ffa738a42635fde442fedac5c"},
+    {file = "django_imagekit-4.1.0-py2.py3-none-any.whl", hash = "sha256:87e36f8dc1d8745647881f4366ef4965225f048042dacebbee0dcb87425defef"},
+]
+
+[package.dependencies]
+django-appconf = {version = "*", markers = "python_version > \"3\""}
+pilkit = ">=0.2.0"
+six = "*"
+
+[package.extras]
+async = ["django-celery (>=3.0)"]
+async-dramatiq = ["django-dramatiq (>=0.4.0)"]
+async-rq = ["django-rq (>=0.6.0)"]
+
+[[package]]
+name = "django-modeltranslation"
+version = "0.18.9"
+description = "Translates Django models using a registration approach."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-modeltranslation-0.18.9.tar.gz", hash = "sha256:d92bcd004e48946ae3824289ee76d36faa670f6e3da4a0412cdaeb4fc2526627"},
+    {file = "django_modeltranslation-0.18.9-py3-none-any.whl", hash = "sha256:f79ec5548053ffa2153b7b5ca646f59da1bf9e4c2c62085e21ead662a9c2faf8"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+typing-extensions = "*"
 
 [[package]]
 name = "django-timezone-field"
@@ -1900,6 +1953,17 @@ files = [
 ]
 
 [[package]]
+name = "pilkit"
+version = "2.0"
+description = "A collection of utilities and processors for the Python Imaging Libary."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pilkit-2.0.tar.gz", hash = "sha256:ddb30c2f0198a147e56b151476c3bb9fe045fbfd5b0a0fa2a3148dba62d1559f"},
+]
+
+[[package]]
 name = "pillow"
 version = "9.1.1"
 description = "Python Imaging Library (Fork)"
@@ -2478,6 +2542,18 @@ files = [
 test = ["pre-commit", "pytest"]
 
 [[package]]
+name = "typing-extensions"
+version = "4.5.0"
+description = "Backported and Experimental Type Hints for Python 3.7+"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
+    {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
+]
+
+[[package]]
 name = "tzdata"
 version = "2022.1"
 description = "Provider of IANA time zone data"
@@ -2730,4 +2806,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3f0c0153f3cba1213697db42f8984647ab86ce153313f4d23269c375c0f25cc3"
+content-hash = "fda4e535de39a963d6ad83342db07e5273479e2fe576bb0829922ce84cb1165b"

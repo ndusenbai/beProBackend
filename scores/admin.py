@@ -1,12 +1,13 @@
 from django.contrib import admin
 from scores.models import Reason, Score
+from modeltranslation.admin import TabbedTranslationAdmin
 
 
 @admin.register(Reason)
-class ReasonAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'score', 'is_auto', 'company')
+class ReasonAdmin(TabbedTranslationAdmin):
+    list_display = ('id', 'name_ru', 'score', 'is_auto', 'company')
     raw_id_fields = ('company',)
-    search_fields = ('name', 'company')
+    search_fields = ('name_ru', 'company')
 
 
 @admin.register(Score)

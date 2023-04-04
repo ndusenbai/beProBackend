@@ -50,11 +50,13 @@ def get_accept_code(user):
         get_accept_code(user)
 
 
-def forgot_password_with_pin(validated_data: dict):
+def forgot_password_with_pin(request: HttpRequest, validated_data: dict):
+    domain = get_domain(request)
     user = get_object_or_404(User, **validated_data)
     accept_code = get_accept_code(user)
     context = {
         'accept_code': accept_code,
+        'domain': domain,
     }
     send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_password_with_pin.html', context=context)
 
@@ -260,6 +262,9 @@ def get_owners_qs():
 
 
 def update_email(request, user, email_new):
+    existing_email = User.objects.filter(email=email_new)
+    if existing_email.exists():
+        return False
     user.email_new = email_new
     user.save()
     domain = get_domain(request)
@@ -268,7 +273,9 @@ def update_email(request, user, email_new):
         'token': password_reset_token.make_token(user),
         'uid': urlsafe_base64_encode(force_bytes(user.pk))
     }
-    send_email.delay(subject='Смена почты', to_list=[user.email], template_name='reset_password.html', context=context)
+    # need to return send_email.delay in future
+    send_email(subject='Смена почты', to_list=[email_new], template_name='reset_email.html', context=context)
+    return True
 
 
 def set_new_email(uid, token):

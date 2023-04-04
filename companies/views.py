@@ -23,7 +23,7 @@ from companies.services import update_department, create_company, create_departm
     delete_head_of_department_role, update_observer, create_observer_and_role, get_observers_qs, \
     update_company_services, get_qs_retrieve_company_services, get_zones_qs, get_employee_time_sheet, \
     generate_employees_timesheet_excel
-from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS
+from utils.manual_parameters import QUERY_COMPANY, QUERY_DEPARTMENTS, QUERY_SHOW_OBS
 from utils.permissions import CompanyPermissions, DepartamentPermissions, EmployeesPermissions, ObserverPermission, \
     SuperuserOrOwnerOrHRPermission
 from utils.tools import log_exception
@@ -158,7 +158,10 @@ class EmployeesViewSet(ModelViewSet):
     filter_serializer = None
 
     def get_queryset(self):
-        return get_employee_list()
+        show = False
+        if self.request.GET.get('show_obs'):
+            show = True
+        return get_employee_list(show)
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
@@ -169,7 +172,7 @@ class EmployeesViewSet(ModelViewSet):
                 return queryset.filter(department__in=data['departments'])
         return queryset
 
-    @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS])
+    @swagger_auto_schema(manual_parameters=[QUERY_DEPARTMENTS, QUERY_SHOW_OBS])
     def list(self, request, *args, **kwargs):
         self.filter_serializer = FilterEmployeesSerializer(data=request.query_params)
         self.filter_serializer.is_valid(raise_exception=True)

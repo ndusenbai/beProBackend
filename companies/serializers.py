@@ -253,6 +253,7 @@ class CreateEmployeeSerializer(BaseSerializer):
 
 class FilterEmployeesSerializer(BaseSerializer):
     departments = serializers.ListField(child=serializers.CharField(), required=False)
+    show_obs = serializers.BooleanField(default=False, required=False)
 
     def to_internal_value(self, data):
         data = super().to_internal_value(data)

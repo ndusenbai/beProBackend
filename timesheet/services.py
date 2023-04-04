@@ -501,7 +501,9 @@ def generate_total_hours(role_id, year, month):
     timesheets = TimeSheet.objects.filter(
         role_id=role_id,
         created_at__year=year,
-        created_at__month=month
+        created_at__month=month,
+        check_in__isnull=False,
+        check_out__isnull=False
     )
 
     # calculate the total working hours
