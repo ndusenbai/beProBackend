@@ -276,7 +276,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
 
     # changed logic of creation, because there might be created future_day timesheet
 
-    timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date())
+    timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date(), check_in__isnull=True)
 
     timesheet.check_in = check_in.time()
     timesheet.check_out = None
