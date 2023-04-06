@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.db.models.functions import TruncMonth, Extract
-from django.db.models import F, Sum, Q, DurationField, ExpressionWrapper
+from django.db.models import F, Sum, Q, FloatField, ExpressionWrapper
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
@@ -200,7 +200,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
         ).annotate(
             total_duration=ExpressionWrapper(
                 F('check_out_new') - F('check_in_new'),
-                output_field=DurationField()
+                output_field=FloatField()
             ) / 3600
         ).exclude(
             Q(total_duration=None) | Q(total_duration=0)
