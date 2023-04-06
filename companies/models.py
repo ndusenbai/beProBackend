@@ -60,6 +60,7 @@ class Role(BaseModel):
     user = models.OneToOneField(to='auth_user.User', on_delete=models.CASCADE)
     title = models.CharField(max_length=200, default='')
     grade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(4)])
+    checkout_any_time = models.BooleanField(default=True)
     in_zone = models.BooleanField(default=True)
 
     class Meta:

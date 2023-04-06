@@ -8,6 +8,7 @@ from utils.serializers import BaseSerializer
 class TimeSheetModelSerializer(serializers.ModelSerializer):
     status_decoded = serializers.SerializerMethodField(read_only=True)
     timezone_schedule = serializers.SerializerMethodField(read_only=True)
+    working_hours = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TimeSheet
@@ -22,6 +23,12 @@ class TimeSheetModelSerializer(serializers.ModelSerializer):
 
     def get_status_decoded(self, instance):
         return TimeSheetChoices.get_status(instance.status)
+
+    def get_working_hours(self, instance):
+        if instance.check_in_new is None or instance.check_out_new is None:
+            return 0
+        time_diff = instance.check_out_new - instance.check_in_new
+        return time_diff.total_seconds() / 3600
 
 
 class TimeSheetListSerializer(BaseSerializer):

@@ -1,12 +1,12 @@
 from calendar import monthrange
-from datetime import date, timedelta, datetime, time
+from datetime import date, timedelta, datetime, time, timezone as dtimezone
 from typing import OrderedDict
 
 import geopy.distance
 import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, F
 from django.db.transaction import atomic
 from django.utils import timezone
 
@@ -15,7 +15,8 @@ from companies.models import Role, Department, CompanyService
 from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.serializers import TimeSheetModelSerializer
-from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException
+from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException, \
+    TooEarlyCheckoutException
 from utils.tools import log_message
 
 User = get_user_model()
@@ -474,6 +475,9 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
+    if role.checkout_any_time is False:
+        check_if_checkout_is_possible(role, data['check_out'])
+
     if role.in_zone:
         check_distance(role, data['latitude'], data['longitude'])
 
@@ -564,14 +568,39 @@ def create_future_time_sheet(role_id, day, month, year, status, time_from=None, 
 def generate_total_hours(role_id, year, month):
     timesheets = TimeSheet.objects.filter(
         role_id=role_id,
-        created_at__year=year,
-        created_at__month=month
+        check_in_new__year=year,
+        check_in_new__month=month,
+        check_in_new__isnull=False,
+        check_out_new__isnull=False
     )
 
     # calculate the total working hours
-    total_working_hours = timesheets.aggregate(
-        total=Sum('check_out') - Sum('check_in')
+    total_working_seconds = timesheets.aggregate(
+        total=Sum(F('check_out_new') - F('check_in_new'))
     )['total']
-    if total_working_hours is None:
+    if total_working_seconds is None:
         return 0
-    return total_working_hours.total_seconds() / 3600.0
+    return total_working_seconds / 3600.0
+
+
+def check_if_checkout_is_possible(role, check_out):
+    timezone_str = role.department.timezone
+    timezone = dtimezone(timedelta(hours=int(timezone_str[:3]), minutes=int(timezone_str[4:])))
+
+    # Convert the current UTC time to the local time zone for the department
+    now_local = datetime.now(timezone)
+    try:
+        schedule = EmployeeSchedule.objects.get(role=role, week_day=now_local.today().weekday())
+    except EmployeeSchedule.DoesNotExist:
+        raise ValueError('Невозможно совершить checkout (нету расписания)')
+
+    time_diff = datetime.combine(now_local.today(), schedule.time_to) - datetime.combine(now_local.today(),
+                                                                                        check_out.time())
+    if time_diff > timedelta(minutes=15):
+        raise TooEarlyCheckoutException()
+
+    if check_out.time() < schedule.time_to:
+        raise TooEarlyCheckoutException()
+    #
+    # if check_out < now_local:
+    #     raise ValueError('Check-out не может быть в прошлом')

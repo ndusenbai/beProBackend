@@ -222,7 +222,8 @@ def update_employee(role: Role, data: dict) -> None:
         'title': data.pop('title'),
         'grade': data.pop('grade'),
         'department_id': data.pop('department_id'),
-        'in_zone': data.pop('in_zone')
+        'in_zone': data.pop('in_zone'),
+        'checkout_any_time': data.pop('checkout_any_time')
     }
 
     Role.objects.filter(id=role.id).update(**role_data)

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.db.models.functions import TruncMonth, Extract
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Q
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
@@ -190,22 +190,19 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_serializer = None
 
     def get_queryset(self):
-        return TimeSheet.objects.annotate(
-            month=TruncMonth('created_at'),
-            check_in_hour=Extract('check_in', 'hour'),
-            check_in_minute=Extract('check_in', 'minute'),
-            check_out_hour=Extract('check_out', 'hour'),
-            check_out_minute=Extract('check_out', 'minute'),
-            total_minutes=(
-                    (F('check_out_hour') * 60 + F('check_out_minute')) -
-                    (F('check_in_hour') * 60 + F('check_in_minute'))
-            )
+        return TimeSheet.objects.filter(
+            check_in_new__isnull=False,
+            check_out_new__isnull=False
+        ).annotate(
+            month=TruncMonth('check_in_new')
         ).values(
             'month'
         ).annotate(
-            total_duration=Sum('total_minutes') / 60
+            total_duration=Sum(
+                F('check_out_new') - F('check_in_new')
+            ) / 3600
         ).exclude(
-            total_duration=None
+            Q(total_duration=None) | Q(total_duration=0)
         ).order_by(
             'month'
         )
