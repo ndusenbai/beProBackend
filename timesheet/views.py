@@ -190,7 +190,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_serializer = None
 
     def get_queryset(self):
-        TimeSheet.objects.filter(
+        return TimeSheet.objects.filter(
             check_in_new__isnull=False,
             check_out_new__isnull=False
         ).annotate(
