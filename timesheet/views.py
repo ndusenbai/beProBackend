@@ -4,12 +4,13 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, UpdateModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
+from datetime import timedelta
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.db.models.functions import TruncMonth, Extract
-from django.db.models import F, Sum, Q, FloatField, ExpressionWrapper
+from django.db.models import F, Sum, Q, FloatField, ExpressionWrapper, DurationField, DecimalField
 from timesheet.models import TimeSheet, EmployeeSchedule
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
@@ -199,13 +200,11 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
             'month'
         ).annotate(
             total_duration=Sum(
-                ExpressionWrapper(
-                    F('check_out_new') - F('check_in_new'),
-                    output_field=FloatField()
-                )
-            ) / 3600
+                (Extract('check_out_new', 'epoch') - Extract('check_in_new', 'epoch')) / 3600.0,
+                output_field=FloatField()
+            )
         ).exclude(
-            Q(total_duration=None) | Q(total_duration=0)
+            total_duration=None
         ).order_by(
             'month'
         )
