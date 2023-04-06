@@ -334,39 +334,71 @@ def generate_employees_timesheet_excel(company, departments):
     end_date = datetime.datetime(year, month + 1, 1) - datetime.timedelta(days=1)
     date_list = pd.date_range(start_date, end_date)
 
-    employees = Role.objects.exclude(
-        role=RoleChoices.OBSERVER
-    ).filter(
-        company=company,
-        **extra_kwargs
-    ).select_related('user')
+    employees = (
+        Role.objects
+            .exclude(role=RoleChoices.OBSERVER)
+            .filter(company=company, **extra_kwargs)
+            .select_related('user')
+    )
 
-    data = []
-
+    rows = []
     for employee in employees:
-        row = {'Full Name': employee.user.full_name}
+        timesheets = (
+            TimeSheet.objects
+                .filter(
+                role=employee,
+                check_in_new__year=year,
+                check_in_new__month=month,
+                check_in_new__isnull=False,
+                check_out_new__isnull=False
+            )
+                .values('day', 'status')
+        )
+
+        schedules = (
+            EmployeeSchedule.objects
+                .filter(role=employee)
+                .values('week_day', 'time_from', 'time_to')
+        )
+
+        schedule_dict = {
+            schedule['week_day']: {'time_from': schedule['time_from'], 'time_to': schedule['time_to']}
+            for schedule in schedules
+        }
+        total_hours = timesheets.aggregate(total=Sum(F('check_out_new') - F('check_in_new')))['total']
+
+        data = {
+            'Full Name': employee.user.full_name,
+            'Total hours': total_hours / 3600.0 if total_hours is not None else 0
+            # 'Total hours': timesheets.aggregate(total=Sum(F('check_out_new') - F('check_in_new')))['total'] / 3600.0
+        }
+
         for date in date_list:
-            timesheet = TimeSheet.objects.filter(role=employee, day=date).first()
-            schedule = EmployeeSchedule.objects.filter(role=employee, week_day=date.weekday() + 1).first()
+            timesheet = next((x for x in timesheets if x['day'] == date.date()), None)
             if timesheet:
-                row[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet.status)
-            elif not schedule:
-                row[date.date().strftime('%d.%m.%Y')] = 'day_off'
+                data[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet['status'])
+            elif (schedule := schedule_dict.get(date.weekday() + 1)) is None:
+                data[date.date().strftime('%d.%m.%Y')] = 'day_off'
             else:
-                row[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
+                data[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
 
-        row['Total hours'] = generate_total_hours(employee.id, year, month)
+        rows.append(data)
 
-        data.append(row)
-
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(rows)
     file_name = f'employees_timesheet_{year}_{month}_{company.name}.xlsx'
 
     with BytesIO() as b:
         writer = pd.ExcelWriter(b, engine='xlsxwriter')
         df.to_excel(writer, sheet_name='page1', index=False)
 
+        # Set column widths
+        worksheet = writer.sheets['page1']
+        for i, column in enumerate(df.columns):
+            max_length = df[column].astype(str).map(len).max()
+            worksheet.set_column(i, i, max_length)
+
         writer.save()
+
         response = HttpResponse(b.getvalue(), content_type='application/*')
         response['Content-Disposition'] = f"attachment; filename={iri_to_uri(file_name)}"
         return response
