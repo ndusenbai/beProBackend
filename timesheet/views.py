@@ -190,7 +190,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_serializer = None
 
     def get_queryset(self):
-        return TimeSheet.objects.filter(
+        TimeSheet.objects.filter(
             check_in_new__isnull=False,
             check_out_new__isnull=False
         ).annotate(
@@ -198,9 +198,8 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
         ).values(
             'month'
         ).annotate(
-            total_duration=ExpressionWrapper(
-                F('check_out_new') - F('check_in_new'),
-                output_field=FloatField()
+            total_duration=Sum(
+                F('check_out_new') - F('check_in_new')
             ) / 3600
         ).exclude(
             Q(total_duration=None) | Q(total_duration=0)
