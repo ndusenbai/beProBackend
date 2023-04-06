@@ -198,11 +198,9 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
         ).values(
             'month'
         ).annotate(
-            total_duration=Sum(
-                ExpressionWrapper(
-                    F('check_out_new') - F('check_in_new'),
-                    output_field=DurationField()
-                )
+            total_duration=ExpressionWrapper(
+                F('check_out_new') - F('check_in_new'),
+                output_field=DurationField()
             ) / 3600
         ).exclude(
             Q(total_duration=None) | Q(total_duration=0)
