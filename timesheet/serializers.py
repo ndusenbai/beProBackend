@@ -121,6 +121,11 @@ class MonthHoursSerializer(BaseSerializer):
     month = serializers.DateTimeField()
     total_duration = serializers.FloatField()
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['total_duration'] = round(ret['total_duration'], 2)
+        return ret
+
 
 class MonthHoursValidationSerializer(BaseSerializer):
     year = serializers.IntegerField(required=False)
