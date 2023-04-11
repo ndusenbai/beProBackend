@@ -398,13 +398,13 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
     log_message(f"date.today: {date.today()}")
 
     expected_day = last_timesheet.day
+
     if last_timesheet.is_night_shift and expected_day == date.today():
         expected_day += timedelta(days=1)
-
     if last_timesheet.is_night_shift and check_out_date > expected_day:
-        fill_absent_days(role, last_timesheet, analytics_enabled, check_out_date)
+        return fill_absent_days_of_night_shift(role, last_timesheet, analytics_enabled, check_out_date)
     elif not last_timesheet.is_night_shift and last_timesheet.day != check_out_date:
-        fill_absent_days(role, last_timesheet, analytics_enabled, check_out_date)
+        return fill_absent_days(role, last_timesheet, analytics_enabled, check_out_date)
 
     return True
 
@@ -421,12 +421,47 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
             raise FillUserStatistic()
 
 
+def fill_absent_days_of_night_shift(role, last_timesheet, analytics_enabled, today):
+    if last_timesheet.check_in_new and not last_timesheet.check_out_new:
+        if analytics_enabled:
+            check_statistics(role, last_timesheet.day)
+        last_timesheet.check_out = '23:59'
+        last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), time(23, 59))
+        last_timesheet.debug_comment = 'Automatically filled check_in within fill_absent_days_of_night_shift()'
+        last_timesheet.save()
+
+    first_absent_day = last_timesheet.day + timedelta(days=1)
+    yesterday = today - timedelta(days=1)
+    absent_days_qty = (yesterday - first_absent_day).days
+    time_sheets = []
+    for i in range(absent_days_qty + 1):
+        if not TimeSheet.objects.filter(role=role, day=first_absent_day + timedelta(days=i)).exists():
+            time_sheets.append(
+                TimeSheet(
+                    role=role,
+                    day=first_absent_day + timedelta(days=i),
+                    check_in=None,
+                    check_out=None,
+                    check_in_new=None,
+                    check_out_new=None,
+                    time_from='00:00',
+                    time_to='23:59',
+                    debug_comment='Created automatically within handle_check_out_absent_days()',
+                    file=None,
+                    status=TimeSheetChoices.ABSENT,
+                )
+            )
+    TimeSheet.objects.bulk_create(time_sheets)
+    return False
+
+
 def fill_absent_days(role, last_timesheet, analytics_enabled, today):
     if last_timesheet.check_in and not last_timesheet.check_out:
         if analytics_enabled:
             check_statistics(role, last_timesheet.day)
         last_timesheet.check_out = '23:59'
-        last_timesheet.debug_comment = 'Automatically filled check_in within create_check_out_timesheet()'
+        last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), time(23, 59))
+        last_timesheet.debug_comment = 'Automatically filled check_in within fill_absent_days()'
         last_timesheet.save()
 
     first_absent_day = last_timesheet.day + timedelta(days=1)
@@ -458,7 +493,6 @@ def fill_absent_days(role, last_timesheet, analytics_enabled, today):
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
     if role.checkout_any_time is False:
         check_if_checkout_is_possible(role, data['check_out'])
-
     if role.in_zone:
         check_distance(role, data['latitude'], data['longitude'])
 
