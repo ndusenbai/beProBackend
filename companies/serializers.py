@@ -187,6 +187,7 @@ class EmployeesSerializer(BaseSerializer):
         except IndexError:
             return ''
 
+
 class EmployeeTimeSheetSerializer(BaseSerializer):
     id = serializers.IntegerField()
     user = UserSerializer()

@@ -47,7 +47,9 @@ def get_date_for_statistic(role: User, statistic_id: int):
             last_check_in = TimeSheet.objects.filter(
                 role=role,
                 check_in__isnull=False,
+                check_in_new__isnull=False,
                 check_out__isnull=True,
+                check_out_new__isnull=True,
                 day__lte=date.today()) \
                 .order_by('-day').first()
 
