@@ -4,7 +4,6 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, UpdateModelMixin
 from django_filters.rest_framework import DjangoFilterBackend
-from datetime import timedelta
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -191,6 +190,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_serializer = None
 
     def get_queryset(self):
+
         return TimeSheet.objects.filter(
             check_in_new__isnull=False,
             check_out_new__isnull=False
