@@ -3,15 +3,20 @@ from datetime import timedelta
 import environ
 import redis
 import os
-from firebase_admin import initialize_app
+from firebase_admin import initialize_app, credentials
+
+cred = credentials.Certificate('media/bepro-dd75c-firebase-adminsdk-rwbfr-f449f576e8.json')
+
+initialize_app(cred)
+
+#FIREBASE_APP = initialize_app()
+
 env = environ.Env()
 environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-FIREBASE_APP = initialize_app()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -46,6 +51,7 @@ THIRD_PARTY_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'imagekit',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 LOCAL_APPS = [
@@ -58,7 +64,8 @@ LOCAL_APPS = [
     'timesheet.apps.TimesheetConfig',
     'tariffs.apps.TariffsConfig',
     'tests.apps.TestsConfig',
-    'app_version.apps.AppVersionConfig'
+    'app_version.apps.AppVersionConfig',
+    'notifications.apps.NotificationsConfig',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -232,7 +239,7 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
 }
 
-GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
+
 
 FCM_DJANGO_SETTINGS = {
     # an instance of firebase_admin.App to be used as default for all fcm-django requests
@@ -253,6 +260,9 @@ FCM_DJANGO_SETTINGS = {
     # default: False
     "UPDATE_ON_DUPLICATE_REG_ID": True,
 }
+
+GOOGLE_APPLICATION_CREDENTIALS=env('CREDENTIALS')
+
 
 CURRENT_SITE = env('CURRENT_SITE')
 

@@ -174,6 +174,7 @@ class EmployeesSerializer(BaseSerializer):
     department = DepartmentListSerializer()
     schedules = ScheduleSerializer(many=True)
     in_zone = serializers.BooleanField()
+    checkout_any_time = serializers.BooleanField()
     today_schedule = serializers.SerializerMethodField()
 
     def get_today_schedule(self, instance):
@@ -185,6 +186,7 @@ class EmployeesSerializer(BaseSerializer):
             return f'{time_from} - {time_to}'
         except IndexError:
             return ''
+
 
 class EmployeeTimeSheetSerializer(BaseSerializer):
     id = serializers.IntegerField()
@@ -206,6 +208,7 @@ class CreateEmployeeSerializer(BaseSerializer):
     email = serializers.EmailField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
     in_zone = serializers.BooleanField(allow_null=True)
+    checkout_any_time = serializers.BooleanField(allow_null=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()

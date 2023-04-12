@@ -75,7 +75,7 @@ class ForgotPasswordWithPinView(GenericViewSet):
     def reset_password(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        forgot_password_with_pin(serializer.validated_data)
+        forgot_password_with_pin(request, serializer.validated_data)
         return Response({'message': 'email_sent'})
 
     def new_password(self, request):
@@ -218,7 +218,9 @@ class ChangeUserEmailAPI(APIView):
     def put(self, request):
         serializer = NewEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        update_email(request, request.user, serializer.validated_data['email_new'])
+        result = update_email(request, request.user, serializer.validated_data['email_new'])
+        if result is False:
+            return Response({'message': 'Such email already exists!'}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'message': 'Email has been sent!'})
 
 

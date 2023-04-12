@@ -20,3 +20,11 @@ class CheckInAlreadyExistsException(Exception):
 
     def __str__(self):
         return self.txt
+
+
+class TooEarlyCheckoutException(Exception):
+    def __init__(self):
+        self.txt = "Еще рано до check out"
+
+    def __str__(self):
+        return self.txt

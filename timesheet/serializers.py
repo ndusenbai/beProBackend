@@ -8,6 +8,7 @@ from utils.serializers import BaseSerializer
 class TimeSheetModelSerializer(serializers.ModelSerializer):
     status_decoded = serializers.SerializerMethodField(read_only=True)
     timezone_schedule = serializers.SerializerMethodField(read_only=True)
+    working_hours = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = TimeSheet
@@ -22,6 +23,12 @@ class TimeSheetModelSerializer(serializers.ModelSerializer):
 
     def get_status_decoded(self, instance):
         return TimeSheetChoices.get_status(instance.status)
+
+    def get_working_hours(self, instance):
+        if instance.check_in_new is None or instance.check_out_new is None:
+            return ''
+        time_diff = instance.check_out_new - instance.check_in_new
+        return time_diff.total_seconds() / 3600
 
 
 class TimeSheetListSerializer(BaseSerializer):
@@ -62,6 +69,7 @@ class ScheduleSerializer(BaseSerializer):
     time_from = serializers.TimeField(format='%H:%M')
     time_to = serializers.TimeField(format='%H:%M')
     timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', read_only=True)
+    is_night_shift = serializers.BooleanField(default=False)
 
 
 class DepartmentScheduleModelSerializer(serializers.ModelSerializer):
@@ -113,6 +121,11 @@ class CreateFutureTimeSheetSerializer(BaseSerializer):
 class MonthHoursSerializer(BaseSerializer):
     month = serializers.DateTimeField()
     total_duration = serializers.FloatField()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['total_duration'] = round(ret['total_duration'], 2)
+        return ret
 
 
 class MonthHoursValidationSerializer(BaseSerializer):
