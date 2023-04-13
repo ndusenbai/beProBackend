@@ -41,16 +41,17 @@ def notify_check_in():
 
             if not time_sheet.exists() and not employee_notification.exists():
                 devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
-                emp_notification, _ = EmployeeNotification.objects.get_or_create(
-                    role=schedule.role,
-                    created_at__date=datetime.date.today(),
-                )
-                emp_notification.check_in_notified = True
-                emp_notification.save()
-                title = "Don't forget to check in!"
-                text = f"Hey {schedule.role.user.full_name}, just a quick reminder that your shift is starting soon and you have 5 minutes left to check in. See you soon!"
+                if devices.exists():
+                    emp_notification, _ = EmployeeNotification.objects.get_or_create(
+                        role=schedule.role,
+                        created_at__date=datetime.date.today(),
+                    )
+                    emp_notification.check_in_notified = True
+                    emp_notification.save()
+                    title = "Don't forget to check in!"
+                    text = f"Hey {schedule.role.user.full_name}, just a quick reminder that your shift is starting soon and you have 5 minutes left to check in. See you soon!"
 
-                devices.send_message(Message(notification=Notification(title=title, body=text)))
+                    devices.send_message(Message(notification=Notification(title=title, body=text)))
 
 
 @after_response.enable
@@ -83,15 +84,16 @@ def notify_check_out():
 
             if not time_sheet.exists() and not employee_notification.exists():
                 devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
-                emp_notification, _ = EmployeeNotification.objects.get_or_create(
-                    role=schedule.role,
-                    created_at__date=datetime.date.today(),
-                )
+                if devices.exists():
+                    emp_notification, _ = EmployeeNotification.objects.get_or_create(
+                        role=schedule.role,
+                        created_at__date=datetime.date.today(),
+                    )
 
-                emp_notification.check_out_notified = True
-                emp_notification.save()
+                    emp_notification.check_out_notified = True
+                    emp_notification.save()
 
-                title = "Don't forget to check out!"
-                text = f"Hey {schedule.role.user.full_name}, just a heads up that your shift is coming to an end and you have 5 minutes left to check out. Thanks for all your hard work today!"
+                    title = "Don't forget to check out!"
+                    text = f"Hey {schedule.role.user.full_name}, just a heads up that your shift is coming to an end and you have 5 minutes left to check out. Thanks for all your hard work today!"
 
-                devices.send_message(Message(notification=Notification(title=title, body=text)))
+                    devices.send_message(Message(notification=Notification(title=title, body=text)))
