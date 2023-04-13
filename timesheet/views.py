@@ -204,7 +204,7 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
                 output_field=FloatField()
             )
         ).exclude(
-            total_duration=None
+            Q(total_duration=None) | Q(total_duration=0)
         ).order_by(
             'month'
         )

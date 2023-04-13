@@ -303,7 +303,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
 
     # changed logic of creation, because there might be created future_day timesheet
 
-    timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date())
+    timesheet, _ = TimeSheet.objects.get_or_create(role=role, day=check_in.date(), check_in__isnull=True)
 
     timesheet.check_in_new = check_in  # new
     timesheet.check_in = check_in.time()
@@ -600,6 +600,7 @@ def generate_total_hours(role_id, year, month):
         check_in_new__month=month,
         check_in_new__isnull=False,
         check_out_new__isnull=False
+
     )
 
     # calculate the total working hours
