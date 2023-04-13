@@ -616,6 +616,20 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-after-response"
+version = "0.2.2"
+description = "Simple asynchronous execution"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-after-response-0.2.2.tar.gz", hash = "sha256:fc6966cd1b07428c725cc8c824dc549e4f42b616b199eef9218c2ae48bfca4e2"},
+]
+
+[package.dependencies]
+Django = ">=1.5"
+
+[[package]]
 name = "django-appconf"
 version = "1.0.5"
 description = "A helper class for handling configuration defaults of packaged apps gracefully."
@@ -2806,4 +2820,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "fda4e535de39a963d6ad83342db07e5273479e2fe576bb0829922ce84cb1165b"
+content-hash = "03707a02f7adec86ebbcfc8e0db74633d9113be5d46dafc075d8a374b9ae825f"

@@ -10,6 +10,7 @@ urlpatterns = [
     path('timesheet/', include('timesheet.urls'), name='timesheet'),
     path('tariffs/', include('tariffs.urls'), name='tariffs'),
     path('', include('tests.urls'), name='tariffs'),
-    path('', include('app_version.urls'), name='app_version')
+    path('', include('app_version.urls'), name='app_version'),
+    path('notification/', include('notifications.urls'), name='notifications')
 ]
 
