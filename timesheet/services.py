@@ -364,7 +364,7 @@ def set_took_off(role: Role, data: dict):
         if check_out and time_sheet.check_in:
             # time_sheet.check_in = schedule.time_from
             time_sheet.check_out = check_out
-            time_sheet.status = TimeSheetChoices.TAKE_OFF
+            time_sheet.check_out_new = check_out
             time_sheet.save()
 
     else:
