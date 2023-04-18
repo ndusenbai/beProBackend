@@ -245,7 +245,7 @@ def update_employee(request, role: Role, data: dict) -> None:
             'new_password': random_password,
             'domain': domain,
         }
-        send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_email_password.html',
+        send_email.delay(subject='Смена пароля', to_list=[email], template_name='reset_email_password.html',
                          context=context)
 
     for key, value in data.items():
