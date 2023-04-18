@@ -295,7 +295,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     time_schedule_datetime = time_schedule_datetime.astimezone(pytz.timezone(settings.TIME_ZONE))
 
     # add timedelta for 1 minute late
-    time_schedule_end = time_schedule_datetime + timedelta(minutes=1)
+    time_schedule_end = time_schedule_datetime + timedelta(minutes=1) + timedelta(role.department.start_inaccuracy)
 
     if check_in > time_schedule_end:
         status = TimeSheetChoices.LATE
@@ -313,7 +313,6 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timesheet.time_to = today_schedule.time_to
     timesheet.status = status
     timesheet.is_night_shift = today_schedule.is_night_shift  # new
-    timesheet.comment = data.get('comment', '')
     timesheet.file = data.get('file', None)
     timesheet.save()
 
@@ -334,6 +333,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
 def create_check_in_timesheet(role: Role, data: dict) -> None:
     if role.in_zone:
         check_distance(role, data['latitude'], data['longitude'])
+
     handle_check_in_timesheet(role, data)
 
 
@@ -352,6 +352,7 @@ def set_took_off(role: Role, data: dict):
     now_date = date.today()
     check_out = data.pop('check_out')
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
+    comment = data.pop('comment')
     schedule = get_schedule(role, now_date)
 
     if time_sheet.exists():
@@ -365,18 +366,22 @@ def set_took_off(role: Role, data: dict):
             # time_sheet.check_in = schedule.time_from
             time_sheet.check_out = check_out
             time_sheet.check_out_new = check_out
+            time_sheet.comment = comment
             time_sheet.save()
 
     else:
         if schedule:
+            check_in_new = datetime.combine(now_date, schedule.time_from)
+            check_out_new = datetime.combine(now_date, schedule.time_to)
             TimeSheet.objects.create(
                 role=role,
                 status=TimeSheetChoices.ABSENT,
                 day=now_date,
-                check_in=None,
-                check_out=None,
-                check_in_new=None,
-                check_out_new=None,
+                check_in=schedule.time_from,
+                check_out=schedule.time_to,
+                check_in_new=check_in_new,
+                check_out_new=check_out_new,
+                comment=comment,
                 time_to=schedule.time_to,
                 time_from=schedule.time_from,
                 **data
@@ -595,6 +600,7 @@ def create_future_time_sheet(role_id, day, month, year, status, time_from=None, 
 def generate_total_hours(role_id, year, month):
     timesheets = TimeSheet.objects.filter(
         (Q(check_in__isnull=False) & Q(check_out__isnull=False)),
+        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE],
         role_id=role_id,
         check_in_new__year=year,
         check_in_new__month=month,

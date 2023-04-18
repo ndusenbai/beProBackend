@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.db.models.functions import TruncMonth, Extract
 from django.db.models import F, Sum, Q, FloatField, ExpressionWrapper, DurationField, DecimalField
-from timesheet.models import TimeSheet, EmployeeSchedule
+from timesheet.models import TimeSheet, EmployeeSchedule, TimeSheetChoices
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
     VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer, MonthHoursValidationSerializer, \
@@ -193,7 +193,8 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
 
         return TimeSheet.objects.filter(
             check_in_new__isnull=False,
-            check_out_new__isnull=False
+            check_out_new__isnull=False,
+            status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
         ).annotate(
             month=TruncMonth('check_in_new')
         ).values(

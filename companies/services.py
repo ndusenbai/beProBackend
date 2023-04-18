@@ -3,6 +3,8 @@ from io import BytesIO
 from typing import OrderedDict
 import pandas as pd
 from calendar import monthrange
+from auth_user.tasks import send_email
+
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, F, Q, FloatField, Sum, When, Case, Value
 from django.db.models.query import QuerySet
@@ -10,6 +12,7 @@ from django.db.transaction import atomic
 from rest_framework import status
 from django.http import HttpRequest, HttpResponse
 # from auth_user.services import User
+from auth_user.services import get_domain
 from companies.models import Department, Company, Role, RoleChoices, CompanyService, Zone
 from scores.models import Reason
 from scores.utils import GetScoreForRole
@@ -64,7 +67,8 @@ def create_department(user: User, data: dict) -> None:
         longitude=data['longitude'],
         radius=data['radius'],
         head_of_department=head_of_department,
-        timezone=data.get('timezone', '+06:00')
+        timezone=data.get('timezone', '+06:00'),
+        start_inaccuracy=data.get('start_inaccuracy', 0)
     )
     bulk_create_department_schedules(department, schedules)
     if data['head_of_department']:
@@ -215,8 +219,8 @@ def create_employee(data: dict) -> None:
 
 
 @atomic
-def update_employee(role: Role, data: dict) -> None:
-    data.pop('email', None)
+def update_employee(request, role: Role, data: dict) -> None:
+    email = data.pop('email', None)
     schedules = data.pop('schedules')
     role_data = {
         'title': data.pop('title'),
@@ -230,6 +234,19 @@ def update_employee(role: Role, data: dict) -> None:
     update_employee_schedules(role, schedules)
 
     user = role.user
+
+    if email:
+        user.email = email
+        random_password = User.objects.make_random_password()
+        user.set_password(random_password)
+        domain = get_domain(request)
+
+        context = {
+            'new_password': random_password,
+            'domain': domain,
+        }
+        send_email.delay(subject='Смена пароля', to_list=[user.email], template_name='reset_email_password.html',
+                         context=context)
 
     for key, value in data.items():
         setattr(user, key, value)
@@ -365,7 +382,9 @@ def generate_employees_timesheet_excel(company, departments):
             schedule['week_day']: {'time_from': schedule['time_from'], 'time_to': schedule['time_to']}
             for schedule in schedules
         }
-        total_hours = timesheets.aggregate(total=Sum(F('check_out_new') - F('check_in_new')))['total']
+        total_hours = timesheets.filter(
+            status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+        ).aggregate(total=Sum(F('check_out_new') - F('check_in_new')))['total']
 
         data = {
             'Full Name': employee.user.full_name,

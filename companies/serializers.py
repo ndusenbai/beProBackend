@@ -90,6 +90,7 @@ class DepartmentSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
     timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', required=False, default='+06:00')
+    start_inaccuracy = serializers.IntegerField(default=0, required=False)
 
     def validate(self, attrs):
         if not attrs.get('address'):
@@ -108,6 +109,7 @@ class UpdateDepartmentSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
     head_of_department_id = serializers.IntegerField(allow_null=True)
     timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', required=False, default='+06:00')
+    start_inaccuracy = serializers.IntegerField(required=False, default=0)
 
 
 class HeadOfDepartmentSerializer(BaseSerializer):
