@@ -508,8 +508,7 @@ def fill_absent_days(role, last_timesheet, analytics_enabled, today):
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
-    if role.checkout_any_time is False:
-        check_if_checkout_is_possible(role, data['check_out'])
+
     if role.in_zone:
         check_distance(role, data['latitude'], data['longitude'])
 
@@ -518,6 +517,8 @@ def create_check_out_timesheet(role: Role, data: dict) -> bool:
         return False
     if analytics_enabled:
         check_statistics(role, data['check_out'])
+    if role.checkout_any_time is False:
+        check_if_checkout_is_possible(role, data['check_out'])
     handle_check_out_timesheet(role, data)
 
 
@@ -624,17 +625,17 @@ def check_if_checkout_is_possible(role, check_out):
 
     # Convert the current UTC time to the local time zone for the department
     now_local = datetime.now(timezone)
-    try:
-        schedule = EmployeeSchedule.objects.get(role=role, week_day=now_local.today().weekday())
-    except EmployeeSchedule.DoesNotExist:
-        raise ValueError('Невозможно совершить checkout (нету расписания)')
 
-    time_diff = datetime.combine(now_local.today(), schedule.time_to) - datetime.combine(now_local.today(),
+    # Find last timesheet
+    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by(
+        '-day').first()
+
+    time_diff = datetime.combine(now_local.today(), last_timesheet.time_to) - datetime.combine(now_local.today(),
                                                                                         check_out.time())
     if time_diff > timedelta(minutes=15):
         raise TooEarlyCheckoutException()
 
-    if check_out.time() < schedule.time_to:
+    if check_out.time() < last_timesheet.time_to:
         raise TooEarlyCheckoutException()
     #
     # if check_out < now_local:
