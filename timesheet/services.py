@@ -442,8 +442,8 @@ def fill_absent_days_of_night_shift(role, last_timesheet, analytics_enabled, tod
     if last_timesheet.check_in_new and not last_timesheet.check_out_new:
         if analytics_enabled:
             check_statistics(role, last_timesheet.day)
-        last_timesheet.check_out = '23:59'
-        last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), time(23, 59))
+        last_timesheet.check_out = last_timesheet.time_to
+        last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date() + timedelta(days=1), last_timesheet.time_to)
         last_timesheet.debug_comment = 'Automatically filled check_in within fill_absent_days_of_night_shift()'
         last_timesheet.save()
 
@@ -476,8 +476,8 @@ def fill_absent_days(role, last_timesheet, analytics_enabled, today):
     if last_timesheet.check_in and not last_timesheet.check_out:
         if analytics_enabled:
             check_statistics(role, last_timesheet.day)
-        last_timesheet.check_out = '23:59'
-        last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), time(23, 59))
+        last_timesheet.check_out = last_timesheet.time_to
+        last_timesheet.check_out_new = datetime.combine(last_timesheet.check_in_new.date(), last_timesheet.time_to)
         last_timesheet.debug_comment = 'Automatically filled check_in within fill_absent_days()'
         last_timesheet.save()
 
@@ -635,8 +635,8 @@ def check_if_checkout_is_possible(role, check_out):
     if time_diff > timedelta(minutes=15):
         raise TooEarlyCheckoutException()
 
-    if check_out.time() < last_timesheet.time_to:
-        raise TooEarlyCheckoutException()
+    # if check_out.time() < last_timesheet.time_to:
+    #     raise TooEarlyCheckoutException()
     #
     # if check_out < now_local:
     #     raise ValueError('Check-out не может быть в прошлом')
