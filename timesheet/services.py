@@ -630,7 +630,11 @@ def check_if_checkout_is_possible(role, check_out):
     last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by(
         '-day').first()
 
-    time_diff = datetime.combine(now_local.today(), last_timesheet.time_to) - datetime.combine(now_local.today(),
+    time_to_date = now_local.today()
+
+    if last_timesheet.is_night_shift:
+        time_to_date = now_local.today() + timedelta(days=1)
+    time_diff = datetime.combine(time_to_date, last_timesheet.time_to) - datetime.combine(now_local.today(),
                                                                                         check_out.time())
     if time_diff > timedelta(minutes=15):
         raise TooEarlyCheckoutException()
