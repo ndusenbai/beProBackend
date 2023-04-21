@@ -190,6 +190,7 @@ def create_employee(data: dict) -> None:
     department_id = data.pop('department_id')
     schedules = data.pop('schedules')
     in_zone = data.pop('in_zone')
+    checkout_any_time = data.pop('checkout_any_time')
 
     department = Department.objects.get(id=department_id)
     data['selected_company_id'] = department.company_id
@@ -211,7 +212,8 @@ def create_employee(data: dict) -> None:
             user=employee,
             title=title,
             grade=grade,
-            in_zone=in_zone
+            in_zone=in_zone,
+            checkout_any_time=data.pop('checkout_any_time')
         )
         create_employee_schedules(role, schedules)
     else:
@@ -236,17 +238,18 @@ def update_employee(request, role: Role, data: dict) -> None:
     user = role.user
 
     if email:
-        user.email = email
-        random_password = User.objects.make_random_password()
-        user.set_password(random_password)
-        domain = get_domain(request)
+        if email != user.email:
+            user.email = email
+            random_password = User.objects.make_random_password()
+            user.set_password(random_password)
+            domain = get_domain(request)
 
-        context = {
-            'new_password': random_password,
-            'domain': domain,
-        }
-        send_email.delay(subject='Смена пароля', to_list=[email], template_name='reset_email_password.html',
-                         context=context)
+            context = {
+                'new_password': random_password,
+                'domain': domain,
+            }
+            send_email.delay(subject='Смена пароля', to_list=[email], template_name='reset_email_password.html',
+                             context=context)
 
     for key, value in data.items():
         setattr(user, key, value)
