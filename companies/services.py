@@ -213,7 +213,7 @@ def create_employee(data: dict) -> None:
             title=title,
             grade=grade,
             in_zone=in_zone,
-            checkout_any_time=data.pop('checkout_any_time')
+            checkout_any_time=checkout_any_time
         )
         create_employee_schedules(role, schedules)
     else:
