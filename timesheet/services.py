@@ -314,6 +314,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timesheet.status = status
     timesheet.is_night_shift = today_schedule.is_night_shift  # new
     timesheet.file = data.get('file', None)
+    timesheet.comment = ''
     timesheet.save()
 
     # TimeSheet.objects.create(
