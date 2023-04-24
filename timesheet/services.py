@@ -416,8 +416,9 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
 
     expected_day = last_timesheet.day
 
-    if last_timesheet.is_night_shift and expected_day == date.today():
+    if (last_timesheet.is_night_shift and expected_day == date.today()) or (last_timesheet.is_night_shift and expected_day + timedelta(days=1) == date.today()) :
         expected_day += timedelta(days=1)
+
     if last_timesheet.is_night_shift and check_out_date > expected_day:
         return fill_absent_days_of_night_shift(role, last_timesheet, analytics_enabled, check_out_date)
     elif not last_timesheet.is_night_shift and last_timesheet.day != check_out_date:

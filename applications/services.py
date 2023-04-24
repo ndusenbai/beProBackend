@@ -161,3 +161,8 @@ def change_status_of_test_application(instance: TestApplication, application_sta
         update_test_application(instance, {'status': application_status})
     elif application_status == ApplicationStatus.DECLINED:
         update_test_application(instance, {'status': application_status})
+
+
+def check_email_existence(email):
+    if User.objects.filter(email=email).exists():
+        raise ValueError('Уже есть пользователь с такой почтой')
