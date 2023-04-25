@@ -409,8 +409,6 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
         role=role,
         day__lte=date.today(),
         status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]).order_by('-day').first()
-    print('LAST TIMESHEET')
-    print(last_timesheet)
     check_out_date = data['check_out'].date()
     # TODO: delete log messages after testing
     log_message(f'handle_check_out_absent_days. role_id: {role.id}')
@@ -422,14 +420,11 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
     expected_day = last_timesheet.day
 
     if (last_timesheet.is_night_shift and expected_day == date.today()) or (last_timesheet.is_night_shift and expected_day + timedelta(days=1) == date.today()) :
-        print('ZAWLO')
         expected_day += timedelta(days=1)
 
     if last_timesheet.is_night_shift and check_out_date > expected_day:
-        print('VISHLO')
         return fill_absent_days_of_night_shift(role, last_timesheet, analytics_enabled, check_out_date)
     elif not last_timesheet.is_night_shift and last_timesheet.day != check_out_date:
-        print('HESHLO')
         return fill_absent_days(role, last_timesheet, analytics_enabled, check_out_date)
 
     return True
@@ -517,20 +512,18 @@ def fill_absent_days(role, last_timesheet, analytics_enabled, today):
 
 @atomic
 def create_check_out_timesheet(role: Role, data: dict) -> bool:
-    print(role.in_zone)
     if role.in_zone:
         check_distance(role, data['latitude'], data['longitude'])
-    print(role.checkout_any_time)
     if role.checkout_any_time is False:
         check_if_checkout_is_possible(role, data['check_out'])
 
     analytics_enabled = CompanyService.objects.get(company=role.user.selected_company).analytics_enabled
     if not handle_check_out_absent_days(role, data, analytics_enabled):
         return False
-    # if analytics_enabled:
-    #     check_statistics(role, data['check_out'])
-    #
-    # handle_check_out_timesheet(role, data)
+    if analytics_enabled:
+        check_statistics(role, data['check_out'])
+
+    handle_check_out_timesheet(role, data)
 
 
 def bulk_create_vacation_timesheets(data):
@@ -631,36 +624,20 @@ def generate_total_hours(role_id, year, month):
 
 
 def check_if_checkout_is_possible(role, check_out):
-    timezone_str = role.department.timezone
-    timezone = dtimezone(timedelta(hours=int(timezone_str[:3]), minutes=int(timezone_str[4:])))
-
-    # Convert the current UTC time to the local time zone for the department
-    now_local = datetime.now(timezone)
-
     # Find last timesheet
     last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by(
         '-day').first()
 
-    print(last_timesheet)
-
-    time_to_date = now_local.today()
+    time_to_date = last_timesheet.day
 
     if last_timesheet.is_night_shift:
-        time_to_date = now_local.today() + timedelta(days=1)
+        time_to_date += timedelta(days=1)
 
-    print(time_to_date, 'TIME TO DATE')
+    now_time = datetime.combine(time_to_date, last_timesheet.time_to)
 
-    print(last_timesheet.time_to, 'LAST TIME SHEET TIME TO')
+    checkout_time = datetime.combine(check_out.date(), check_out.time())
 
-    time_diff = datetime.combine(time_to_date, last_timesheet.time_to) - datetime.combine(now_local.today(),
-                                                                                        check_out.time())
-
-    print(time_diff)
+    time_diff = now_time - checkout_time
     if time_diff > timedelta(minutes=15):
         raise TooEarlyCheckoutException()
 
-    # if check_out.time() < last_timesheet.time_to:
-    #     raise TooEarlyCheckoutException()
-    #
-    # if check_out < now_local:
-    #     raise ValueError('Check-out не может быть в прошлом')
