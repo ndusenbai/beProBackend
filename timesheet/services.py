@@ -295,7 +295,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     time_schedule_datetime = time_schedule_datetime.astimezone(pytz.timezone(settings.TIME_ZONE))
 
     # add timedelta for 1 minute late
-    time_schedule_end = time_schedule_datetime + timedelta(minutes=1) + timedelta(role.department.start_inaccuracy)
+    time_schedule_end = time_schedule_datetime + timedelta(minutes=1) + timedelta(minutes=role.department.start_inaccuracy)
 
     if check_in > time_schedule_end:
         status = TimeSheetChoices.LATE
