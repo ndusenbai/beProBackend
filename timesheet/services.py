@@ -434,11 +434,13 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
     if isinstance(_date, datetime):
         _date = _date.date()
 
+    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by('-day').first()
+
     department = role.department
     stats = Statistic.objects.filter(Q(department=department) | Q(role=role))
 
     for stat in stats:
-        if not UserStatistic.objects.filter(role=role, statistic=stat, day=_date).exists():
+        if not UserStatistic.objects.filter(role=role, statistic=stat, day=last_timesheet.day).exists():
             raise FillUserStatistic()
 
 
