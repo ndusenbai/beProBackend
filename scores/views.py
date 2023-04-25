@@ -119,12 +119,13 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
 
         full_name = self.request.GET.get('full_name')
         if full_name:
-            names = full_name.split(' ')
-            q_objects = Q(role__user__first_name__icontains=names[0]) | Q(role__user__last_name__icontains=names[-1])
-            if len(names) > 2:
-                for name in names[1:-1]:
-                    q_objects |= Q(role__user__first_name__icontains=name) | Q(role__user__last_name__icontains=name)
-            queryset = queryset.filter(q_objects)
+            query = Q(role__user__first_name__icontains=full_name) | Q(role__user__last_name__icontains=full_name)
+            if " " in full_name:
+                first_name, last_name = full_name.split(" ")
+                query |= Q(role__user__first_name__icontains=first_name, role__user__last_name__icontains=last_name) | Q(
+                    role__user__first_name__icontains=last_name, role__user__last_name__icontains=first_name)
+
+            return queryset.filter(query, **extra_kwargs)
 
         return queryset.filter(**extra_kwargs)
 
