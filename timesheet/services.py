@@ -353,8 +353,11 @@ def set_took_off(role: Role, data: dict):
     now_date = date.today()
     check_out = data.pop('check_out')
     time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
-    comment = data.pop('comment')
+    comment = data.pop('comment', None)
     schedule = get_schedule(role, now_date)
+
+    if comment is None:
+        raise ValueError('Добавьте комментарий')
 
     if time_sheet.exists():
         time_sheet = time_sheet.last()
