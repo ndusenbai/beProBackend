@@ -77,6 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True
     )
     selected_company = models.ForeignKey(to='companies.Company', on_delete=models.SET_NULL, null=True, blank=True)
+    language = models.CharField(max_length=10, default='ru')
 
     USERNAME_FIELD = 'email'
 

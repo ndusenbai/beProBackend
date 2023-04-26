@@ -200,7 +200,7 @@ class EmployeesViewSet(ModelViewSet):
         try:
             serializer = CreateEmployeeSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            update_employee(self.get_object(), serializer.validated_data)
+            update_employee(request, self.get_object(), serializer.validated_data)
             return Response({'message': 'updated'}, status=status.HTTP_200_OK)
         except Exception as e:
             log_exception(e, 'Error in DepartmentViewSet.update()')

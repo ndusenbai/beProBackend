@@ -90,6 +90,7 @@ class DepartmentSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
     head_of_department = CreateHeadDepartmentSerializer(allow_null=True)
     timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', required=False, default='+06:00')
+    start_inaccuracy = serializers.IntegerField(default=0, required=False)
 
     def validate(self, attrs):
         if not attrs.get('address'):
@@ -108,6 +109,7 @@ class UpdateDepartmentSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
     head_of_department_id = serializers.IntegerField(allow_null=True)
     timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', required=False, default='+06:00')
+    start_inaccuracy = serializers.IntegerField(required=False, default=0)
 
 
 class HeadOfDepartmentSerializer(BaseSerializer):
@@ -174,6 +176,7 @@ class EmployeesSerializer(BaseSerializer):
     department = DepartmentListSerializer()
     schedules = ScheduleSerializer(many=True)
     in_zone = serializers.BooleanField()
+    checkout_any_time = serializers.BooleanField()
     today_schedule = serializers.SerializerMethodField()
 
     def get_today_schedule(self, instance):
@@ -185,6 +188,7 @@ class EmployeesSerializer(BaseSerializer):
             return f'{time_from} - {time_to}'
         except IndexError:
             return ''
+
 
 class EmployeeTimeSheetSerializer(BaseSerializer):
     id = serializers.IntegerField()
@@ -206,6 +210,7 @@ class CreateEmployeeSerializer(BaseSerializer):
     email = serializers.EmailField(allow_blank=True)
     phone_number = serializers.CharField(allow_blank=True)
     in_zone = serializers.BooleanField(allow_null=True)
+    checkout_any_time = serializers.BooleanField(allow_null=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()
