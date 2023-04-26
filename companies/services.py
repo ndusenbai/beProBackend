@@ -3,13 +3,16 @@ from io import BytesIO
 from typing import OrderedDict
 import pandas as pd
 from calendar import monthrange
+from auth_user.tasks import send_email
+
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Prefetch, F, Q
+from django.db.models import Count, Prefetch, F, Q, FloatField, Sum, When, Case, Value
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
 from rest_framework import status
 from django.http import HttpRequest, HttpResponse
-from auth_user.services import User
+# from auth_user.services import User
+from auth_user.services import get_domain
 from companies.models import Department, Company, Role, RoleChoices, CompanyService, Zone
 from scores.models import Reason
 from scores.utils import GetScoreForRole
@@ -64,7 +67,8 @@ def create_department(user: User, data: dict) -> None:
         longitude=data['longitude'],
         radius=data['radius'],
         head_of_department=head_of_department,
-        timezone=data.get('timezone', '+06:00')
+        timezone=data.get('timezone', '+06:00'),
+        start_inaccuracy=data.get('start_inaccuracy', 0)
     )
     bulk_create_department_schedules(department, schedules)
     if data['head_of_department']:
@@ -186,6 +190,7 @@ def create_employee(data: dict) -> None:
     department_id = data.pop('department_id')
     schedules = data.pop('schedules')
     in_zone = data.pop('in_zone')
+    checkout_any_time = data.pop('checkout_any_time')
 
     department = Department.objects.get(id=department_id)
     data['selected_company_id'] = department.company_id
@@ -207,7 +212,8 @@ def create_employee(data: dict) -> None:
             user=employee,
             title=title,
             grade=grade,
-            in_zone=in_zone
+            in_zone=in_zone,
+            checkout_any_time=checkout_any_time
         )
         create_employee_schedules(role, schedules)
     else:
@@ -215,20 +221,35 @@ def create_employee(data: dict) -> None:
 
 
 @atomic
-def update_employee(role: Role, data: dict) -> None:
-    data.pop('email', None)
+def update_employee(request, role: Role, data: dict) -> None:
+    email = data.pop('email', None)
     schedules = data.pop('schedules')
     role_data = {
         'title': data.pop('title'),
         'grade': data.pop('grade'),
         'department_id': data.pop('department_id'),
-        'in_zone': data.pop('in_zone')
+        'in_zone': data.pop('in_zone'),
+        'checkout_any_time': data.pop('checkout_any_time')
     }
 
     Role.objects.filter(id=role.id).update(**role_data)
     update_employee_schedules(role, schedules)
 
     user = role.user
+
+    if email:
+        if email != user.email:
+            user.email = email
+            random_password = User.objects.make_random_password()
+            user.set_password(random_password)
+            domain = get_domain(request)
+
+            context = {
+                'new_password': random_password,
+                'domain': domain,
+            }
+            send_email.delay(subject='Смена пароля', to_list=[email], template_name='reset_email_password.html',
+                             context=context)
 
     for key, value in data.items():
         setattr(user, key, value)
@@ -247,6 +268,7 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
             week_day=schedule['week_day'],
             time_from=schedule['time_from'],
             time_to=schedule['time_to'],
+            is_night_shift=schedule['is_night_shift']
         ) for schedule in schedules]
     EmployeeSchedule.objects.bulk_create(new_schedules)
 
@@ -322,61 +344,6 @@ def get_zones_qs():
 
 
 def generate_employees_timesheet_excel(company, departments):
-    # extra_kwargs = {}
-    # if departments:
-    #     extra_kwargs['department__in'] = departments
-    #
-    # now = datetime.datetime.now()
-    # year = now.year
-    # month = now.month
-    # start_date = datetime.datetime(year, month, 1)
-    # end_date = datetime.datetime(year, month + 1, 1) - datetime.timedelta(days=1)
-    # date_list = pd.date_range(start_date, end_date)
-    #
-    # employees = Role.objects.exclude(
-    #     role=RoleChoices.OBSERVER
-    # ).filter(
-    #     company=company,
-    #     **extra_kwargs
-    # ).select_related('user').prefetch_related(
-    #     Prefetch('timesheet', queryset=TimeSheet.objects.filter(day__gte=start_date, day__lte=end_date)),
-    #     Prefetch('employee_schedules', queryset=EmployeeSchedule.objects.filter(week_day__in=date_list.weekday + 1)),
-    # )
-    #
-    # data = {}
-    # for employee in employees:
-    #     row = {'Full Name': employee.user.full_name}
-    #     timesheet_dict = {timesheet.day: timesheet for timesheet in employee.timesheet.all()}
-    #     schedule_dict = {schedule.week_day: schedule for schedule in employee.employee_schedules.all()}
-    #     for date in date_list:
-    #         timesheet = timesheet_dict.get(date.date())
-    #         schedule = schedule_dict.get(date.weekday() + 1)
-    #         if timesheet:
-    #             row[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet.status)
-    #         elif not schedule:
-    #             row[date.date().strftime('%d.%m.%Y')] = 'day_off'
-    #         else:
-    #             row[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
-    #
-    #     data[employee.id] = row
-    #
-    # employee_ids = list(data.keys())
-    # total_hours_dict = generate_total_hours(employee_ids, year, month)
-    # for employee_id, total_hours in total_hours_dict.items():
-    #     data[employee_id]['Total hours'] = total_hours
-    #
-    # df = pd.DataFrame(list(data.values()))
-    # file_name = f'employees_timesheet_{year}_{month}_{company.name}.xlsx'
-    #
-    # with BytesIO() as b:
-    #     writer = pd.ExcelWriter(b, engine='xlsxwriter')
-    #     df.to_excel(writer, sheet_name='page1', index=False)
-    #
-    #     writer.save()
-    #     response = HttpResponse(b.getvalue(), content_type='application/*')
-    #     response['Content-Disposition'] = f"attachment; filename={iri_to_uri(file_name)}"
-    #     return response
-
     extra_kwargs = {}
     if departments:
         extra_kwargs['department__in'] = departments
@@ -387,39 +354,73 @@ def generate_employees_timesheet_excel(company, departments):
     end_date = datetime.datetime(year, month + 1, 1) - datetime.timedelta(days=1)
     date_list = pd.date_range(start_date, end_date)
 
-    employees = Role.objects.exclude(
-        role=RoleChoices.OBSERVER
-    ).filter(
-        company=company,
-        **extra_kwargs
-    ).select_related('user')
+    employees = (
+        Role.objects
+            .exclude(role=RoleChoices.OBSERVER)
+            .filter(company=company, **extra_kwargs)
+            .select_related('user')
+    )
 
-    data = []
-
+    rows = []
     for employee in employees:
-        row = {'Full Name': employee.user.full_name}
+        timesheets = (
+            TimeSheet.objects
+                .filter(
+                role=employee,
+                check_in_new__year=year,
+                check_in_new__month=month,
+                check_in_new__isnull=False,
+                check_out_new__isnull=False
+            )
+                .values('day', 'status')
+        )
+
+        schedules = (
+            EmployeeSchedule.objects
+                .filter(role=employee)
+                .values('week_day', 'time_from', 'time_to')
+        )
+
+        schedule_dict = {
+            schedule['week_day']: {'time_from': schedule['time_from'], 'time_to': schedule['time_to']}
+            for schedule in schedules
+        }
+        total_hours = timesheets.filter(
+            status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+        ).aggregate(total=Sum(F('check_out_new') - F('check_in_new')))['total']
+
+        data = {
+            'Full Name': employee.user.full_name,
+            'Total hours': total_hours / 3600.0 if total_hours is not None else 0
+            # 'Total hours': timesheets.aggregate(total=Sum(F('check_out_new') - F('check_in_new')))['total'] / 3600.0
+        }
+
         for date in date_list:
-            timesheet = TimeSheet.objects.filter(role=employee, day=date).first()
-            schedule = EmployeeSchedule.objects.filter(role=employee, week_day=date.weekday() + 1).first()
+            timesheet = next((x for x in timesheets if x['day'] == date.date()), None)
             if timesheet:
-                row[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet.status)
-            elif not schedule:
-                row[date.date().strftime('%d.%m.%Y')] = 'day_off'
+                data[date.date().strftime('%d.%m.%Y')] = TimeSheetChoices.get_status(timesheet['status'])
+            elif (schedule := schedule_dict.get(date.weekday() + 1)) is None:
+                data[date.date().strftime('%d.%m.%Y')] = 'day_off'
             else:
-                row[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
+                data[date.date().strftime('%d.%m.%Y')] = 'Not filled in'
 
-        row['Total hours'] = generate_total_hours(employee.id, year, month)
+        rows.append(data)
 
-        data.append(row)
-
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(rows)
     file_name = f'employees_timesheet_{year}_{month}_{company.name}.xlsx'
 
     with BytesIO() as b:
         writer = pd.ExcelWriter(b, engine='xlsxwriter')
         df.to_excel(writer, sheet_name='page1', index=False)
 
+        # Set column widths
+        worksheet = writer.sheets['page1']
+        for i, column in enumerate(df.columns):
+            max_length = df[column].astype(str).map(len).max()
+            worksheet.set_column(i, i, max_length)
+
         writer.save()
+
         response = HttpResponse(b.getvalue(), content_type='application/*')
         response['Content-Disposition'] = f"attachment; filename={iri_to_uri(file_name)}"
         return response

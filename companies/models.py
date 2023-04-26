@@ -43,6 +43,7 @@ class Department(BaseModel):
     radius = models.IntegerField(default=50)
     head_of_department = models.ForeignKey(to='companies.Role', on_delete=models.SET_NULL, null=True, blank=True, related_name='head_departments')
     timezone = models.CharField(max_length=10, default='+06:00')
+    start_inaccuracy = models.PositiveIntegerField(default=0)
 
     class Meta:
         constraints = [
@@ -60,6 +61,7 @@ class Role(BaseModel):
     user = models.OneToOneField(to='auth_user.User', on_delete=models.CASCADE)
     title = models.CharField(max_length=200, default='')
     grade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(4)])
+    checkout_any_time = models.BooleanField(default=True)
     in_zone = models.BooleanField(default=True)
 
     class Meta:

@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.db.models.functions import TruncMonth, Extract
-from django.db.models import F, Sum, Case, When, Q
-from timesheet.models import TimeSheet, EmployeeSchedule
+from django.db.models import F, Sum, Q, FloatField, ExpressionWrapper, DurationField, DecimalField
+from timesheet.models import TimeSheet, EmployeeSchedule, TimeSheetChoices
 from timesheet.serializers import CheckInSerializer, CheckOutSerializer, TimeSheetModelSerializer, \
     TimeSheetListSerializer, TimeSheetUpdateSerializer, ChangeTimeSheetSerializer, TakeTimeOffSerializer, \
     VacationTimeSheetSerializer, CreateFutureTimeSheetSerializer, MonthHoursSerializer, MonthHoursValidationSerializer, \
@@ -94,6 +94,9 @@ class TakeTimeOffView(CreateModelMixin, GenericViewSet):
             serializer.is_valid(raise_exception=True)
             message, status_code = set_took_off(self.request.user.role, serializer.validated_data)
             return Response(message, status_code)
+        except ValueError as e:
+            return Response({'message': str(e)}, status=status.HTTP_423_LOCKED)
+
         except Exception as e:
             log_exception(e, 'Error in TookOffViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -190,20 +193,20 @@ class MonthHoursViewSet(ListModelMixin, GenericViewSet):
     filter_serializer = None
 
     def get_queryset(self):
-        return TimeSheet.objects.annotate(
-            month=TruncMonth('created_at'),
-            check_in_hour=Extract('check_in', 'hour'),
-            check_in_minute=Extract('check_in', 'minute'),
-            check_out_hour=Extract('check_out', 'hour'),
-            check_out_minute=Extract('check_out', 'minute'),
-            total_minutes=Case(
-                When(Q(check_in__isnull=True) | Q(check_out__isnull=True), then=0),
-                default=((F('check_out_hour') * 60 + F('check_out_minute')) - (F('check_in_hour') * 60 + F('check_in_minute')))
-            )
+
+        return TimeSheet.objects.filter(
+            check_in_new__isnull=False,
+            check_out_new__isnull=False,
+            status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+        ).annotate(
+            month=TruncMonth('check_in_new')
         ).values(
             'month'
         ).annotate(
-            total_duration=Sum('total_minutes') / 60
+            total_duration=Sum(
+                (Extract('check_out_new', 'epoch') - Extract('check_in_new', 'epoch')) / 3600.0,
+                output_field=FloatField()
+            )
         ).exclude(
             Q(total_duration=None) | Q(total_duration=0)
         ).order_by(

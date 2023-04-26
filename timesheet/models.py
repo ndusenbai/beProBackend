@@ -15,6 +15,7 @@ class TimeSheetChoices(models.IntegerChoices):
     ON_VACATION = 4, 'On vacation'
     DAY_OFF = 5, 'Day off'
     FUTURE_DAY = 6, 'Future day'
+    TAKE_OFF = 7, 'Take off'
 
     @staticmethod
     def get_status(status):
@@ -30,14 +31,21 @@ class TimeSheetChoices(models.IntegerChoices):
             return 'day_off'
         elif status == TimeSheetChoices.FUTURE_DAY:
             return 'future_day'
+        elif status == TimeSheetChoices.TAKE_OFF:
+            return 'take_off'
         return ''
 
 
 class TimeSheet(BaseModel):
     role = models.ForeignKey(to='companies.Role', on_delete=models.CASCADE, related_name='timesheet')
     day = models.DateField()
+
     check_in = models.TimeField(null=True)
     check_out = models.TimeField(null=True, blank=True)
+
+    check_in_new = models.DateTimeField(null=True)
+    check_out_new = models.DateTimeField(null=True, blank=True)
+
     time_from = models.TimeField(null=True)
     time_to = models.TimeField(null=True)
     comment = models.TextField(blank=True)
@@ -45,6 +53,7 @@ class TimeSheet(BaseModel):
     file = models.FileField(upload_to='timesheet/', null=True, blank=True,)
     status = models.PositiveSmallIntegerField(choices=TimeSheetChoices.choices, default=TimeSheetChoices.ON_TIME)
     timezone = models.CharField(max_length=10, default='+06:00')
+    is_night_shift = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -84,6 +93,7 @@ class EmployeeSchedule(BaseModel):
     week_day = models.IntegerField(choices=WeekDayChoices.choices, validators=[MinValueValidator(0), MaxValueValidator(6)])
     time_from = models.TimeField()
     time_to = models.TimeField()
+    is_night_shift = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

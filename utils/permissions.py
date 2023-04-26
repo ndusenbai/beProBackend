@@ -199,8 +199,8 @@ class ReasonPermissions(BasePermission):
         role = get_user_role(request.user)
 
         if view.action == 'list':
-            if not request.GET.get('company'):
-                return False
+            if request.GET.get('company'):
+                return True
 
         if request.user.is_authenticated and (role in {'owner', 'superuser', 'hr', 'head_of_hr_department'}):
             return True

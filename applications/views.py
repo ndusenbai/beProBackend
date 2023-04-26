@@ -14,7 +14,7 @@ from applications.serializers import ApplicationToCreateCompanyModelSerializer, 
     TariffApplicationSerializer, TestApplicationModelSerializer, TariffApplicationRetrieveSerializer, \
     CreateTestApplicationSerializer, ListTestApplicationsSerializer
 from applications.services import change_status_of_application_to_create_company, change_status_of_tariff_application, \
-    change_status_of_test_application
+    change_status_of_test_application, check_email_existence
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS, \
@@ -68,9 +68,17 @@ class ApplicationToCreateCompanyCreateViewSet(CreateModelMixin, GenericViewSet):
     @swagger_auto_schema(request_body=CreateApplicationToCreateCompanySerializer)
     def create(self, request, *args, **kwargs):
         """
-        Создание заявки на создание компании. TariffPeriod:1 = MONTHLY, 2 = YEARLY
+            Создание заявки на создание компании. TariffPeriod:1 = MONTHLY, 2 = YEARLY
         """
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            check_email_existence(serializer.validated_data.get('email'))
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except ValueError as e:
+            return Response({'message': str(e)}, status.HTTP_423_LOCKED)
 
 
 class TariffApplicationView(ListModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):

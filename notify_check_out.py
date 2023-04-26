@@ -49,7 +49,7 @@ for department in Department.objects.all():
             emp_notification.check_out_notified = True
             emp_notification.save()
 
-            title = "Don't forget to check out!"
-            text = f"Hey {schedule.role.user.full_name}, just a heads up that your shift is coming to an end and you have 5 minutes left to check out. Thanks for all your hard work today!"
+            title = 'Не забудьте нажать "Ушел" и заполнить статистики!'
+            text = f"{schedule.role.user.full_name}, напоминаем что ваш рабочий заканчивается через 5 минут"
 
             devices.send_message(Message(notification=Notification(title=title, body=text)))

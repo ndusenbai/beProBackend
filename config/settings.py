@@ -52,6 +52,7 @@ THIRD_PARTY_APPS = [
     'django_celery_results',
     'imagekit',
     'rest_framework_simplejwt.token_blacklist',
+    'after_response'
 ]
 
 LOCAL_APPS = [

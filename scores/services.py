@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 from auth_user.services import get_user_role
 from scores.models import Score, Reason
+from companies.models import Company
 
 User = get_user_model()
 
@@ -20,7 +21,7 @@ def get_score_feed(user):
     extra_kwargs = {}
     role = get_user_role(user)
     if role == 'owner':
-        extra_kwargs['role__company'] = user.owner.company
+        extra_kwargs['role__company__in'] = user.owned_companies.all()
     elif role in ('observer', 'hr', 'head_of_hr_department'):
         extra_kwargs['role__company'] = user.role.company
     elif role in ('employee', 'head_of_department'):
