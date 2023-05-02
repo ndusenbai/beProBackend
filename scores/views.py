@@ -12,7 +12,7 @@ from scores.serializers import ReasonSerializer, ScoreModelSerializer, MonthScor
 from scores.models import Reason, Score
 from scores.services import create_score, get_score_feed
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTHS, QUERY_END_DATE, QUERY_START_DATE, QUERY_REASONS, \
-    QUERY_FULL_NAME
+    QUERY_FULL_NAME, QUERY_COMPANY
 from utils.permissions import ReasonPermissions, MonthScorePermissions, ScorePermission
 
 
@@ -99,7 +99,7 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ScoreFeedSerializer
 
-    @swagger_auto_schema(manual_parameters=[QUERY_START_DATE, QUERY_END_DATE, QUERY_REASONS, QUERY_FULL_NAME])
+    @swagger_auto_schema(manual_parameters=[QUERY_START_DATE, QUERY_END_DATE, QUERY_REASONS, QUERY_FULL_NAME, QUERY_COMPANY])
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -130,4 +130,4 @@ class ScoreFeedListView(ListModelMixin, GenericViewSet):
         return queryset.filter(**extra_kwargs)
 
     def get_queryset(self):
-        return get_score_feed(self.request.user)
+        return get_score_feed(self.request)

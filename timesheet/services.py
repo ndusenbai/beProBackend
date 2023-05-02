@@ -375,22 +375,15 @@ def set_took_off(role: Role, data: dict):
 
     else:
         if schedule:
-            check_in_new = datetime.combine(now_date, schedule.time_from)
-            check_out_new = datetime.combine(now_date, schedule.time_to)
             TimeSheet.objects.create(
                 role=role,
                 status=TimeSheetChoices.ABSENT,
                 day=now_date,
-                check_in=schedule.time_from,
-                check_out=schedule.time_to,
-                check_in_new=check_in_new,
-                check_out_new=check_out_new,
                 comment=comment,
                 time_to=schedule.time_to,
                 time_from=schedule.time_from,
                 **data
             )
-
 
     return {'message': 'created'}, 201
 
