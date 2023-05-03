@@ -20,6 +20,7 @@ from timesheet.models import DepartmentSchedule, EmployeeSchedule, TimeSheet, Ti
 from django.utils.encoding import iri_to_uri
 
 from timesheet.services import generate_total_hours
+from timesheet.utils import EmailExistsException
 
 User = get_user_model()
 
@@ -239,6 +240,8 @@ def update_employee(request, role: Role, data: dict) -> None:
 
     if email:
         if email != user.email:
+            if User.objects.filter(email=email).exists():
+                raise EmailExistsException()
             user.email = email
             random_password = User.objects.make_random_password()
             user.set_password(random_password)
