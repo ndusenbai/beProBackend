@@ -17,6 +17,7 @@ from companies.utils import CompanyAlreadyExists
 from scores.models import Reason
 from tariffs.models import TariffPeriod
 from timesheet.models import DepartmentSchedule
+from timesheet.utils import EmailExistsException
 
 User = get_user_model()
 
@@ -165,4 +166,4 @@ def change_status_of_test_application(instance: TestApplication, application_sta
 
 def check_email_existence(email):
     if User.objects.filter(email=email).exists():
-        raise ValueError('Уже есть пользователь с такой почтой')
+        raise EmailExistsException()

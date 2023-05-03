@@ -28,3 +28,11 @@ class TooEarlyCheckoutException(Exception):
 
     def __str__(self):
         return self.txt
+
+
+class EmailExistsException(Exception):
+    def __init__(self):
+        self.txt = 'Уже есть пользователь с такой почтой'
+
+    def __str__(self):
+        return self.txt

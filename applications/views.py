@@ -17,6 +17,7 @@ from applications.services import change_status_of_application_to_create_company
     change_status_of_test_application, check_email_existence
 from auth_user.utils import UserAlreadyExists
 from companies.utils import CompanyAlreadyExists
+from timesheet.utils import EmailExistsException
 from utils.manual_parameters import QUERY_APPLICATIONS_STATUS, QUERY_TEST_APPLICATIONS_STATUS, \
     QUERY_APPLICATIONS_STATUSES
 from utils.permissions import IsAssistantMarketingOrSuperuser, TestApplicationPermission, TariffApplicationPermission, \
@@ -77,7 +78,7 @@ class ApplicationToCreateCompanyCreateViewSet(CreateModelMixin, GenericViewSet):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except ValueError as e:
+        except EmailExistsException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
 
 
