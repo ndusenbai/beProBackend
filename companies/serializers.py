@@ -211,6 +211,7 @@ class CreateEmployeeSerializer(BaseSerializer):
     phone_number = serializers.CharField(allow_blank=True)
     in_zone = serializers.BooleanField(allow_null=True)
     checkout_any_time = serializers.BooleanField(allow_null=True)
+    checkout_time = serializers.IntegerField(allow_null=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     title = serializers.CharField()
     grade = serializers.IntegerField()

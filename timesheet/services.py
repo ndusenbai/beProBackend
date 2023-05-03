@@ -633,6 +633,6 @@ def check_if_checkout_is_possible(role, check_out):
     checkout_time = datetime.combine(check_out.date(), check_out.time())
 
     time_diff = now_time - checkout_time
-    if time_diff > timedelta(minutes=15):
+    if time_diff > timedelta(minutes=role.checkout_time):
         raise TooEarlyCheckoutException()
 

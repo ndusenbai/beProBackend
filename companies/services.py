@@ -192,6 +192,7 @@ def create_employee(data: dict) -> None:
     schedules = data.pop('schedules')
     in_zone = data.pop('in_zone')
     checkout_any_time = data.pop('checkout_any_time')
+    checkout_time = data.pop('checkout_time')
 
     department = Department.objects.get(id=department_id)
     data['selected_company_id'] = department.company_id
@@ -214,7 +215,8 @@ def create_employee(data: dict) -> None:
             title=title,
             grade=grade,
             in_zone=in_zone,
-            checkout_any_time=checkout_any_time
+            checkout_any_time=checkout_any_time,
+            checkout_time=checkout_time
         )
         create_employee_schedules(role, schedules)
     else:
@@ -230,7 +232,8 @@ def update_employee(request, role: Role, data: dict) -> None:
         'grade': data.pop('grade'),
         'department_id': data.pop('department_id'),
         'in_zone': data.pop('in_zone'),
-        'checkout_any_time': data.pop('checkout_any_time')
+        'checkout_any_time': data.pop('checkout_any_time'),
+        'checkout_time': data.pop('checkout_time')
     }
 
     Role.objects.filter(id=role.id).update(**role_data)
