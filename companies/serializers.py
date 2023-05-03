@@ -177,6 +177,7 @@ class EmployeesSerializer(BaseSerializer):
     schedules = ScheduleSerializer(many=True)
     in_zone = serializers.BooleanField()
     checkout_any_time = serializers.BooleanField()
+    checkout_time = serializers.IntegerField()
     today_schedule = serializers.SerializerMethodField()
 
     def get_today_schedule(self, instance):
