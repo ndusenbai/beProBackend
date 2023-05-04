@@ -178,7 +178,7 @@ class UserProfileSerializer(BaseSerializer):
         print('AAAAAAAAAAA')
         try:
             week_day = datetime.datetime.today().weekday()
-            today_schedule = list(filter(lambda p: p.week_day == week_day, instance.role.employee_schedules))[0]
+            today_schedule = list(filter(lambda p: p.week_day == week_day, instance.role.employee_schedules.all()))[0]
             time_from = today_schedule.time_from.strftime('%H:%M')
             time_to = today_schedule.time_to.strftime('%H:%M')
             return f'{time_from} - {time_to}'
