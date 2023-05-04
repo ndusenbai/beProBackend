@@ -1,3 +1,4 @@
+import datetime
 from datetime import date, timedelta
 
 from django.utils import timezone
@@ -152,6 +153,14 @@ class UserZonesSerializer(BaseSerializer):
     radius = serializers.IntegerField()
 
 
+class UserScheduleSerializer(BaseSerializer):
+    week_day = serializers.IntegerField(min_value=0, max_value=6)
+    time_from = serializers.TimeField(format='%H:%M')
+    time_to = serializers.TimeField(format='%H:%M')
+    timezone = serializers.RegexField(r'^\+\d{2,2}:\d{2,2}\b', read_only=True)
+    is_night_shift = serializers.BooleanField(default=False)
+
+
 class UserProfileSerializer(BaseSerializer):
     id = serializers.IntegerField(required=False, read_only=True)
     full_name = serializers.CharField()
@@ -161,7 +170,20 @@ class UserProfileSerializer(BaseSerializer):
     language = serializers.CharField(required=False)
     role = serializers.SerializerMethodField(required=False)
     selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
+    today_schedule = serializers.SerializerMethodField()
+
     score = serializers.SerializerMethodField()
+
+    def get_today_schedule(self, instance):
+        print('AAAAAAAAAAA')
+        try:
+            week_day = datetime.datetime.today().weekday()
+            today_schedule = list(filter(lambda p: p.week_day == week_day, instance.role.employee_schedules))[0]
+            time_from = today_schedule.time_from.strftime('%H:%M')
+            time_to = today_schedule.time_to.strftime('%H:%M')
+            return f'{time_from} - {time_to}'
+        except IndexError:
+            return ''
 
     def get_role(self, instance):
         from auth_user.services import get_user_role
@@ -169,6 +191,7 @@ class UserProfileSerializer(BaseSerializer):
             return {
                 'role_id': instance.role.id,
                 'role': get_user_role(instance),
+                'title': instance.role.title,
                 'in_zone': instance.role.in_zone,
                 'department_id': instance.role.department.id,
                 'department_name': instance.role.department.name,
