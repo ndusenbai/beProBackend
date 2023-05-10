@@ -170,20 +170,8 @@ class UserProfileSerializer(BaseSerializer):
     language = serializers.CharField(required=False)
     role = serializers.SerializerMethodField(required=False)
     selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
-    today_schedule = serializers.SerializerMethodField()
 
     score = serializers.SerializerMethodField()
-
-    def get_today_schedule(self, instance):
-        print('AAAAAAAAAAA')
-        try:
-            week_day = datetime.datetime.today().weekday()
-            today_schedule = list(filter(lambda p: p.week_day == week_day, instance.role.employee_schedules.all()))[0]
-            time_from = today_schedule.time_from.strftime('%H:%M')
-            time_to = today_schedule.time_to.strftime('%H:%M')
-            return f'{time_from} - {time_to}'
-        except IndexError:
-            return ''
 
     def get_role(self, instance):
         from auth_user.services import get_user_role
