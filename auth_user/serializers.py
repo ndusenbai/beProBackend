@@ -6,7 +6,6 @@ from rest_framework import serializers
 from django.contrib.auth import password_validation, get_user_model
 
 from applications.models import TariffApplication, ApplicationStatus
-from auth_user.services import get_users_today_schedule
 from companies.models import Company
 from utils.serializers import BaseSerializer
 
@@ -175,7 +174,17 @@ class UserProfileSerializer(BaseSerializer):
     score = serializers.SerializerMethodField()
 
     def get_today_schedule(self, instance):
-        return get_users_today_schedule(instance)
+        try:
+            schedules = instance.role.employee_schedules.filter(week_day=datetime.date.today().weekday())
+            if schedules.exists():
+                schedule = schedules.first()
+                time_from = schedule.time_from.strftime('%H:%M')
+                time_to = schedule.time_to.strftime('%H:%M')
+                return f'{time_from} - {time_to}'
+            else:
+                return ''
+        except Exception as e:
+            return ''
 
     def get_role(self, instance):
         from auth_user.services import get_user_role
