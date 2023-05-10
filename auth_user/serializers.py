@@ -6,6 +6,7 @@ from rest_framework import serializers
 from django.contrib.auth import password_validation, get_user_model
 
 from applications.models import TariffApplication, ApplicationStatus
+from auth_user.services import get_users_today_schedule
 from companies.models import Company
 from utils.serializers import BaseSerializer
 
@@ -170,8 +171,11 @@ class UserProfileSerializer(BaseSerializer):
     language = serializers.CharField(required=False)
     role = serializers.SerializerMethodField(required=False)
     selected_company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.only('id'), required=False)
-
+    today_schedule = serializers.SerializerMethodField()
     score = serializers.SerializerMethodField()
+
+    def get_today_schedule(self, instance):
+        return get_users_today_schedule(instance)
 
     def get_role(self, instance):
         from auth_user.services import get_user_role

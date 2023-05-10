@@ -1,3 +1,4 @@
+import datetime
 from typing import OrderedDict
 
 from django.contrib.auth import get_user_model
@@ -290,3 +291,17 @@ def set_new_email(uid, token):
         user.save()
     else:
         raise serializers.ValidationError('Token expired', code='expired_token')
+
+
+def get_users_today_schedule(user):
+    try:
+        schedules = user.role.employee_schedules.filter(week_day=datetime.date.today().weekday())
+        if schedules.exists():
+            schedule = schedules.first()
+            time_from = schedule.time_from.strftime('%H:%M')
+            time_to = schedule.time_to.strftime('%H:%M')
+            return f'{time_from} - {time_to}'
+        else:
+            return ''
+    except Exception as e:
+        return ''
