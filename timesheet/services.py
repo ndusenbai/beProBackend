@@ -401,7 +401,8 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
     last_timesheet = TimeSheet.objects.filter(
         role=role,
         day__lte=date.today(),
-        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]).order_by('-day').first()
+        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+    ).order_by('-day').first()
     check_out_date = data['check_out'].date()
     # TODO: delete log messages after testing
     log_message(f'handle_check_out_absent_days. role_id: {role.id}')
@@ -427,7 +428,12 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
     if isinstance(_date, datetime):
         _date = _date.date()
 
-    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(
+        role=role,
+        check_in_new__isnull=False,
+        day__lte=date.today(),
+        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+    ).order_by('-day').first()
 
     department = role.department
     stats = Statistic.objects.filter(Q(department=department) | Q(role=role))
