@@ -181,11 +181,11 @@ class UserProfileSerializer(BaseSerializer):
                 time_from = schedule.time_from.strftime('%H:%M')
                 time_to = schedule.time_to.strftime('%H:%M')
                 current_date = datetime.datetime.now().strftime('%Y.%m.%d')
-                if schedule.time_to > datetime.time(23, 59):
+                if schedule.time_to < schedule.time_from:
                     next_day = datetime.datetime.now() + datetime.timedelta(days=1)
                     next_day_str = next_day.strftime('%Y.%m.%d')
-                    time_to = (datetime.datetime.combine(datetime.date.today(), schedule.time_to) - datetime.timedelta(
-                        days=1)).strftime('%H:%M')
+                    # time_to = (datetime.datetime.combine(datetime.date.today(), schedule.time_to) - datetime.timedelta(
+                    #     days=1)).strftime('%H:%M')
                     return f'{current_date} {time_from} - {next_day_str} {time_to}'
                 else:
                     return f'{current_date} {time_from} - {current_date} {time_to}'
