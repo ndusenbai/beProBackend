@@ -184,13 +184,13 @@ def generate_test_links(test: Test = None, test_id: int = None) -> dict:
     }
 
 
-def generate_test_pdf(test_id: int) -> str:
+def generate_test_pdf(test_id: int, lang: str) -> str:
     test = Test.objects.get(id=test_id)
     if test.status != TestStatus.FINISHED:
         raise Exception('Нельзя скачать незавершенный тест')
 
     if test.test_type == TestType.ONE_HEART_PRO:
-        return generate_pdf_for_test_one(test)
+        return generate_pdf_for_test_one(test, lang)
     elif test.test_type == TestType.TWO_BRAIN:
         return generate_pdf_for_test_two(test)
     elif test.test_type == TestType.THREE_BRAIN_PRO:
@@ -201,8 +201,8 @@ def generate_test_pdf(test_id: int) -> str:
         raise Exception('Неверный тип теста')
 
 
-def generate_pdf_for_test_one(test: Test):
-    context = get_context_for_pdf_test_one(test)
+def generate_pdf_for_test_one(test: Test, lang: str):
+    context = get_context_for_pdf_test_one(test, lang)
     template = get_template('tests/test_1_to_pdf.html')
     html_pdf = template.render(context)
 
@@ -213,7 +213,7 @@ def generate_pdf_for_test_one(test: Test):
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
-def get_context_for_pdf_test_one(test: Test) -> dict:
+def get_context_for_pdf_test_one(test: Test, lang: str) -> dict:
     path = 'file://' + os.path.join(settings.BASE_DIR, 'tests', 'static', 'tests')
     height = {}
     color = {}
@@ -229,6 +229,8 @@ def get_context_for_pdf_test_one(test: Test) -> dict:
             characteristics.append(f"{characteristic_text}")
 
     for conclusion in test.result['conclusions']:
+        if lang in conclusion:
+            conclusion.append(f"{conclusion[{lang}]['description']}")
         conclusions.append(f"{conclusion['description']}")
 
     context = {
