@@ -192,9 +192,9 @@ def generate_test_pdf(test_id: int, lang: str) -> str:
     if test.test_type == TestType.ONE_HEART_PRO:
         return generate_pdf_for_test_one(test, lang)
     elif test.test_type == TestType.TWO_BRAIN:
-        return generate_pdf_for_test_two(test)
+        return generate_pdf_for_test_two(test, lang)
     elif test.test_type == TestType.THREE_BRAIN_PRO:
-        return generate_pdf_for_test_three(test)
+        return generate_pdf_for_test_three(test, lang)
     elif test.test_type == TestType.FOUR_HEART:
         return generate_pdf_for_test_four(test)
     else:
@@ -266,13 +266,13 @@ def get_color_for_test_one(percent):
     return 'blue'
 
 
-def generate_pdf_for_test_two(test: Test) -> str:
+def generate_pdf_for_test_two(test: Test, lang: str) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
-        'classification': test.result['classification'],
+        'classification': test.result['classification'] if lang not in test.result else test.result[lang]['classification'],
         'percent': test.result['percent'],
-        'summary': test.result['summary'],
+        'summary': test.result['summary'] if lang not in test.result else test.result[lang]['summary'],
     }
     template = get_template('tests/test_2_to_pdf.html')
     html_pdf = template.render(context)
@@ -284,11 +284,11 @@ def generate_pdf_for_test_two(test: Test) -> str:
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
-def generate_pdf_for_test_three(test: Test) -> str:
+def generate_pdf_for_test_three(test: Test, lang) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
-        'description': test.result['description'],
+        'description': test.result['description'] if lang not in test.result else test.result[lang]['description'],
     }
     template = get_template('tests/test_3_to_pdf.html')
     html_pdf = template.render(context)
