@@ -196,7 +196,7 @@ def generate_test_pdf(test_id: int, lang: str) -> str:
     elif test.test_type == TestType.THREE_BRAIN_PRO:
         return generate_pdf_for_test_three(test, lang)
     elif test.test_type == TestType.FOUR_HEART:
-        return generate_pdf_for_test_four(test)
+        return generate_pdf_for_test_four(test, lang)
     else:
         raise Exception('Неверный тип теста')
 
@@ -300,10 +300,10 @@ def generate_pdf_for_test_three(test: Test, lang) -> str:
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
-def generate_pdf_for_test_four(test: Test) -> str:
+def generate_pdf_for_test_four(test: Test, lang: str) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
-        'characteristics': test.result['characteristics'],
+        'characteristics': test.result['characteristics'] if lang not in test.result else test.result[lang]['characteristics'],
     }
     template = get_template('tests/test_4_to_pdf.html')
     html_pdf = template.render(context)
