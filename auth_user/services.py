@@ -1,3 +1,4 @@
+import datetime
 from typing import OrderedDict
 
 from django.contrib.auth import get_user_model
@@ -290,3 +291,5 @@ def set_new_email(uid, token):
         user.save()
     else:
         raise serializers.ValidationError('Token expired', code='expired_token')
+
+

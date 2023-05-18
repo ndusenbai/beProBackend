@@ -63,6 +63,7 @@ class Role(BaseModel):
     grade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(4)])
     checkout_any_time = models.BooleanField(default=True)
     in_zone = models.BooleanField(default=True)
+    checkout_time = models.PositiveIntegerField(default=15)
 
     class Meta:
         ordering = ('-created_at',)

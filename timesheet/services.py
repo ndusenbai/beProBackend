@@ -375,22 +375,15 @@ def set_took_off(role: Role, data: dict):
 
     else:
         if schedule:
-            check_in_new = datetime.combine(now_date, schedule.time_from)
-            check_out_new = datetime.combine(now_date, schedule.time_to)
             TimeSheet.objects.create(
                 role=role,
                 status=TimeSheetChoices.ABSENT,
                 day=now_date,
-                check_in=schedule.time_from,
-                check_out=schedule.time_to,
-                check_in_new=check_in_new,
-                check_out_new=check_out_new,
                 comment=comment,
                 time_to=schedule.time_to,
                 time_from=schedule.time_from,
                 **data
             )
-
 
     return {'message': 'created'}, 201
 
@@ -408,7 +401,8 @@ def handle_check_out_absent_days(role: Role, data: dict, analytics_enabled: bool
     last_timesheet = TimeSheet.objects.filter(
         role=role,
         day__lte=date.today(),
-        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]).order_by('-day').first()
+        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+    ).order_by('-day').first()
     check_out_date = data['check_out'].date()
     # TODO: delete log messages after testing
     log_message(f'handle_check_out_absent_days. role_id: {role.id}')
@@ -434,7 +428,12 @@ def check_statistics(role: Role, _date: datetime | date) -> None:
     if isinstance(_date, datetime):
         _date = _date.date()
 
-    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(
+        role=role,
+        check_in_new__isnull=False,
+        day__lte=date.today(),
+        status__in=[TimeSheetChoices.ON_TIME, TimeSheetChoices.LATE]
+    ).order_by('-day').first()
 
     department = role.department
     stats = Statistic.objects.filter(Q(department=department) | Q(role=role))
@@ -640,6 +639,5 @@ def check_if_checkout_is_possible(role, check_out):
     checkout_time = datetime.combine(check_out.date(), check_out.time())
 
     time_diff = now_time - checkout_time
-    if time_diff > timedelta(minutes=15):
+    if time_diff > timedelta(minutes=role.checkout_time):
         raise TooEarlyCheckoutException()
-
