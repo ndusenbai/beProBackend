@@ -271,7 +271,7 @@ def generate_pdf_for_test_two(test: Test, lang: str) -> str:
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
         'classification': test.result['classification'] if lang not in test.result else test.result[lang]['classification'],
-        'percent': test.result['percent'],
+        'percent': test.result['percent'] if lang not in test.result else test.result[lang]['percent'],
         'summary': test.result['summary'] if lang not in test.result else test.result[lang]['summary'],
     }
     template = get_template('tests/test_2_to_pdf.html')
