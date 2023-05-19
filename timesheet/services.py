@@ -382,6 +382,10 @@ def set_took_off(role: Role, data: dict):
                 comment=comment,
                 time_to=schedule.time_to,
                 time_from=schedule.time_from,
+                check_in=schedule.time_from,
+                check_out=schedule.time_to,
+                check_in_new=datetime.combine(now_date, schedule.time_from),
+                check_out_new=datetime.combine(now_date, schedule.time_to),
                 **data
             )
 
