@@ -1,3 +1,9 @@
+import django
+import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
+
 from tests.models import Test
 
 
