@@ -125,3 +125,9 @@ def update_old_result_for_test_four():
             print('+=================================================================')
         except KeyError:
             pass
+
+
+update_old_result_for_test_one()
+update_old_result_for_test_two()
+update_old_result_for_test_three()
+update_old_result_for_test_four()
