@@ -9,7 +9,7 @@ from django.apps import apps
 def send_push_notification(modeladmin, request, queryset):
     for push_notification in queryset:
         role = apps.get_model(app_label='companies', model_name='Role').objects.get(id=push_notification.role_id)
-        devices = FCMDevice.objects.filter(user__in=role.user)
+        devices = FCMDevice.objects.filter(user=role.user)
 
         devices.send_message(
             Message(
