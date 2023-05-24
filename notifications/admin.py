@@ -1,5 +1,24 @@
 from django.contrib import admin
 from .models import EmployeeNotification, TestNotification
+from firebase_admin.messaging import Message, Notification
+from fcm_django.models import FCMDevice
+from django.apps import apps
+
+
+@admin.action(description='Send push notifications')
+def send_push_notification(modeladmin, request, queryset):
+    for push_notification in queryset:
+        role = apps.get_model(app_label='companies', model_name='Role').objects.get(id=push_notification.role_id)
+        devices = FCMDevice.objects.filter(user__in=role.user)
+
+        devices.send_message(
+            Message(
+                notification=Notification(
+                    title=push_notification.title,
+                    body=push_notification.text
+                )
+            )
+        )
 
 
 
@@ -10,10 +29,8 @@ class EmployeeNotificationAdmin(admin.ModelAdmin):
 class TestNotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'role_id', 'title')
 
-    def save_model(self, request, obj, form, change):
-
-        super().save_model(request, obj, form, change)
+    actions = [send_push_notification]
 
 
 admin.site.register(EmployeeNotification, EmployeeNotificationAdmin)
-admin.site.register(TestNotification)
+admin.site.register(TestNotification, TestNotificationAdmin)
