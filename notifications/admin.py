@@ -15,7 +15,7 @@ def send_push_notification(modeladmin, request, queryset):
             Message(
                 notification=Notification(
                     title=push_notification.title,
-                    body=push_notification.text
+                    body=push_notification.body
                 )
             )
         )
