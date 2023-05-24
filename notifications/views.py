@@ -32,4 +32,4 @@ class TestNotificationAPI(APIView):
         devices = FCMDevice.objects.filter(user_id=role.user.id)
         devices.send_message(Message(notification=Notification(title=title, body=body)))
 
-        return Response({'message': devices})
+        return Response({'message': 'send'})
