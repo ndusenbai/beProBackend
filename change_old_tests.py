@@ -40,6 +40,7 @@ def update_old_result_for_test_one():
 
             result['characteristics'] = new_characteristics
             test_one.result = result
+            test_one.save(update_fields=('result',))
             print('+=================================================================')
             print('NEW_RESULT_OF_TEST_ONE_WITH_ID', test_one.id)
             print(result)
@@ -71,6 +72,8 @@ def update_old_result_for_test_two():
             print('+=================================================================')
             print('NEW_RESULT_OF_TEST_TWO_WITH_ID', test_two.id)
             print(test_two.result)
+            test_two.save(update_fields=('result',))
+
             print("END_OF_RESULT_OF_TEST_TWO_WITH_ID", test_two.id)
             print('+=================================================================')
         except KeyError:
@@ -95,6 +98,7 @@ def update_old_result_for_test_three():
             print('+=================================================================')
             print('NEW_RESULT_OF_TEST_THREE_WITH_ID', test_three.id)
             print(test_threes.result)
+            test_threes.save(update_fields=('result',))
             print("END_OF_RESULT_OF_TEST_THREE_WITH_ID", test_three.id)
             print('+=================================================================')
         except KeyError:
@@ -124,6 +128,8 @@ def update_old_result_for_test_four():
                 )
             result['characteristics'] = new_characteristics
             test_four.result = result
+            test_four.save(update_fields=('result',))
+
             print('+=================================================================')
             print('NEW_RESULT_OF_TEST_FOUR_WITH_ID', test_four.id)
             print(test_four.result)
