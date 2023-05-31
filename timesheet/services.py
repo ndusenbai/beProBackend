@@ -275,7 +275,7 @@ def check_distance(role: Role, latitude: float, longitude: float) -> None:
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
-    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day=date.today()).order_by('-day').first()
     if last_timesheet:
         if last_timesheet.check_in_new and not last_timesheet.check_out_new:
             raise CheckInAlreadyExistsException()
