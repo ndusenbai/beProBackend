@@ -361,7 +361,7 @@ def set_took_off(role: Role, data: dict):
     if comment is None:
         raise ValueError('Добавьте комментарий')
 
-    if time_sheet.day != now_date:
+    if time_sheet.day != now_date and time_sheet.check_out_new is None:
         raise CheckOutFirstExceiption()
 
     elif time_sheet.day == now_date:
