@@ -16,7 +16,7 @@ from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.serializers import TimeSheetModelSerializer
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException, \
-    TooEarlyCheckoutException
+    TooEarlyCheckoutException, TookOffException, CheckOutFirstExceiption
 from utils.tools import log_message
 
 User = get_user_model()
@@ -279,6 +279,8 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     if last_timesheet:
         if last_timesheet.check_in_new and not last_timesheet.check_out_new:
             raise CheckInAlreadyExistsException()
+        elif last_timesheet.status == TimeSheetChoices.ABSENT:
+            raise TookOffException()
 
     check_in = datetime.now(pytz.timezone(settings.TIME_ZONE))
 
@@ -352,15 +354,17 @@ def get_schedule(role, now_date):
 def set_took_off(role: Role, data: dict):
     now_date = date.today()
     check_out = data.pop('check_out')
-    time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
+    time_sheet = TimeSheet.objects.filter(role=role, day__lte=now_date).order_by('-day').first()
     comment = data.pop('comment', None)
     schedule = get_schedule(role, now_date)
 
     if comment is None:
         raise ValueError('Добавьте комментарий')
 
-    if time_sheet.exists():
-        time_sheet = time_sheet.last()
+    if time_sheet.day != now_date:
+        raise CheckOutFirstExceiption()
+
+    elif time_sheet.day == now_date:
         if time_sheet.status == TimeSheetChoices.ON_VACATION:
             return {'message': 'Нельзя отпроситься на время отпуска'}, 400
         if time_sheet.check_out:

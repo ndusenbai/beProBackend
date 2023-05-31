@@ -36,3 +36,19 @@ class EmailExistsException(Exception):
 
     def __str__(self):
         return self.txt
+
+
+class TookOffException(Exception):
+    def __init__(self):
+        self.txt = 'Вы сегодня отпросились'
+
+    def __str__(self):
+        return self.txt
+
+
+class CheckOutFirstExceiption(Exception):
+    def __init__(self):
+        self.txt = 'Сделайте чекаут'
+
+    def __str__(self):
+        return self.txt
