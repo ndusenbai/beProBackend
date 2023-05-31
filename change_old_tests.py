@@ -94,11 +94,11 @@ def update_old_result_for_test_three():
                     'description': result['description']
                 }
             }
-            test_threes.result = new_result
+            test_three.result = new_result
             print('+=================================================================')
             print('NEW_RESULT_OF_TEST_THREE_WITH_ID', test_three.id)
-            print(test_threes.result)
-            test_threes.save(update_fields=('result',))
+            print(test_three.result)
+            test_three.save(update_fields=('result',))
             print("END_OF_RESULT_OF_TEST_THREE_WITH_ID", test_three.id)
             print('+=================================================================')
         except KeyError:
