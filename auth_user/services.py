@@ -13,6 +13,7 @@ from django.db.models import Q, Count, F
 from django.db import IntegrityError
 from django.db.transaction import atomic
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 from auth_user.models import AssistantTypes, AcceptCode
 from auth_user.serializers import UserModelSerializer
@@ -29,7 +30,7 @@ def change_password(user: User, validated_data: dict) -> None:
         user.set_password(validated_data.get('new_password'))
         user.save()
     else:
-        raise serializers.ValidationError('Old password incorrect', code='incorrect_old')
+        raise serializers.ValidationError(_('Неправильный старый пароль'), code='incorrect_old')
 
 
 def forgot_password(request: HttpRequest, validated_data: dict):
@@ -72,7 +73,7 @@ def change_password_after_forgot(uid, token, validated_data: dict):
         user.set_password(validated_data.get('password'))
         user.save()
     else:
-        raise serializers.ValidationError('Token expired', code='expired_token')
+        raise serializers.ValidationError(_('Token expired'), code='expired_token')
 
 
 def change_password_with_code_after_forgot(validated_data: dict):
@@ -101,19 +102,19 @@ def check_link_after_forgot(uid, token) -> bool:
 
 def check_code_after_forgot(code) -> dict:
     if not code:
-        return {'status': False, 'message': 'Input code'}
+        return {'status': False, 'message': _('Введите код')}
 
     accept_code = AcceptCode.objects.filter(code=code, is_accepted=False, is_expired=False)
 
     if not accept_code.exists():
-        return {'status': False, 'message': 'Wrong code'}
+        return {'status': False, 'message': _('Неправильный код')}
 
     accept_code = accept_code.first()
 
     if accept_code.expiration < now():
         accept_code.is_expired = True
         accept_code.save()
-        return {'status': False, 'message': 'Code is expired'}
+        return {'status': False, 'message': _('Код истёк')}
 
     return {'status': True, 'message': 'Is active'}
 

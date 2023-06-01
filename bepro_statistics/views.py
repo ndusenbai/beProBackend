@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.parsers import JSONParser, FormParser
+from django.utils.translation import gettext_lazy as _
 
 from bepro_statistics.filters import StatisticsFilterSet
 from bepro_statistics.models import UserStatistic, Statistic
@@ -128,7 +129,7 @@ class CreateUserStat(RetrieveModelMixin, CreateModelMixin, GenericViewSet):
             response, status_code = create_user_statistic(request.user.role, serializer.validated_data)
             return Response(response, status=status_code)
         except IntegrityError:
-            return Response({'message': 'Статистика уже заполнена'}, status.HTTP_423_LOCKED)
+            return Response({'message': _('Статистика уже заполнена')}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in CreateUserStat.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from django.utils.translation import gettext_lazy as _
 
 from applications.models import TariffApplication, ApplicationStatus
 from companies.models import Company
@@ -28,7 +29,7 @@ def get_my_tariff(owner):
     if last_tariff_app:
         data = MyTariffSerializer(last_tariff_app).data
         return data, status.HTTP_200_OK
-    return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
+    return {'message': _('Нет оплаченных заявок')}, status.HTTP_403_FORBIDDEN
 
 
 def prolongate_my_tariff(owner):
@@ -50,7 +51,7 @@ def prolongate_my_tariff(owner):
             period=last_tariff_app.period,
         )
         return {'message': 'created'}, status.HTTP_200_OK
-    return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
+    return {'message': _('Нет оплаченных заявок')}, status.HTTP_403_FORBIDDEN
 
 
 def change_my_tariff(owner, tariff, period, is_instant_apply):
@@ -83,7 +84,7 @@ def change_my_tariff(owner, tariff, period, is_instant_apply):
             period=period,
         )
         return {'message': 'created'}, status.HTTP_200_OK
-    return {'message': 'Нет оплаченных заявок'}, status.HTTP_403_FORBIDDEN
+    return {'message': _('Нет оплаченных заявок')}, status.HTTP_403_FORBIDDEN
 
 
 def deactivate_my_tariff(owner):

@@ -21,6 +21,7 @@ from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, Che
 from utils.manual_parameters import QUERY_YEAR, QUERY_MONTH, QUERY_ROLE, QUERY_MONTHS
 from utils.permissions import TimeSheetPermissions, ChangeTimeSheetPermissions, CheckPermission
 from utils.tools import log_exception
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -76,9 +77,9 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
         except CheckInAlreadyExistsException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except EmployeeSchedule.DoesNotExist:
-            return Response({'message': "Сегодня нерабочий день"}, status.HTTP_423_LOCKED)
+            return Response({'message': _("Сегодня нерабочий день")}, status.HTTP_423_LOCKED)
         except IntegrityError:
-            return Response({'message': "Вы уже осуществили check in сегодня"}, status.HTTP_423_LOCKED)
+            return Response({'message': _("Вы уже осуществили check in сегодня")}, status.HTTP_423_LOCKED)
         except Exception as e:
             log_exception(e, 'Error in CheckInViewSet.create()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -112,7 +113,7 @@ class CheckOutViewSet(CreateModelMixin, GenericViewSet):
             serializer.is_valid(raise_exception=True)
             result = create_check_out_timesheet(request.user.role, serializer.validated_data)
             if result is False:
-                return Response({'message': 'Нужно сделать check in заново', 'code': 're-check-in'}, status=status.HTTP_423_LOCKED)
+                return Response({'message': _('Нужно сделать check in заново'), 'code': 're-check-in'}, status=status.HTTP_423_LOCKED)
             return Response({'message': 'created'})
         except FillUserStatistic as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
@@ -161,7 +162,7 @@ class VacationTimeSheetViewSet(CreateModelMixin, GenericViewSet):
             response, status_code = create_vacation(serializer.validated_data)
             return Response(response, status=status_code)
         except IntegrityError:
-            return Response({'message': "В указанный промежуток уже есть check_in"}, status.HTTP_400_BAD_REQUEST)
+            return Response({'message': _("В указанный промежуток уже есть check_in")}, status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             log_exception(e, 'Error in ChangeTimeSheetViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)

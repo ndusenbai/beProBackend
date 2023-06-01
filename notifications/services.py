@@ -10,6 +10,8 @@ from companies.models import Department
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
 from notifications.models import EmployeeNotification
+from django.utils.translation import gettext_lazy as _
+
 
 @after_response.enable
 def notify_check_in():
@@ -48,8 +50,13 @@ def notify_check_in():
                     )
                     emp_notification.check_in_notified = True
                     emp_notification.save()
-                    title = "Don't forget to check in!"
-                    text = f"Hey {schedule.role.user.full_name}, just a quick reminder that your shift is starting soon and you have 5 minutes left to check in. See you soon!"
+
+                    title = "Не забудьте сделать check in!"
+                    text = f"Привет {schedule.role.user.full_name}, просто напоминаю, что ваша смена скоро начинается, и у вас осталось 5 минут, чтобы сделать check in. До скорой встречи!"
+
+                    if schedule.role.user.language == 'kk':
+                        title = "Check in жасауды ұмытпаңыз!"
+                        text = f"Сәлем {schedule.role.user.full_name}, сіздің ауысымыңыз жақында басталатынын және check in жасауға 5 минут қалғанын еске саламын. Жақын кездесуге дейін!"
 
                     devices.send_message(Message(notification=Notification(title=title, body=text)))
 
@@ -93,7 +100,11 @@ def notify_check_out():
                     emp_notification.check_out_notified = True
                     emp_notification.save()
 
-                    title = "Don't forget to check out!"
-                    text = f"Hey {schedule.role.user.full_name}, just a heads up that your shift is coming to an end and you have 5 minutes left to check out. Thanks for all your hard work today!"
+                    title = "Не забудьте сделать check out!"
+                    text = f"Привет {schedule.role.user.full_name}, просто предупреждаю, что ваша смена подходит к концу и у вас осталось 5 минут, чтобы сделать check out. Спасибо за всю вашу сегодняшнюю тяжелую работу!"
+
+                    if schedule.role.user.language == 'kk':
+                        title = "Check out жасауды ұмытпаңыз!"
+                        text = "Сәлем {schedule.role.user.full_name}, тек сіздің ауысымыңыз аяқталып жатқанын ескертемін және check out жасауға 5 минут қалды. Бүгінгі барлық қажырлы еңбегіңіз үшін рахмет!"
 
                     devices.send_message(Message(notification=Notification(title=title, body=text)))
