@@ -34,13 +34,16 @@ def notify_check_in():
 
         # Loop through each check-in schedule and send a notification to the employee
         for schedule in check_in_schedules:
+            print(schedule)
+
             time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today(), check_in_new__isnull=False)
             employee_notification = EmployeeNotification.objects.filter(
                 role=schedule.role,
                 created_at__date=datetime.date.today(),
                 check_in_notified=True
             )
-
+            print(time_sheet.exists())
+            print(employee_notification.exists())
             if not time_sheet.exists() and not employee_notification.exists():
                 devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
                 if devices.exists():
@@ -82,13 +85,15 @@ def notify_check_out():
 
         # Loop through each check-out schedule and send a notification to the employee
         for schedule in check_out_schedules:
-            time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today(), check_in_out__isnull=False)
+            print(schedule)
+            time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today(), check_out__new__isnull=False)
             employee_notification = EmployeeNotification.objects.filter(
                 role=schedule.role,
                 created_at__date=datetime.date.today(),
                 check_out_notified=True
             )
-
+            print(time_sheet.exists())
+            print(employee_notification.exists())
             if not time_sheet.exists() and not employee_notification.exists():
                 devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
                 if devices.exists():
