@@ -82,7 +82,7 @@ def notify_check_out():
 
         # Loop through each check-out schedule and send a notification to the employee
         for schedule in check_out_schedules:
-            time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today())
+            time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today(), check_in_out__isnull=False)
             employee_notification = EmployeeNotification.objects.filter(
                 role=schedule.role,
                 created_at__date=datetime.date.today(),
