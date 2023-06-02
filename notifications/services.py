@@ -105,6 +105,6 @@ def notify_check_out():
 
                     if schedule.role.user.language == 'kk':
                         title = "Check out жасауды ұмытпаңыз!"
-                        text = "Сәлем {schedule.role.user.full_name}, тек сіздің ауысымыңыз аяқталып жатқанын ескертемін және check out жасауға 5 минут қалды. Бүгінгі барлық қажырлы еңбегіңіз үшін рахмет!"
+                        text = f"Сәлем {schedule.role.user.full_name}, мен сіздің ауысымыңыз аяқталып жатқанын және check out жасауға 5 минут қалғанын ескертемін. Бүгінгі барлық қажырлы еңбегіңіз үшін рахмет!"
 
                     devices.send_message(Message(notification=Notification(title=title, body=text)))
