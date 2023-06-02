@@ -81,7 +81,7 @@ class UserStatsSerializer(BaseSerializer):
 
 class CreateUserStatSerializer(BaseSerializer):
     statistic_id = serializers.IntegerField()
-    fact = serializers.IntegerField()
+    fact = serializers.FloatField()
 
 
 class ChangeUserStatSerializer(BaseSerializer):

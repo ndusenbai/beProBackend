@@ -1,6 +1,9 @@
-class CompanyAlreadyExists(Exception):
-    def __init__(self):
-        self.txt = 'Компания с таким названием уже существует'
+from rest_framework import status
+from rest_framework.exceptions import APIException
+from django.utils.translation import gettext_lazy as _
 
-    def __str__(self):
-        return self.txt
+
+class CompanyAlreadyExists(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = _('Компания с таким названием уже существует')
+    default_code = 'company-already-exists'

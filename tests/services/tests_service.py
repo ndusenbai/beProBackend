@@ -184,25 +184,25 @@ def generate_test_links(test: Test = None, test_id: int = None) -> dict:
     }
 
 
-def generate_test_pdf(test_id: int) -> str:
+def generate_test_pdf(test_id: int, lang: str) -> str:
     test = Test.objects.get(id=test_id)
     if test.status != TestStatus.FINISHED:
         raise Exception('Нельзя скачать незавершенный тест')
 
     if test.test_type == TestType.ONE_HEART_PRO:
-        return generate_pdf_for_test_one(test)
+        return generate_pdf_for_test_one(test, lang)
     elif test.test_type == TestType.TWO_BRAIN:
-        return generate_pdf_for_test_two(test)
+        return generate_pdf_for_test_two(test, lang)
     elif test.test_type == TestType.THREE_BRAIN_PRO:
-        return generate_pdf_for_test_three(test)
+        return generate_pdf_for_test_three(test, lang)
     elif test.test_type == TestType.FOUR_HEART:
-        return generate_pdf_for_test_four(test)
+        return generate_pdf_for_test_four(test, lang)
     else:
         raise Exception('Неверный тип теста')
 
 
-def generate_pdf_for_test_one(test: Test):
-    context = get_context_for_pdf_test_one(test)
+def generate_pdf_for_test_one(test: Test, lang: str):
+    context = get_context_for_pdf_test_one(test, lang)
     template = get_template('tests/test_1_to_pdf.html')
     html_pdf = template.render(context)
 
@@ -213,7 +213,7 @@ def generate_pdf_for_test_one(test: Test):
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
-def get_context_for_pdf_test_one(test: Test) -> dict:
+def get_context_for_pdf_test_one(test: Test, lang: str) -> dict:
     path = 'file://' + os.path.join(settings.BASE_DIR, 'tests', 'static', 'tests')
     height = {}
     color = {}
@@ -229,6 +229,8 @@ def get_context_for_pdf_test_one(test: Test) -> dict:
             characteristics.append(f"{characteristic_text}")
 
     for conclusion in test.result['conclusions']:
+        if lang in conclusion:
+            conclusion.append(f"{conclusion[{lang}]['description']}")
         conclusions.append(f"{conclusion['description']}")
 
     context = {
@@ -264,13 +266,13 @@ def get_color_for_test_one(percent):
     return 'blue'
 
 
-def generate_pdf_for_test_two(test: Test) -> str:
+def generate_pdf_for_test_two(test: Test, lang: str) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
-        'classification': test.result['classification'],
-        'percent': test.result['percent'],
-        'summary': test.result['summary'],
+        'classification': test.result['classification'] if lang not in test.result else test.result[lang]['classification'],
+        'percent': test.result['percent'] if lang not in test.result else test.result[lang]['percent'],
+        'summary': test.result['summary'] if lang not in test.result else test.result[lang]['summary'],
     }
     template = get_template('tests/test_2_to_pdf.html')
     html_pdf = template.render(context)
@@ -282,11 +284,11 @@ def generate_pdf_for_test_two(test: Test) -> str:
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
-def generate_pdf_for_test_three(test: Test) -> str:
+def generate_pdf_for_test_three(test: Test, lang) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
         'points': test.result['points'],
-        'description': test.result['description'],
+        'description': test.result['description'] if lang not in test.result else test.result[lang]['description'],
     }
     template = get_template('tests/test_3_to_pdf.html')
     html_pdf = template.render(context)
@@ -298,10 +300,10 @@ def generate_pdf_for_test_three(test: Test) -> str:
     return f'{settings.CURRENT_SITE}/media/{pdf_file_name}'
 
 
-def generate_pdf_for_test_four(test: Test) -> str:
+def generate_pdf_for_test_four(test: Test, lang: str) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
-        'characteristics': test.result['characteristics'],
+        'characteristics': test.result['characteristics'] if lang not in test.result else test.result[lang]['characteristics'],
     }
     template = get_template('tests/test_4_to_pdf.html')
     html_pdf = template.render(context)

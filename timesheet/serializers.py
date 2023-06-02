@@ -25,7 +25,7 @@ class TimeSheetModelSerializer(serializers.ModelSerializer):
         return TimeSheetChoices.get_status(instance.status)
 
     def get_working_hours(self, instance):
-        if instance.check_in_new is None or instance.check_out_new is None:
+        if instance.check_in_new is None or instance.check_out_new is None or instance.status not in [1, 2]:
             return ''
         time_diff = instance.check_out_new - instance.check_in_new
         return time_diff.total_seconds() / 3600

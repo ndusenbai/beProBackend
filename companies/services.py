@@ -4,6 +4,7 @@ from typing import OrderedDict
 import pandas as pd
 from calendar import monthrange
 from auth_user.tasks import send_email
+from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, F, Q, FloatField, Sum, When, Case, Value
@@ -20,6 +21,7 @@ from timesheet.models import DepartmentSchedule, EmployeeSchedule, TimeSheet, Ti
 from django.utils.encoding import iri_to_uri
 
 from timesheet.services import generate_total_hours
+from timesheet.utils import EmailExistsException
 
 User = get_user_model()
 
@@ -191,6 +193,7 @@ def create_employee(data: dict) -> None:
     schedules = data.pop('schedules')
     in_zone = data.pop('in_zone')
     checkout_any_time = data.pop('checkout_any_time')
+    checkout_time = data.pop('checkout_time')
 
     department = Department.objects.get(id=department_id)
     data['selected_company_id'] = department.company_id
@@ -213,11 +216,12 @@ def create_employee(data: dict) -> None:
             title=title,
             grade=grade,
             in_zone=in_zone,
-            checkout_any_time=checkout_any_time
+            checkout_any_time=checkout_any_time,
+            checkout_time=checkout_time
         )
         create_employee_schedules(role, schedules)
     else:
-        raise Exception({'message': 'Тариф компании истек. Необходимо обновить тариф', 'status': 400})
+        raise Exception({'message': _('Тариф компании истек. Необходимо обновить тариф'), 'status': 400})
 
 
 @atomic
@@ -229,7 +233,8 @@ def update_employee(request, role: Role, data: dict) -> None:
         'grade': data.pop('grade'),
         'department_id': data.pop('department_id'),
         'in_zone': data.pop('in_zone'),
-        'checkout_any_time': data.pop('checkout_any_time')
+        'checkout_any_time': data.pop('checkout_any_time'),
+        'checkout_time': data.pop('checkout_time')
     }
 
     Role.objects.filter(id=role.id).update(**role_data)
@@ -239,6 +244,8 @@ def update_employee(request, role: Role, data: dict) -> None:
 
     if email:
         if email != user.email:
+            if User.objects.filter(email=email).exists():
+                raise EmailExistsException()
             user.email = email
             random_password = User.objects.make_random_password()
             user.set_password(random_password)
@@ -298,7 +305,7 @@ def create_observer_and_role(data: OrderedDict):
             selected_company=data['company']
         )
     if Role.objects.filter(user=observer).exists():
-        return {'message': 'observer with this email is already created'}, status.HTTP_400_BAD_REQUEST
+        return {'message': _('Наблюдатель с такой почтой уже создан')}, status.HTTP_400_BAD_REQUEST
 
     Role.objects.create(
         company=data['company'],
