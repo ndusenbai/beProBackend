@@ -317,7 +317,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timesheet.status = status
     timesheet.is_night_shift = today_schedule.is_night_shift  # new
     timesheet.file = data.get('file', None)
-    timesheet.comment = ''
+    timesheet.comment = data.get('comment', None)
     timesheet.save()
 
     # TimeSheet.objects.create(
@@ -357,6 +357,8 @@ def set_took_off(role: Role, data: dict):
     check_out = data.pop('check_out')
     time_sheet = TimeSheet.objects.filter(role=role, day__lte=now_date).order_by('-day').first()
     comment = data.pop('comment', None)
+    file = data.pop('file', None)
+
     schedule = get_schedule(role, now_date)
 
     if comment is None or len(comment) == 0:
@@ -376,8 +378,15 @@ def set_took_off(role: Role, data: dict):
             time_sheet.check_out = check_out
             time_sheet.check_out_new = check_out
             time_sheet.comment = comment
-            time_sheet.save()
-
+            time_sheet.file = file
+            time_sheet.save(
+                update_fields=(
+                    'check_out',
+                    'check_out_new',
+                    'comment',
+                    'file'
+                )
+            )
     else:
         if schedule:
             TimeSheet.objects.create(
@@ -387,6 +396,7 @@ def set_took_off(role: Role, data: dict):
                 comment=comment,
                 time_to=schedule.time_to,
                 time_from=schedule.time_from,
+                file=file,
                 # check_in=schedule.time_from,
                 # check_out=schedule.time_to,
                 # check_in_new=datetime.combine(now_date, schedule.time_from),
@@ -399,7 +409,11 @@ def set_took_off(role: Role, data: dict):
 
 def handle_check_out_timesheet(role: Role, data: dict):
     check_out = data['check_out']
-    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(
+        role=role,
+        check_in_new__isnull=False,
+        day__lte=date.today()
+    ).order_by('-day').first()
 
     last_timesheet.check_out = check_out
     last_timesheet.check_out_new = check_out
