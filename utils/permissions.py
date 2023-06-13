@@ -2,7 +2,7 @@ from django.apps import apps
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 from auth_user.services import get_user_role
-from companies.models import Role, RoleChoices
+from companies.models import Role, RoleChoices, Company
 
 
 def check_hr_of_company(user):
@@ -162,6 +162,17 @@ class EmployeesPermissions(BasePermission):
                 return True
 
         return False
+
+    def has_object_permission(self, request, view, obj):
+        role = get_user_role(request.user)
+
+        if role == 'owner':
+            companies = Company.objects.filter(owner=request.user)
+
+            if obj.company in companies:
+                return True
+
+        return obj.company == request.user.role.company
 
 
 class StatisticPermissions(BasePermission):

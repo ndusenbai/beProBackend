@@ -56,7 +56,7 @@ class CheckInSerializer(BaseSerializer):
 class TakeTimeOffSerializer(BaseSerializer):
     check_out = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%S%z')
     comment = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    file = serializers.FileField(required=False, allow_null=True, allow_blank=True)
+    file = serializers.FileField(required=False, allow_null=True)
 
 
 class CheckOutSerializer(BaseSerializer):

@@ -30,7 +30,7 @@ class ApplicationStatus(models.IntegerChoices):
 
 class ApplicationToCreateCompany(BaseModel):
     first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50, blank=True)
     middle_name = models.CharField(max_length=50, blank=True)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15, blank=True)
