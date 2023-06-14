@@ -81,7 +81,7 @@ class ApplicationToCreateCompanyModelSerializer(serializers.ModelSerializer):
 
 class CreateApplicationToCreateCompanySerializer(BaseSerializer):
     first_name = serializers.CharField()
-    last_name = serializers.CharField()
+    last_name = serializers.CharField(allow_blank=True, default='')
     middle_name = serializers.CharField(allow_blank=True, default='')
     email = serializers.EmailField()
     phone_number = serializers.CharField(allow_blank=True, default='')
