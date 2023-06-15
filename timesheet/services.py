@@ -317,7 +317,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timesheet.status = status
     timesheet.is_night_shift = today_schedule.is_night_shift  # new
     timesheet.file = data.get('file', None)
-    timesheet.comment = data.get('comment', None)
+    timesheet.comment = data.get('comment', '')
     timesheet.save()
 
     # TimeSheet.objects.create(
@@ -356,7 +356,7 @@ def set_took_off(role: Role, data: dict):
     now_date = date.today()
     check_out = data.pop('check_out')
     time_sheet = TimeSheet.objects.filter(role=role, day__lte=now_date).order_by('-day').first()
-    comment = data.pop('comment', None)
+    comment = data.pop('comment', '')
     file = data.pop('file', None)
 
     schedule = get_schedule(role, now_date)
