@@ -10,30 +10,30 @@ from tests.models import Test
 def update_old_result_for_test_one():
     test_ones = Test.objects.filter(test_type=1, status=2)
     for test_one in test_ones:
-
         result = test_one.result
+        if 'kz' in result or 'ru' in result:
+            continue  # Skip if 'kz' or 'ru' keys already exist in the result
         try:
             conclusions = result['conclusions']
             new_conclusions = []
             for conclusion in conclusions:
-                    new_conclusions.append(
-                        {
-                            'ru': conclusion,
-                            'kz': conclusion
-                        }
-                    )
+                new_conclusions.append(
+                    {
+                        'ru': conclusion,
+                        'kz': conclusion
+                    }
+                )
             result['conclusions'] = new_conclusions
 
             characteristics = result['characteristics']
             new_characteristics = []
             for characteristic in characteristics:
                 for category in characteristic:
-
                     new_characteristics.append(
                         {
-                            f'{category}':{
-                                            'ru': characteristic[category],
-                                            'kz': characteristic[category]
+                            f'{category}': {
+                                'ru': characteristic[category],
+                                'kz': characteristic[category]
                             }
                         }
                     )
@@ -54,6 +54,8 @@ def update_old_result_for_test_two():
     test_twos = Test.objects.filter(test_type=2, status=2)
     for test_two in test_twos:
         result = test_two.result
+        if 'kz' in result or 'ru' in result:
+            continue  # Skip if 'kz' or 'ru' keys already exist in the result
         try:
             new_result = {
                 'kz': {
@@ -84,6 +86,8 @@ def update_old_result_for_test_three():
     test_threes = Test.objects.filter(test_type=3, status=2)
     for test_three in test_threes:
         result = test_three.result
+        if 'kz' in result or 'ru' in result:
+            continue  # Skip if 'kz' or 'ru' keys already exist in the result
         try:
             new_result = {
                 'kz': {
@@ -109,6 +113,8 @@ def update_old_result_for_test_four():
     test_fours = Test.objects.filter(test_type=4, status=2)
     for test_four in test_fours:
         result = test_four.result
+        if 'kz' in result or 'ru' in result:
+            continue  # Skip if 'kz' or 'ru' keys already exist in the result
         new_characteristics = []
         try:
             for characteristic in result['characteristics']:
