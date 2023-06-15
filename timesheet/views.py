@@ -78,10 +78,11 @@ class CheckInViewSet(CreateModelMixin, GenericViewSet):
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
         except EmployeeSchedule.DoesNotExist:
             return Response({'message': _("Сегодня нерабочий день")}, status.HTTP_423_LOCKED)
-        except IntegrityError:
+        except IntegrityError as e:
+            log_exception(e, 'Error in CheckInViewSet.create() IntegrityError')
             return Response({'message': _("Вы уже осуществили check in сегодня")}, status.HTTP_423_LOCKED)
         except Exception as e:
-            log_exception(e, 'Error in CheckInViewSet.create()')
+            log_exception(e, 'Error in CheckInViewSet.create() Exception')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
