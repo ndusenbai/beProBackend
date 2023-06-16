@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import EmployeeNotification, TestNotification
-from firebase_admin.messaging import Message, Notification, APNSConfig
+from firebase_admin.messaging import Message, Notification, APNSConfig, APNSPayload
 from fcm_django.models import FCMDevice
 from django.apps import apps
 
@@ -14,7 +14,9 @@ def send_push_notification(modeladmin, request, queryset):
         devices.send_message(
 
             Message(
-                apns=APNSConfig(payload={'aps': {'mutable-content': 1}}),
+                apns=APNSConfig(
+                    APNSPayload(payload={'aps': {'mutable-content': 1}})
+                ),
                 notification=Notification(
                     title=push_notification.title,
                     body=push_notification.body
