@@ -133,7 +133,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'PAGE_SIZE': 25
+    'PAGE_SIZE': 5
 }
 
 EMAIL_HOST = env('EMAIL_HOST')
