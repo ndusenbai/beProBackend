@@ -112,7 +112,7 @@ class TestDownloadView(APIView):
     permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
 
     def get(self, request, *args, **kwargs):
-        lang = request.user.language
+        lang = self.request.query_params.get('lang', 'ru')
         if lang == 'kk':
             lang = 'kz'
         link = generate_test_pdf(test_id=kwargs['id'], lang=lang)
