@@ -13,13 +13,13 @@ def send_push_notification(modeladmin, request, queryset):
 
         devices.send_message(
             Message(
-                notification=Notification(
-                    title=push_notification.title,
-                    body=push_notification.body
-                )
+                data={
+                    'title': push_notification.title,
+                    'body': push_notification.body,
+                    'mutableContent': 'true'
+                }
             )
         )
-
 
 
 class EmployeeNotificationAdmin(admin.ModelAdmin):
