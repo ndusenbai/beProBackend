@@ -11,7 +11,7 @@ def send_push_notification(modeladmin, request, queryset):
         role = apps.get_model(app_label='companies', model_name='Role').objects.get(id=push_notification.role_id)
         devices = FCMDevice.objects.filter(user=role.user)
         data = {
-            'mutableContent': '1'
+            'mutableContent': True
         }
         devices.send_message(
             Message(
