@@ -10,14 +10,16 @@ def send_push_notification(modeladmin, request, queryset):
     for push_notification in queryset:
         role = apps.get_model(app_label='companies', model_name='Role').objects.get(id=push_notification.role_id)
         devices = FCMDevice.objects.filter(user=role.user)
-
+        data = {
+            'mutableContent': 'true'
+        }
         devices.send_message(
             Message(
-                data={
-                    'title': push_notification.title,
-                    'body': push_notification.body,
-                    'mutableContent': 'true'
-                }
+                data=data,
+                notification=Notification(
+                    title=push_notification.title,
+                    body=push_notification.body
+                )
             )
         )
 
