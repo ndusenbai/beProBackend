@@ -14,12 +14,13 @@ def send_push_notification(modeladmin, request, queryset):
         devices.send_message(
 
             Message(
-                apns=APNSConfig(payload=APNSPayload(aps=Aps(mutable_content=True)))),
+                apns=APNSConfig(payload=APNSPayload(aps=Aps(mutable_content=True))),
                 notification=Notification(
                     title=push_notification.title,
                     body=push_notification.body
                 )
             )
+        )
 
 
 
