@@ -23,7 +23,6 @@ def send_push_notification(modeladmin, request, queryset):
         )
 
 
-
 class EmployeeNotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'role', 'check_in_notified', 'check_out_notified', 'created_at')
 

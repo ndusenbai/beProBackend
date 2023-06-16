@@ -7,7 +7,8 @@ import after_response
 import datetime
 from timesheet.models import TimeSheet, EmployeeSchedule
 from companies.models import Department
-from firebase_admin.messaging import Message, Notification
+from firebase_admin.messaging import Message, Notification, APNSConfig, APNSPayload, Aps
+
 from fcm_django.models import FCMDevice
 from notifications.models import EmployeeNotification
 from django.utils.translation import gettext_lazy as _
@@ -58,7 +59,10 @@ def notify_check_in():
                         title = "Check in жасауды ұмытпаңыз!"
                         text = f"Сәлем {schedule.role.user.full_name}, сіздің ауысымыңыз жақында басталатынын және check in жасауға 5 минут қалғанын еске саламын. Жақын кездесуге дейін!"
 
-                    devices.send_message(Message(notification=Notification(title=title, body=text)))
+                    devices.send_message(Message(
+                        apns=APNSConfig(payload=APNSPayload(aps=Aps(mutable_content=True))),
+                        notification=Notification(title=title, body=text))
+                    )
 
 
 @after_response.enable
@@ -106,4 +110,7 @@ def notify_check_out():
                         title = "Check out жасауды ұмытпаңыз!"
                         text = f"Сәлем {schedule.role.user.full_name}, мен сіздің ауысымыңыз аяқталып жатқанын және check out жасауға 5 минут қалғанын ескертемін. Бүгінгі барлық қажырлы еңбегіңіз үшін рахмет!"
 
-                    devices.send_message(Message(notification=Notification(title=title, body=text)))
+                    devices.send_message(Message(
+                        apns=APNSConfig(payload=APNSPayload(aps=Aps(mutable_content=True))),
+                        notification=Notification(title=title, body=text))
+                    )
