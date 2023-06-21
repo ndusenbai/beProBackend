@@ -85,7 +85,7 @@ class SendEmailViewSet(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            send_email_invitation(kwargs['uid'])
+            send_email_invitation(kwargs['uid'], request)
             return Response({'message': 'success'})
         except NoEmailTestException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)

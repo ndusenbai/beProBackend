@@ -236,8 +236,16 @@ def get_history_stats_for_user(user, data: OrderedDict):
     result = []
 
     for stat in stats:
-        if not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
-                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat)):
+        user_role = getattr(user, 'role', None)
+
+        if user_role is None:
+            checking_logic = not (stat.visibility == VisibilityType.EMPLOYEES)
+
+        else:
+            checking_logic = not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
+                 observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat))
+
+        if checking_logic:
 
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \

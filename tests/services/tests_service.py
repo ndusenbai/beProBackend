@@ -1,6 +1,7 @@
 import os
 from typing import OrderedDict
 from urllib.parse import quote_plus
+from django.contrib.sites.shortcuts import get_current_site
 
 from django.conf import settings
 from django.db.models import F, Sum
@@ -112,7 +113,16 @@ def submit_test(uid, data):
     test.save()
 
 
-def send_email_invitation(uid):
+def send_email_invitation(uid, request):
+    current_site = get_current_site(request)
+    domain_name = current_site.domain
+    if 'media.' in domain_name:
+        domain_name = domain_name.replace('media.', '')
+
+    protocol = 'https://' if request.is_secure() else 'http://'
+
+    domain = protocol + domain_name
+
     decoded_id = force_str(urlsafe_base64_decode(uid))
     test = Test.objects.get(id=decoded_id)
     if not test.email:
@@ -122,6 +132,7 @@ def send_email_invitation(uid):
 
     context = {
         'link': f'{settings.CURRENT_SITE}/test/registration/{uid}/',
+        'domain': domain
     }
     send_email.delay(subject='Пройдите тест на BePRO.kz', to_list=[test.email], template_name='test_invitation.html', context=context)
 
