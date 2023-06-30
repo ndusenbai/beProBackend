@@ -237,7 +237,10 @@ def get_context_for_pdf_test_one(test: Test, lang: str) -> dict:
 
     for characteristic_dict in test.result['characteristics']:
         for characteristic_title, characteristic_text in characteristic_dict.items():
-            characteristics.append(f"{characteristic_text}")
+            if lang in characteristic_text:
+                characteristics.append(f'{characteristic_text[lang]}')
+            else:
+                characteristics.append(f"{characteristic_text}")
 
     for conclusion in test.result['conclusions']:
         if lang in conclusion:
