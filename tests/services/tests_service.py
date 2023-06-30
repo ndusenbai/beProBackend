@@ -318,7 +318,7 @@ def generate_pdf_for_test_three(test: Test, lang) -> str:
 def generate_pdf_for_test_four(test: Test, lang: str) -> str:
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
-        'characteristics': test.result['characteristics'] if lang not in test.result else test.result[lang]['characteristics'],
+        'characteristics': test.result['characteristics'] if lang not in test.result['characteristics'] else test.result[lang]['characteristics'],
     }
     template = get_template('tests/test_4_to_pdf.html')
     html_pdf = template.render(context)
