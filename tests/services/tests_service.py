@@ -316,9 +316,15 @@ def generate_pdf_for_test_three(test: Test, lang) -> str:
 
 
 def generate_pdf_for_test_four(test: Test, lang: str) -> str:
+    try:
+        characteristics = test.result['characteristics'][0]
+    except KeyError:
+        characteristics = test.result['characteristics']
+
+
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
-        'characteristics': test.result['characteristics'] if lang not in test.result['characteristics'] else test.result[lang]['characteristics'],
+        'characteristics': characteristics if lang not in characteristics else characteristics[lang],
     }
     template = get_template('tests/test_4_to_pdf.html')
     html_pdf = template.render(context)
