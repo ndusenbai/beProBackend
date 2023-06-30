@@ -242,7 +242,8 @@ def get_context_for_pdf_test_one(test: Test, lang: str) -> dict:
     for conclusion in test.result['conclusions']:
         if lang in conclusion:
             conclusion.append(f"{conclusion[{lang}]['description']}")
-        conclusions.append(f"{conclusion['description']}")
+        else:
+            conclusions.append(f"{conclusion['description']}")
 
     context = {
         'test_participant': f'{test.first_name} {test.last_name} {test.middle_name}',
