@@ -241,7 +241,7 @@ def get_context_for_pdf_test_one(test: Test, lang: str) -> dict:
 
     for conclusion in test.result['conclusions']:
         if lang in conclusion:
-            conclusion.append(f"{conclusion[{lang}]['description']}")
+            conclusions.append(f"{conclusion[{lang}]['description']}")
         else:
             conclusions.append(f"{conclusion['description']}")
 
