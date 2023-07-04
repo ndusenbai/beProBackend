@@ -85,7 +85,7 @@ class SendEmailViewSet(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            send_email_invitation(kwargs['uid'])
+            send_email_invitation(kwargs['uid'], request)
             return Response({'message': 'success'})
         except NoEmailTestException as e:
             return Response({'message': str(e)}, status.HTTP_423_LOCKED)
@@ -112,7 +112,10 @@ class TestDownloadView(APIView):
     permission_classes = (SuperuserOrOwnerOrHRorHeadOfHRDepartmentPermission,)
 
     def get(self, request, *args, **kwargs):
-        link = generate_test_pdf(test_id=kwargs['id'])
+        lang = self.request.query_params.get('lang', 'ru')
+        if lang == 'kk':
+            lang = 'kz'
+        link = generate_test_pdf(test_id=kwargs['id'], lang=lang)
         return Response({'link': link})
 
 

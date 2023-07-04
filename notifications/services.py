@@ -7,9 +7,12 @@ import after_response
 import datetime
 from timesheet.models import TimeSheet, EmployeeSchedule
 from companies.models import Department
-from firebase_admin.messaging import Message, Notification
+from firebase_admin.messaging import Message, Notification, APNSConfig, APNSPayload, Aps
+
 from fcm_django.models import FCMDevice
 from notifications.models import EmployeeNotification
+from django.utils.translation import gettext_lazy as _
+
 
 @after_response.enable
 def notify_check_in():
@@ -32,13 +35,13 @@ def notify_check_in():
 
         # Loop through each check-in schedule and send a notification to the employee
         for schedule in check_in_schedules:
+
             time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today(), check_in_new__isnull=False)
             employee_notification = EmployeeNotification.objects.filter(
                 role=schedule.role,
                 created_at__date=datetime.date.today(),
                 check_in_notified=True
             )
-
             if not time_sheet.exists() and not employee_notification.exists():
                 devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
                 if devices.exists():
@@ -48,10 +51,18 @@ def notify_check_in():
                     )
                     emp_notification.check_in_notified = True
                     emp_notification.save()
-                    title = "Don't forget to check in!"
-                    text = f"Hey {schedule.role.user.full_name}, just a quick reminder that your shift is starting soon and you have 5 minutes left to check in. See you soon!"
 
-                    devices.send_message(Message(notification=Notification(title=title, body=text)))
+                    title = "Не забудьте сделать check in!"
+                    text = f"Привет {schedule.role.user.full_name}, просто напоминаю, что ваша смена скоро начинается, и у вас осталось 5 минут, чтобы сделать check in. До скорой встречи!"
+
+                    if schedule.role.user.language == 'kk':
+                        title = "Check in жасауды ұмытпаңыз!"
+                        text = f"Сәлем {schedule.role.user.full_name}, сіздің ауысымыңыз жақында басталатынын және check in жасауға 5 минут қалғанын еске саламын. Жақын кездесуге дейін!"
+
+                    devices.send_message(Message(
+                        apns=APNSConfig(payload=APNSPayload(aps=Aps(mutable_content=True))),
+                        notification=Notification(title=title, body=text))
+                    )
 
 
 @after_response.enable
@@ -75,13 +86,12 @@ def notify_check_out():
 
         # Loop through each check-out schedule and send a notification to the employee
         for schedule in check_out_schedules:
-            time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today())
+            time_sheet = TimeSheet.objects.filter(role=schedule.role, day=datetime.date.today(), check_out_new__isnull=False)
             employee_notification = EmployeeNotification.objects.filter(
                 role=schedule.role,
                 created_at__date=datetime.date.today(),
                 check_out_notified=True
             )
-
             if not time_sheet.exists() and not employee_notification.exists():
                 devices = FCMDevice.objects.filter(user_id=schedule.role.user.id)
                 if devices.exists():
@@ -93,7 +103,14 @@ def notify_check_out():
                     emp_notification.check_out_notified = True
                     emp_notification.save()
 
-                    title = "Don't forget to check out!"
-                    text = f"Hey {schedule.role.user.full_name}, just a heads up that your shift is coming to an end and you have 5 minutes left to check out. Thanks for all your hard work today!"
+                    title = "Не забудьте сделать check out!"
+                    text = f"Привет {schedule.role.user.full_name}, просто предупреждаю, что ваша смена подходит к концу и у вас осталось 5 минут, чтобы сделать check out. Спасибо за всю вашу сегодняшнюю тяжелую работу!"
 
-                    devices.send_message(Message(notification=Notification(title=title, body=text)))
+                    if schedule.role.user.language == 'kk':
+                        title = "Check out жасауды ұмытпаңыз!"
+                        text = f"Сәлем {schedule.role.user.full_name}, мен сіздің ауысымыңыз аяқталып жатқанын және check out жасауға 5 минут қалғанын ескертемін. Бүгінгі барлық қажырлы еңбегіңіз үшін рахмет!"
+
+                    devices.send_message(Message(
+                        apns=APNSConfig(payload=APNSPayload(aps=Aps(mutable_content=True))),
+                        notification=Notification(title=title, body=text))
+                    )

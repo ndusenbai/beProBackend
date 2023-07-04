@@ -1,38 +1,33 @@
-class VersionAlreadyExists(Exception):
-    def __init__(self):
-        self.txt = 'Данный пользователь уже сдавал вариант этого теста'
-
-    def __str__(self):
-        return self.txt
+from rest_framework import status
+from rest_framework.exceptions import APIException
+from django.utils.translation import gettext_lazy as _
 
 
-class TestAlreadyFinished(Exception):
-    def __init__(self):
-        self.txt = 'Тест уже пройден и не может быть сдан повторно'
-
-    def __str__(self):
-        return self.txt
+class VersionAlreadyExists(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = _('Данный пользователь уже сдавал вариант этого теста')
+    default_code = 'version-already-exists'
 
 
-class NoEmailTestException(Exception):
-    def __init__(self):
-        self.txt = 'Невозможно отправить приглашение, т.к. не указана электронная почта'
-
-    def __str__(self):
-        return self.txt
+class TestAlreadyFinished(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = _('Тест уже пройден и не может быть сдан повторно')
+    default_code = 'test-already-finished'
 
 
-class TestAlreadyFinishedEmailException(Exception):
-    def __init__(self):
-        self.txt = 'Невозможно отправить приглашение, т.к. тест уже пройден'
-
-    def __str__(self):
-        return self.txt
+class NoEmailTestException(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = _('Невозможно отправить приглашение, т.к. не указана электронная почта')
+    default_code = 'no-email-test'
 
 
-class NoPaidTestException(Exception):
-    def __init__(self):
-        self.txt = 'Необходимо сначала оплатить тест'
+class TestAlreadyFinishedEmailException(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = _('Невозможно отправить приглашение, т.к. тест уже пройден')
+    default_code = 'test-already-finished-email'
 
-    def __str__(self):
-        return self.txt
+
+class NoPaidTestException(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = _('Необходимо сначала оплатить тест')
+    default_code = 'no-paid-tests'

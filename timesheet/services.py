@@ -1,6 +1,7 @@
 from calendar import monthrange
 from datetime import date, timedelta, datetime, time, timezone as dtimezone
 from typing import OrderedDict
+from django.utils.translation import gettext_lazy as _
 
 import geopy.distance
 import pytz
@@ -16,7 +17,7 @@ from scores.models import Score, Reason
 from timesheet.models import EmployeeSchedule, TimeSheet, TimeSheetChoices
 from timesheet.serializers import TimeSheetModelSerializer
 from timesheet.utils import EmployeeTooFarFromDepartment, FillUserStatistic, CheckInAlreadyExistsException, \
-    TooEarlyCheckoutException
+    TooEarlyCheckoutException, TookOffException, CheckOutFirstException
 from utils.tools import log_message
 
 User = get_user_model()
@@ -275,10 +276,12 @@ def check_distance(role: Role, latitude: float, longitude: float) -> None:
 
 
 def handle_check_in_timesheet(role: Role, data: dict) -> None:
-    last_timesheet = TimeSheet.objects.filter(role=role, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(role=role, day=date.today()).order_by('-day').first()
     if last_timesheet:
         if last_timesheet.check_in_new and not last_timesheet.check_out_new:
             raise CheckInAlreadyExistsException()
+        elif last_timesheet.status == TimeSheetChoices.ABSENT:
+            raise TookOffException()
 
     check_in = datetime.now(pytz.timezone(settings.TIME_ZONE))
 
@@ -314,7 +317,7 @@ def handle_check_in_timesheet(role: Role, data: dict) -> None:
     timesheet.status = status
     timesheet.is_night_shift = today_schedule.is_night_shift  # new
     timesheet.file = data.get('file', None)
-    timesheet.comment = ''
+    timesheet.comment = data.get('comment', '')
     timesheet.save()
 
     # TimeSheet.objects.create(
@@ -352,27 +355,38 @@ def get_schedule(role, now_date):
 def set_took_off(role: Role, data: dict):
     now_date = date.today()
     check_out = data.pop('check_out')
-    time_sheet = TimeSheet.objects.filter(role=role, day=now_date)
-    comment = data.pop('comment', None)
+    time_sheet = TimeSheet.objects.filter(role=role, day__lte=now_date).order_by('-day').first()
+    comment = data.pop('comment', '')
+    file = data.pop('file', None)
+
     schedule = get_schedule(role, now_date)
 
-    if comment is None:
-        raise ValueError('Добавьте комментарий')
+    if comment is None or len(comment) == 0:
+        raise ValueError(_('Добавьте комментарий'))
 
-    if time_sheet.exists():
-        time_sheet = time_sheet.last()
+    if time_sheet.day != now_date and time_sheet.check_out_new is None and time_sheet.check_in_new:
+        raise CheckOutFirstException()
+
+    elif time_sheet.day == now_date:
         if time_sheet.status == TimeSheetChoices.ON_VACATION:
-            return {'message': 'Нельзя отпроситься на время отпуска'}, 400
+            return {'message': _('Нельзя отпроситься на время отпуска')}, 400
         if time_sheet.check_out:
-            return {'message': 'Вы уже осуществили check out на текущий день'}, 400
+            return {'message': _('Вы уже осуществили check out на текущий день')}, 400
 
         if check_out and time_sheet.check_in:
             # time_sheet.check_in = schedule.time_from
             time_sheet.check_out = check_out
             time_sheet.check_out_new = check_out
             time_sheet.comment = comment
-            time_sheet.save()
-
+            time_sheet.file = file
+            time_sheet.save(
+                update_fields=(
+                    'check_out',
+                    'check_out_new',
+                    'comment',
+                    'file'
+                )
+            )
     else:
         if schedule:
             TimeSheet.objects.create(
@@ -382,10 +396,11 @@ def set_took_off(role: Role, data: dict):
                 comment=comment,
                 time_to=schedule.time_to,
                 time_from=schedule.time_from,
-                check_in=schedule.time_from,
-                check_out=schedule.time_to,
-                check_in_new=datetime.combine(now_date, schedule.time_from),
-                check_out_new=datetime.combine(now_date, schedule.time_to),
+                file=file,
+                # check_in=schedule.time_from,
+                # check_out=schedule.time_to,
+                # check_in_new=datetime.combine(now_date, schedule.time_from),
+                # check_out_new=datetime.combine(now_date, schedule.time_to),
                 **data
             )
 
@@ -394,7 +409,11 @@ def set_took_off(role: Role, data: dict):
 
 def handle_check_out_timesheet(role: Role, data: dict):
     check_out = data['check_out']
-    last_timesheet = TimeSheet.objects.filter(role=role, check_in_new__isnull=False, day__lte=date.today()).order_by('-day').first()
+    last_timesheet = TimeSheet.objects.filter(
+        role=role,
+        check_in_new__isnull=False,
+        day__lte=date.today()
+    ).order_by('-day').first()
 
     last_timesheet.check_out = check_out
     last_timesheet.check_out_new = check_out
@@ -574,10 +593,10 @@ def change_timesheet(timesheet: TimeSheet, data: OrderedDict) -> None:
 def create_vacation(data: OrderedDict):
 
     if TimeSheet.objects.filter(day=data['start_vacation_date'], role_id=data['role']).exists():
-        return {'message': 'У этого сотрудника уже есть статус check_in на указанный промежуток.'}, 400
+        return {'message': _('У этого сотрудника уже есть статус check_in на указанный промежуток.')}, 400
 
     if data['start_vacation_date'] > data['end_vacation_date']:
-        return {'message': 'Дата начала отпуска не может быть позже или равным, чем дата окончания отпуска'}, 400
+        return {'message': _('Дата начала отпуска не может быть позже или равным, чем дата окончания отпуска')}, 400
 
     return bulk_create_vacation_timesheets(data)
 
@@ -597,14 +616,14 @@ def create_future_time_sheet(role_id, day, month, year, status, time_from=None, 
             #     local_time_to = is_workday_schedule.time_to
             # else:
             if not (time_from and time_to):
-                return {'message': 'Enter time_from & time_to'}, 400
+                return {'message': _('Введите time_from & time_to')}, 400
 
             local_time_from = time_from
             local_time_to = time_to
 
             return create_future_day_timesheet(role_id, date_formatted, local_time_from, local_time_to, text), 201
         else:
-            return {'message': 'Wrong status!'}, 400
+            return {'message': _('Неверный статус!')}, 400
 
 
 def generate_total_hours(role_id, year, month):

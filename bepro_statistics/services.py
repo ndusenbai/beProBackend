@@ -2,6 +2,7 @@ import random
 import matplotlib.pyplot as plt
 from typing import OrderedDict
 from datetime import datetime, date, timedelta
+from django.utils.translation import gettext_lazy as _
 
 from django.apps import apps
 from django.conf import settings
@@ -54,10 +55,10 @@ def get_date_for_statistic(role: User, statistic_id: int):
                 .order_by('-day').first()
 
             if not last_check_in:
-                raise Exception('Вы не осуществляли check in сегодня')
+                raise Exception(_('Вы не осуществляли check in сегодня'))
 
             return last_check_in.day
-        raise Exception('У Вас нет доступа к статистике')
+        raise Exception(_('У Вас нет доступа к статистике'))
 
     return timezone.now().date()
 
@@ -76,11 +77,11 @@ def create_user_statistic_when_time_tracking_enabled(role: Role, data: OrderedDi
     try:
         today_timesheet = TimeSheet.objects.get(role=role, day=date.today())
         if today_timesheet.status == TimeSheetChoices.ABSENT:
-            return {'message': 'Вы отпросились, нельзя заполнить статистику'}, 400
+            return {'message': _('Вы отпросились, нельзя заполнить статистику')}, 400
         if today_timesheet.status == TimeSheetChoices.ON_VACATION:
-            return {'message': 'В отпуске нельзя заполнить статистику'}, 400
+            return {'message': _('В отпуске нельзя заполнить статистику')}, 400
         if today_timesheet.check_in and today_timesheet.check_out:
-            return {'message': 'Чек-ин и чек-аут заполнены. Нельзя заполнить статистику'}, 400
+            return {'message': _('Чек-ин и чек-аут заполнены. Нельзя заполнить статистику')}, 400
     except TimeSheet.DoesNotExist:
         pass
 
@@ -92,7 +93,7 @@ def create_user_statistic_when_time_tracking_enabled(role: Role, data: OrderedDi
         .order_by('-day').first()
 
     if not last_check_in:
-        return {'message': 'Вы не осуществляли check in сегодня', }, 400
+        return {'message': _('Вы не осуществляли check in сегодня'), }, 400
 
     UserStatistic.objects.create(
         role=role,
@@ -132,9 +133,9 @@ def bulk_create_observers(data: dict, instance: Statistic):
         StatisticObserver.objects.bulk_create(observers)
         return data, 200
     elif employees and data.get('visibility') != VisibilityType.EMPLOYEES:
-        return {'message': 'Change visibility to Employees'}, 400
+        return {'message': _('Поменяйте видимость на Employees')}, 400
     elif not employees and data.get('visibility') == VisibilityType.EMPLOYEES:
-        return {'message': 'Input employees'}, 400
+        return {'message': 'Введите employees'}, 400
     elif not employees and data.get('visibility') != VisibilityType.EMPLOYEES:
         return data, 200
 
@@ -235,8 +236,16 @@ def get_history_stats_for_user(user, data: OrderedDict):
     result = []
 
     for stat in stats:
-        if not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
-                observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat)):
+        user_role = getattr(user, 'role', None)
+
+        if user_role is None:
+            checking_logic = not (stat.visibility == VisibilityType.EMPLOYEES)
+
+        else:
+            checking_logic = not (stat.visibility == VisibilityType.EMPLOYEES and not user.role.
+                 observing_statistics.select_related('statistic').only('statistic').filter(statistic=stat))
+
+        if checking_logic:
 
             user_stats = UserStatistic.objects \
                 .filter(role=role, statistic=stat, day__range=[data['monday'], data['sunday']]) \

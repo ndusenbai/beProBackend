@@ -50,11 +50,13 @@ class CheckInSerializer(BaseSerializer):
     longitude = serializers.DecimalField(max_digits=22, decimal_places=6)
     check_in = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%S%z')
     file = serializers.FileField(allow_null=True, required=False)
+    comment = serializers.CharField(allow_null=True, required=False)
 
 
 class TakeTimeOffSerializer(BaseSerializer):
     check_out = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%S%z')
-    comment = serializers.CharField(required=False)
+    comment = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    file = serializers.FileField(required=False, allow_null=True)
 
 
 class CheckOutSerializer(BaseSerializer):

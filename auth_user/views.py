@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
+from django.utils.translation import gettext_lazy as _
 
 from auth_user.serializers import ChangePasswordSerializer, EmailSerializer, ForgotPasswordResetSerializer, \
     AssistantSerializer, \
@@ -220,8 +221,8 @@ class ChangeUserEmailAPI(APIView):
         serializer.is_valid(raise_exception=True)
         result = update_email(request, request.user, serializer.validated_data['email_new'])
         if result is False:
-            return Response({'message': 'Such email already exists!'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'message': 'Email has been sent!'})
+            return Response({'message': _('Такая почта уже существует!')}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': _('Письмо отправлено!')})
 
 
 class SetUserEmailAPI(APIView):

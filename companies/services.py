@@ -4,6 +4,7 @@ from typing import OrderedDict
 import pandas as pd
 from calendar import monthrange
 from auth_user.tasks import send_email
+from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, F, Q, FloatField, Sum, When, Case, Value
@@ -220,7 +221,7 @@ def create_employee(data: dict) -> None:
         )
         create_employee_schedules(role, schedules)
     else:
-        raise Exception({'message': 'Тариф компании истек. Необходимо обновить тариф', 'status': 400})
+        raise Exception({'message': _('Тариф компании истек. Необходимо обновить тариф'), 'status': 400})
 
 
 @atomic
@@ -304,7 +305,7 @@ def create_observer_and_role(data: OrderedDict):
             selected_company=data['company']
         )
     if Role.objects.filter(user=observer).exists():
-        return {'message': 'observer with this email is already created'}, status.HTTP_400_BAD_REQUEST
+        return {'message': _('Наблюдатель с такой почтой уже создан')}, status.HTTP_400_BAD_REQUEST
 
     Role.objects.create(
         company=data['company'],

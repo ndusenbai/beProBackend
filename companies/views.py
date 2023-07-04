@@ -209,6 +209,12 @@ class EmployeesViewSet(ModelViewSet):
             log_exception(e, 'Error in DepartmentViewSet.update()')
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
 
 class EmployeeTimeSheetViewSet(ModelViewSet):
     http_method_names = ['get']

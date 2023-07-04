@@ -1,0 +1,265 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-01 16:10+0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: .\auth_user\admin.py:19
+msgid "Personal info"
+msgstr ""
+
+#: .\auth_user\admin.py:23
+msgid "Permissions"
+msgstr ""
+
+#: .\auth_user\admin.py:34
+msgid "Important dates"
+msgstr ""
+
+#: .\auth_user\models.py:48
+msgid "Non assistant"
+msgstr ""
+
+#: .\auth_user\models.py:49
+msgid "Marketing-sales"
+msgstr ""
+
+#: .\auth_user\models.py:50
+msgid "Production workers"
+msgstr ""
+
+#: .\auth_user\services.py:33
+msgid "Неправильный старый пароль"
+msgstr "Қате ескі құпия сөз"
+
+#: .\auth_user\services.py:76
+msgid "Token expired"
+msgstr "Таңбалауыштың мерзімі аяқталды"
+
+#: .\auth_user\services.py:105
+msgid "Введите код"
+msgstr "Кодты енгізіңіз"
+
+#: .\auth_user\services.py:110
+msgid "Неправильный код"
+msgstr "Қате код"
+
+#: .\auth_user\services.py:117
+msgid "Код истёк"
+msgstr "Кодтың мерзімі аяқталды"
+
+#: .\auth_user\utils.py:8
+msgid "Пользователь с данной электронной почтой уже зарегистрирован в системе"
+msgstr "Осы электрондық поштасы бар пайдаланушы Жүйеде тіркелген"
+
+#: .\auth_user\views.py:224
+msgid "Такая почта уже существует!"
+msgstr "Мұндай поштасы бар пайдаланушы қазірдің өзінде бар"
+
+#: .\auth_user\views.py:225
+msgid "Письмо отправлено!"
+msgstr "Хат жіберілді!"
+
+#: .\bepro_statistics\services.py:58 .\bepro_statistics\services.py:96
+msgid "Вы не осуществляли check in сегодня"
+msgstr "Сіз бүгін тексеру жүргізген жоқсыз"
+
+#: .\bepro_statistics\services.py:61
+msgid "У Вас нет доступа к статистике"
+msgstr "Сіз статистикаға қол жеткізе алмайсыз"
+
+#: .\bepro_statistics\services.py:80
+msgid "Вы отпросились, нельзя заполнить статистику"
+msgstr "Сіз сұрадыңыз, статистиканы толтыра алмайсыз"
+
+#: .\bepro_statistics\services.py:82
+msgid "В отпуске нельзя заполнить статистику"
+msgstr "Демалыста сіз статистиканы толтыра алмайсыз"
+
+#: .\bepro_statistics\services.py:84
+msgid "Чек-ин и чек-аут заполнены. Нельзя заполнить статистику"
+msgstr "Тексеру және тексеру аяқталды. Статистиканы толтыру мүмкін емес"
+
+#: .\bepro_statistics\services.py:136
+msgid "Поменяйте видимость на Employees"
+msgstr "Көрінуді қызметкерлерге ауыстырыңыз"
+
+#: .\bepro_statistics\views.py:132
+msgid "Статистика уже заполнена"
+msgstr "Статистика қазірдің өзінде толық"
+
+#: .\companies\models.py:12
+msgid "HR"
+msgstr ""
+
+#: .\companies\models.py:13
+msgid "Observer"
+msgstr ""
+
+#: .\companies\models.py:14
+msgid "Employee"
+msgstr ""
+
+#: .\companies\models.py:15
+msgid "Head of department"
+msgstr ""
+
+#: .\companies\services.py:224
+msgid "Тариф компании истек. Необходимо обновить тариф"
+msgstr "Компанияның тарифі аяқталды. Тарифті жаңарту қажет"
+
+#: .\companies\services.py:308
+msgid "Наблюдатель с такой почтой уже создан"
+msgstr "Мұндай поштасы бар бақылаушы қазірдің өзінде құрылды"
+
+#: .\companies\utils.py:8
+msgid "Компания с таким названием уже существует"
+msgstr "Мұндай атауы бар Компания қазірдің өзінде бар"
+
+#: .\config\settings.py:296
+msgid "Russian"
+msgstr ""
+
+#: .\config\settings.py:297
+msgid "Kazakh"
+msgstr ""
+
+#: .\config\settings.py:298
+msgid "English"
+msgstr ""
+
+#: .\notifications\services.py:53
+msgid "Не забудьте сделать check in!"
+msgstr "Check in жасауды ұмытпаңыз!"
+
+#: .\notifications\services.py:54
+#, python-brace-format
+msgid ""
+"Привет {schedule.role.user.full_name}, просто напоминаю, что ваша смена "
+"скоро начинается, и у вас осталось 5 минут, чтобы сделать check in. До "
+"скорой встречи!"
+msgstr ""
+
+#: .\notifications\services.py:98
+msgid "Не забудьте сделать check out!"
+msgstr "Check out жасауды ұмытпаңыз!"
+
+#: .\notifications\services.py:99
+#, python-brace-format
+msgid ""
+"Привет {schedule.role.user.full_name}, просто предупреждаю, что ваша смена "
+"подходит к концу и у вас осталось 5 минут, чтобы сделать check out. Спасибо "
+"за всю вашу сегодняшнюю тяжелую работу!"
+msgstr ""
+
+#: .\tariffs\services.py:32 .\tariffs\services.py:54 .\tariffs\services.py:87
+msgid "Нет оплаченных заявок"
+msgstr "Ақылы өтінімдер жоқ"
+
+#: .\tests\exceptions.py:8
+msgid "Данный пользователь уже сдавал вариант этого теста"
+msgstr "Бұл Пайдаланушы осы тесттің нұсқасын тапсырды"
+
+#: .\tests\exceptions.py:14
+msgid "Тест уже пройден и не может быть сдан повторно"
+msgstr "Тест өтіп үлгерді және оны қайта тапсыру мүмкін емес"
+
+#: .\tests\exceptions.py:20
+msgid "Невозможно отправить приглашение, т.к. не указана электронная почта"
+msgstr "Шақыру жіберу мүмкін емес, себебі электрондық пошта көрсетілмеген"
+
+#: .\tests\exceptions.py:26
+msgid "Невозможно отправить приглашение, т.к. тест уже пройден"
+msgstr "Шақыру жіберу мүмкін емес, өйткені тест аяқталды"
+
+#: .\tests\exceptions.py:32
+msgid "Необходимо сначала оплатить тест"
+msgstr "Алдымен тест үшін ақы төлеу керек"
+
+#: .\timesheet\services.py:363
+msgid "Добавьте комментарий"
+msgstr "Пікір қосыңыз"
+
+#: .\timesheet\services.py:370
+msgid "Нельзя отпроситься на время отпуска"
+msgstr "Сіз демалыс уақытында сұрай алмайсыз"
+
+#: .\timesheet\services.py:372
+msgid "Вы уже осуществили check out на текущий день"
+msgstr "Сіз ағымдағы күні check out-ты жүзеге асырдыңыз"
+
+#: .\timesheet\services.py:582
+msgid "У этого сотрудника уже есть статус check_in на указанный промежуток."
+msgstr "Бұл қызметкердің белгіленген аралықта check_in мәртебесі бар."
+
+#: .\timesheet\services.py:585
+msgid ""
+"Дата начала отпуска не может быть позже или равным, чем дата окончания "
+"отпуска"
+msgstr "Демалыстың басталу күні демалыстың аяқталу күнінен кешірек немесе оған тең бола алмайды"
+
+#: .\timesheet\services.py:605
+msgid "Введите time_from & time_to"
+msgstr "time_from & time_to енгізіңіз"
+
+#: .\timesheet\services.py:612
+msgid "Неверный статус!"
+msgstr "Қате мәртебе!"
+
+#: .\timesheet\utils.py:8
+msgid "Вы не находитесь в радиусе вашего отдела"
+msgstr "Сіз өзіңіздің бөліміңіздің радиусындасыз"
+
+#: .\timesheet\utils.py:14
+msgid "Заполните статистику"
+msgstr "Статистиканы толтырыңыз"
+
+#: .\timesheet\utils.py:20
+msgid "Сначала сделайте check out"
+msgstr "Алдымен checkout жасаңыз"
+
+#: .\timesheet\utils.py:26
+msgid "Еще рано до check out"
+msgstr "Check out алдында әлі ерте"
+
+#: .\timesheet\utils.py:32
+msgid "Уже есть пользователь с такой почтой"
+msgstr "Мұндай поштасы бар пайдаланушы бар"
+
+#: .\timesheet\utils.py:38
+msgid "Вы сегодня отпросились"
+msgstr "Сіз бүгін сұрадыңыз"
+
+#: .\timesheet\utils.py:44
+msgid "Сделайте чекаут"
+msgstr "Checkout жасаңыз"
+
+#: .\timesheet\views.py:80
+msgid "Сегодня нерабочий день"
+msgstr "Бүгін жұмыс күні емес"
+
+#: .\timesheet\views.py:82
+msgid "Вы уже осуществили check in сегодня"
+msgstr "Сіз бүгін check in жасадыңыз"
+
+#: .\timesheet\views.py:116
+msgid "Нужно сделать check in заново"
+msgstr "Қайта тексеру керек"
+
+#: .\timesheet\views.py:165
+msgid "В указанный промежуток уже есть check_in"
+msgstr "Көрсетілген аралықта check_in бар"
