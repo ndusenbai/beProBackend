@@ -30,7 +30,6 @@ schema_view = get_schema_view(
     generator_class=BothHttpAndHttpsSchemaGenerator,
     public=True,
     permission_classes=(permissions.AllowAny,),
-    url=env('DEFAULT_API_URL')
 )
 
 urlpatterns = [
