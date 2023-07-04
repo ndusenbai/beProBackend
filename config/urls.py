@@ -15,20 +15,12 @@ env = environ.Env()
 environ.Env.read_env()
 
 
-class BothHttpAndHttpsSchemaGenerator(OpenAPISchemaGenerator):
-    def get_schema(self, request=None, public=False):
-        schema = super().get_schema(request, public)
-        schema.schemes = ["http", "https"]
-        return schema
-
-
 schema_view = get_schema_view(
     openapi.Info(
         title="BePro API",
         default_version='v1',
     ),
     public=True,
-    generator_class=BothHttpAndHttpsSchemaGenerator,
     permission_classes=(permissions.AllowAny,),
 )
 
