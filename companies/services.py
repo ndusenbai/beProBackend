@@ -13,7 +13,7 @@ from django.db.transaction import atomic
 from rest_framework import status
 from django.http import HttpRequest, HttpResponse
 # from auth_user.services import User
-from auth_user.services import get_domain
+from auth_user.services import get_domain, get_user_role
 from companies.models import Department, Company, Role, RoleChoices, CompanyService, Zone
 from scores.models import Reason
 from scores.utils import GetScoreForRole
@@ -149,10 +149,16 @@ def get_company_qs() -> QuerySet[Company]:
         .annotate(employees_count=Count('roles')).order_by('id')
 
 
-def get_employee_list(show_obs):
+def get_employee_list(show_obs, user):
     qs = Role.objects.exclude(
         role=RoleChoices.OBSERVER
     )
+
+    extra_kwargs = {}
+    role = get_user_role(user)
+
+    if role in ('employee', 'head_of_department'):
+        extra_kwargs['grade__lte'] = user.role.grade
 
     if show_obs:
         qs = Role.objects.all()
@@ -172,7 +178,7 @@ def get_employee_list(show_obs):
             ),
             to_attr='schedules'
         )
-    ).distinct()
+    ).filter(**extra_kwargs).distinct()
 
     return qs
 

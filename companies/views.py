@@ -162,7 +162,7 @@ class EmployeesViewSet(ModelViewSet):
         show = False
         if self.request.GET.get('show_obs'):
             show = True
-        return get_employee_list(show)
+        return get_employee_list(show, self.request.user)
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
