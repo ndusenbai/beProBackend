@@ -27,7 +27,6 @@ schema_view = get_schema_view(
         title="BePro API",
         default_version='v1',
     ),
-    generator_class=BothHttpAndHttpsSchemaGenerator,
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
