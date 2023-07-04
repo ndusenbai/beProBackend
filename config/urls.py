@@ -28,7 +28,7 @@ schema_view = get_schema_view(
         default_version='v1',
     ),
     public=True,
-    generator_class=OpenAPISchemaGenerator,
+    generator_class=BothHttpAndHttpsSchemaGenerator,
     permission_classes=(permissions.AllowAny,),
 )
 
