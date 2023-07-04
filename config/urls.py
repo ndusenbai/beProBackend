@@ -28,6 +28,7 @@ schema_view = get_schema_view(
         default_version='v1',
     ),
     public=True,
+    generator_class=OpenAPISchemaGenerator,
     permission_classes=(permissions.AllowAny,),
 )
 
