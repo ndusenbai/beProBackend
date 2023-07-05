@@ -81,6 +81,7 @@ def create_department(user: User, data: dict) -> None:
         except User.DoesNotExist:
             data['head_of_department']['selected_company_id'] = department.company_id
             head_of_department_user = User.objects.create_user(**data['head_of_department'])
+
         head_of_department_role = Role.objects.create(
             company=user.selected_company,
             department=department,
@@ -287,7 +288,7 @@ def create_employee_schedules(role: Role, schedules: list) -> None:
 
 
 def delete_head_of_department_role(instance: Department) -> None:
-    Role.objects.filter(user=instance.head_of_department).delete()
+    instance.head_of_department.delete()
 
 
 def update_observer(instance: Role, data: OrderedDict):
